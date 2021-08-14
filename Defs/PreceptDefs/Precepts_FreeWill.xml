@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- Issues -->
+
+  <IssueDef>
+    <defName>Free_Will</defName>
+    <label>free will</label>
+    <iconPath>UI/Issues/Slavery</iconPath>
+  </IssueDef>
+
+  <!-- Precepts -->
+
+  <PreceptDef>
+    <defName>Free_Will_Prohibited</defName>
+    <issue>Free_Will</issue>
+    <description>The work schedule exists to protect us. We blindly obey!</description>
+    <label>disabled</label>
+    <impact>Low</impact>
+    <displayOrderInIssue>10</displayOrderInIssue>
+    <displayOrderInImpact>200</displayOrderInImpact>
+    <defaultSelectionWeight>1</defaultSelectionWeight>
+    <associatedMemes>
+      <li>Collectivist</li>
+    </associatedMemes>
+    <conflictingMemes>
+      <li>Individualist</li>
+    </conflictingMemes>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Free_Will_Disapproved</defName>
+    <issue>Free_Will</issue>
+    <description>The work only gets done when there is a prioritised list of tasks. Everyone does their share.</description>
+    <label>disapproved</label>
+    <impact>Medium</impact>
+    <displayOrderInIssue>20</displayOrderInIssue>
+    <displayOrderInImpact>900</displayOrderInImpact>
+    <associatedMemes>
+      <li>Collectivist</li>
+    </associatedMemes>
+    <conflictingMemes>
+      <li>Individualist</li>
+    </conflictingMemes>
+    <comps>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>NoWorkSchedule_Disapproved</thought>
+      </li>
+    </comps>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Free_Will_Preferred</defName>
+    <issue>Free_Will</issue>
+    <description>Autonomy is more important than resticting freedom. The work will get done eventually.</description>
+    <label>preferred</label>
+    <impact>Medium</impact>
+    <displayOrderInIssue>30</displayOrderInIssue>
+    <displayOrderInImpact>900</displayOrderInImpact>
+    <associatedMemes>
+      <li>Individualist</li>
+    </associatedMemes>
+    <conflictingMemes>
+      <li>Collectivist</li>
+    </conflictingMemes>
+    <comps>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>EnforcedWorkSchedule_Disapproved</thought>
+      </li>
+    </comps>
+  </PreceptDef>
+
+  <PreceptDef>
+    <defName>Free_Will_Mandatory</defName>
+    <issue>Free_Will</issue>
+    <description>Interfering with someone's autonomy is unacceptable and cannot be tolerated.</description>
+    <label>mandatory</label>
+    <impact>High</impact>
+    <displayOrderInIssue>40</displayOrderInIssue>
+    <displayOrderInImpact>900</displayOrderInImpact>
+    <associatedMemes>
+      <li>Individualist</li>
+    </associatedMemes>
+    <conflictingMemes>
+      <li>Collectivist</li>
+    </conflictingMemes>
+  </PreceptDef>
+
+  <!-- Thoughts -->
+
+  <ThoughtDef>
+    <defName>NoWorkSchedule_Disapproved</defName>
+    <workerClass>ThoughtWorker_Precept_NoWorkSchedule</workerClass>
+    <stages>
+      <li>
+        <label>no work schedule</label>
+        <description>There is no work schedule for me to follow. This is so overwhelming!</description>
+        <baseMoodEffect>-10</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>EnforcedWorkSchedule_Disapproved</defName>
+    <workerClass>ThoughtWorker_Precept_EnforcedWorkSchedule</workerClass>
+    <stages>
+      <li>
+        <label>enforced work schedule</label>
+        <description>This work schedule is too restrictive. Why can't I make my own decisions?</description>
+        <baseMoodEffect>-10</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+</Defs>

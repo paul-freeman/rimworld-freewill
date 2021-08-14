@@ -14,8 +14,12 @@
 
   <ItemGroup>
     <Compile Include="Mod.cs" />
+    <Compile Include="FreeWill_MapComponent.cs" />
+    <Compile Include="ThoughtWorkers\EnforcedWorkSchedule.cs" />
+    <Compile Include="ThoughtWorkers\NoWorkSchedule.cs" />
     <Folder Include="About\" />
     <Folder Include="Assemblies\" />
+    <Folder Include="Defs\" />
     <Folder Include="Languages\" />
   </ItemGroup>
 
@@ -24,13 +28,16 @@
     <PostBuildEvent>
 md "$(ProjectDir)"
 md "$(ProjectDir)\Assemblies"
+md "$(ProjectDir)\Defs"
 md "$(ProjectDir)\Languages"
 move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
 md "$(TargetDir)About"
 md "$(TargetDir)Assemblies"
+md "$(TargetDir)Defs"
 md "$(TargetDir)Languages"
 xcopy /y /s "$(ProjectDir)About" "$(TargetDir)About"
 xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
+xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
 xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
 </PostBuildEvent>
   </PropertyGroup>
