@@ -15,7 +15,7 @@
     <defName>Free_Will_Prohibited</defName>
     <issue>Free_Will</issue>
     <description>The work schedule exists to protect us. We blindly obey!</description>
-    <label>disabled</label>
+    <label>prohibited</label>
     <impact>High</impact>
     <displayOrderInIssue>10</displayOrderInIssue>
     <displayOrderInImpact>200</displayOrderInImpact>
@@ -79,7 +79,7 @@
     <label>mandatory</label>
     <impact>High</impact>
     <displayOrderInIssue>40</displayOrderInIssue>
-    <displayOrderInImpact>900</displayOrderInImpact>
+    <displayOrderInImpact>200</displayOrderInImpact>
     <defaultSelectionWeight>1</defaultSelectionWeight>
     <associatedMemes>
       <li>Individualist</li>
