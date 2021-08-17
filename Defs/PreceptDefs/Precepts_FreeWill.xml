@@ -6,7 +6,7 @@
   <IssueDef>
     <defName>Free_Will</defName>
     <label>free will</label>
-    <iconPath>UI/Issues/Slavery</iconPath>
+    <iconPath>Issues/FreeWill</iconPath>
   </IssueDef>
 
   <!-- Precepts -->
@@ -16,7 +16,7 @@
     <issue>Free_Will</issue>
     <description>The work schedule exists to protect us. We blindly obey!</description>
     <label>disabled</label>
-    <impact>Low</impact>
+    <impact>High</impact>
     <displayOrderInIssue>10</displayOrderInIssue>
     <displayOrderInImpact>200</displayOrderInImpact>
     <defaultSelectionWeight>1</defaultSelectionWeight>
@@ -36,6 +36,7 @@
     <impact>Medium</impact>
     <displayOrderInIssue>20</displayOrderInIssue>
     <displayOrderInImpact>900</displayOrderInImpact>
+    <defaultSelectionWeight>2</defaultSelectionWeight>
     <associatedMemes>
       <li>Collectivist</li>
     </associatedMemes>
@@ -52,11 +53,12 @@
   <PreceptDef>
     <defName>Free_Will_Preferred</defName>
     <issue>Free_Will</issue>
-    <description>Autonomy is more important than resticting freedom. The work will get done eventually.</description>
+    <description>Autonomy is more important than restricting freedom. The work will get done eventually.</description>
     <label>preferred</label>
     <impact>Medium</impact>
     <displayOrderInIssue>30</displayOrderInIssue>
     <displayOrderInImpact>900</displayOrderInImpact>
+    <defaultSelectionWeight>2</defaultSelectionWeight>
     <associatedMemes>
       <li>Individualist</li>
     </associatedMemes>
@@ -78,6 +80,7 @@
     <impact>High</impact>
     <displayOrderInIssue>40</displayOrderInIssue>
     <displayOrderInImpact>900</displayOrderInImpact>
+    <defaultSelectionWeight>1</defaultSelectionWeight>
     <associatedMemes>
       <li>Individualist</li>
     </associatedMemes>
@@ -95,7 +98,7 @@
       <li>
         <label>no work schedule</label>
         <description>There is no work schedule for me to follow. This is so overwhelming!</description>
-        <baseMoodEffect>-10</baseMoodEffect>
+        <baseMoodEffect>-5</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>
@@ -107,7 +110,7 @@
       <li>
         <label>enforced work schedule</label>
         <description>This work schedule is too restrictive. Why can't I make my own decisions?</description>
-        <baseMoodEffect>-10</baseMoodEffect>
+        <baseMoodEffect>-5</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>

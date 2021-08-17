@@ -13,14 +13,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Mod.cs" />
+    <Compile Include="FreeWill_Mod.cs" />
+    <Compile Include="FreeWill_ModSettings.cs" />
     <Compile Include="FreeWill_MapComponent.cs" />
+    <Compile Include="FreeWill_WorldComponent.cs" />
+    <Compile Include="ITabs\ITab_Pawn_FreeWill.cs" />
     <Compile Include="ThoughtWorkers\EnforcedWorkSchedule.cs" />
     <Compile Include="ThoughtWorkers\NoWorkSchedule.cs" />
+    <Compile Include="Priority.cs" />
     <Folder Include="About\" />
     <Folder Include="Assemblies\" />
     <Folder Include="Defs\" />
     <Folder Include="Languages\" />
+    <Folder Include="Patches\" />
+    <Folder Include="Textures\" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -30,15 +36,21 @@ md "$(ProjectDir)"
 md "$(ProjectDir)\Assemblies"
 md "$(ProjectDir)\Defs"
 md "$(ProjectDir)\Languages"
+md "$(ProjectDir)\Patches"
+md "$(ProjectDir)\Textures"
 move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
 md "$(TargetDir)About"
 md "$(TargetDir)Assemblies"
 md "$(TargetDir)Defs"
 md "$(TargetDir)Languages"
+md "$(TargetDir)Patches"
+md "$(TargetDir)Textures"
 xcopy /y /s "$(ProjectDir)About" "$(TargetDir)About"
 xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
 xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
 xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
+xcopy /y /s "$(ProjectDir)Patches" "$(TargetDir)Patches"
+xcopy /y /s "$(ProjectDir)Textures" "$(TargetDir)Textures"
 </PostBuildEvent>
   </PropertyGroup>
 
@@ -65,6 +77,10 @@ xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

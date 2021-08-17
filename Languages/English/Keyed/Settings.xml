@@ -1,4 +1,105 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
+
+  <!-- Mod settings -->
   <FreeWillSettingsCategory>Free Will Settings</FreeWillSettingsCategory>
+  <FreeWillWorkTypeAdjustment>Global adjustment to</FreeWillWorkTypeAdjustment>
+  <FreeWillWorkTypeAdjustments>You can make global adjustments to the work priorities here. Except in rare cases, the adjustments will be made after all other calculations are performed. This will show in the work calculation as "{0}".</FreeWillWorkTypeAdjustments>
+  <FreeWillDefaultSliderButtonLabel>Default</FreeWillDefaultSliderButtonLabel>
+  <FreeWillResetGlobalSlidersButtonLabel>Reset global sliders</FreeWillResetGlobalSlidersButtonLabel>
+  <FreeWillResetGlobalSlidersLabel>Reset all global overrides to zero</FreeWillResetGlobalSlidersLabel>
+
+  <!-- Mod ITab -->
+  <FreeWillITab>Free will</FreeWillITab>
+  <FreeWillITabCheckbox>Free will</FreeWillITabCheckbox>
+  <FreeWillFreePawnTip>{0} subscribes to an ideology that allows specific work to be assigned when needed.</FreeWillFreePawnTip>
+  <FreeWillFreePawnTipEnabled>{0} subscribes to an ideology that prohibits telling others what to do. {1} will always choose their own work tasks.</FreeWillFreePawnTipEnabled>
+  <FreeWillFreePawnTipDisabled>{0} subscribes to an ideology that enforces adherence to a strict work schedule. {1} must always be given their work tasks.</FreeWillFreePawnTipDisabled>
+  <FreeWillWorkPreference>Work preference</FreeWillWorkPreference>
+  <FreeWillWorkAssignment>Work assignment</FreeWillWorkAssignment>
+
+  <!-- Considerations-->
+  <FreeWillConsiderMovementSpeed>Consider movement speed</FreeWillConsiderMovementSpeed>
+  <FreeWillConsiderMovementSpeedLong>Colonists perfer work that suits their movement speed.</FreeWillConsiderMovementSpeedLong>
+  <FreeWillConsiderFoodPoisoning>Consider food poisoning</FreeWillConsiderFoodPoisoning>
+  <FreeWillConsiderFoodPoisoningLong>Pawns will clean more and cook less when a cooking area has a food poisoning risk.</FreeWillConsiderFoodPoisoningLong>
+  <FreeWillConsiderOwnRoom>Consider own room</FreeWillConsiderOwnRoom>
+  <FreeWillConsiderOwnRoomLong>Pawns will clean more when in their own room.</FreeWillConsiderOwnRoomLong>
+  <FreeWillConsiderBrawlersNotHunting>Consider brawlers for not hunting</FreeWillConsiderBrawlersNotHunting>
+  <FreeWillConsiderBrawlersNotHuntingLong>Pawns will not hunt if they have the brawler trait.</FreeWillConsiderBrawlersNotHuntingLong>
+  <FreeWillConsiderHasHuntingWeapon>Consider has hunting weapon</FreeWillConsiderHasHuntingWeapon>
+  <FreeWillConsiderHasHuntingWeaponLong>Pawns will not hunt if they don't have a hunting weapon.</FreeWillConsiderHasHuntingWeaponLong>
+  <FreeWillConsiderPlantsBlighted>Consider plants blighted</FreeWillConsiderPlantsBlighted>
+  <FreeWillConsiderPlantsBlightedLong>Pawns will actively cut blighted plants.</FreeWillConsiderPlantsBlightedLong>
+  <FreeWillConsiderGauranlenPruning>Consider pruning Gauranlen tree</FreeWillConsiderGauranlenPruning>
+  <FreeWillConsiderGauranlenPruningLong>Pawns will prefer to keep their connected tree pruned.</FreeWillConsiderGauranlenPruningLong>
+
+  <!-- Priority strings -->
+  <FreeWillPriorityGlobalDefault>base priority</FreeWillPriorityGlobalDefault>
+  <FreeWillPriorityEnabled>enabled</FreeWillPriorityEnabled>
+  <FreeWillPriorityDisabled>disabled</FreeWillPriorityDisabled>
+  <FreeWillPriorityPermanentlyDisabled>permanently disabled</FreeWillPriorityPermanentlyDisabled>
+  <FreeWillPriorityFirefightingDefault>firefighting default</FreeWillPriorityFirefightingDefault>
+  <FreeWillPriorityPatientDefault>patient default</FreeWillPriorityPatientDefault>
+  <FreeWillPriorityBedrestDefault>bedrest default</FreeWillPriorityBedrestDefault>
+  <FreeWillPriorityBasicWorkDefault>basic work default</FreeWillPriorityBasicWorkDefault>
+  <FreeWillPriorityPawnDowned>downed</FreeWillPriorityPawnDowned>
+  <FreeWillPriorityOtherPawnsDowned>others downed</FreeWillPriorityOtherPawnsDowned>
+  <FreeWillPriorityNeedTreatment>need treatment</FreeWillPriorityNeedTreatment>
+  <FreeWillPriorityNeedTreatmentSelfTend>can self tend</FreeWillPriorityNeedTreatmentSelfTend>
+  <FreeWillPriorityOthersNeedTreatment>others need treatment</FreeWillPriorityOthersNeedTreatment>
+  <FreeWillPriorityPetsInjured>pets injured</FreeWillPriorityPetsInjured>
+  <FreeWillPriorityFireInHomeArea>home on fire</FreeWillPriorityFireInHomeArea>
+  <FreeWillPriorityFireOnMap>fire in the area</FreeWillPriorityFireOnMap>
+  <FreeWillPriorityHealth>current health</FreeWillPriorityHealth>
+  <FreeWillPriorityBuildingImmunity>building immunity</FreeWillPriorityBuildingImmunity>
+  <FreeWillPriorityBored>bored</FreeWillPriorityBored>
+  <FreeWillPriorityRefueling>refueling required</FreeWillPriorityRefueling>
+  <FreeWillPriorityFilthyCookingArea>dirty cooking area</FreeWillPriorityFilthyCookingArea>
+  <FreeWillPriorityNoOneElseDoing>no one else doing</FreeWillPriorityNoOneElseDoing>
+  <FreeWillPriorityInspired>inspired</FreeWillPriorityInspired>
+  <FreeWillPriorityNotInHomeArea>not in home area</FreeWillPriorityNotInHomeArea>
+  <FreeWillPriorityHungerLevel>hunger level</FreeWillPriorityHungerLevel>
+  <FreeWillPriorityLowFood>low food</FreeWillPriorityLowFood>
+  <FreeWillPriorityAteRawFood>ate raw food</FreeWillPriorityAteRawFood>
+  <FreeWillPriorityOwnRoom>should clean my room</FreeWillPriorityOwnRoom>
+  <FreeWillPriorityThingsDeteriorating>things deteriorating</FreeWillPriorityThingsDeteriorating>
+  <FreeWillPriorityBlight>blight</FreeWillPriorityBlight>
+  <FreeWillPriorityPruneGauranlenTree>my tree needs pruning</FreeWillPriorityPruneGauranlenTree>
+  <FreeWillPriorityNeedWarmClothes>need warm clothes</FreeWillPriorityNeedWarmClothes>
+  <FreeWillPriorityBrawler>brawler</FreeWillPriorityBrawler>
+  <FreeWillPriorityNoHuntingWeapon>no hunting weapon</FreeWillPriorityNoHuntingWeapon>
+  <FreeWillPriorityCurrentlyDoing>continuing current task</FreeWillPriorityCurrentlyDoing>
+  <FreeWillPriorityMovementSpeed>movement speed</FreeWillPriorityMovementSpeed>
+  <FreeWillPriorityCarryingCapacity>carrying capacity</FreeWillPriorityCarryingCapacity>
+  <FreeWillPrioritySkillLevel>skill level</FreeWillPrioritySkillLevel>
+  <FreeWillPriorityExpectionsExceeded>superfluously clean</FreeWillPriorityExpectionsExceeded>
+  <FreeWillPriorityExpectionsMet>clean enough</FreeWillPriorityExpectionsMet>
+  <FreeWillPriorityExpectionsUnmet>a bit messy</FreeWillPriorityExpectionsUnmet>
+  <FreeWillPriorityExpectionsLetDown>very messy</FreeWillPriorityExpectionsLetDown>
+  <FreeWillPriorityExpectionsIgnored>mess everywhere</FreeWillPriorityExpectionsIgnored>
+  <FreeWillPriorityBeautyDefault>beauty default</FreeWillPriorityBeautyDefault>
+  <FreeWillPriorityMajorPassionFor>major passion for</FreeWillPriorityMajorPassionFor>
+  <FreeWillPriorityMinorPassionFor>minor passion for</FreeWillPriorityMinorPassionFor>
+  <FreeWillPriorityMinorAversionTo>minor aversion to</FreeWillPriorityMinorAversionTo>
+  <FreeWillPriorityMajorAversionTo>major aversion to</FreeWillPriorityMajorAversionTo>
+  <FreeWillPriorityCompulsiveItch>itching to do</FreeWillPriorityCompulsiveItch>
+  <FreeWillPriorityCompulsiveNeed>needing to do</FreeWillPriorityCompulsiveNeed>
+  <FreeWillPriorityCompulsiveObsession>obsessed with</FreeWillPriorityCompulsiveObsession>
+  <FreeWillPriorityCompulsiveDemand>demand to do</FreeWillPriorityCompulsiveDemand>
+  <FreeWillPriorityCompulsiveWithdrawl>in withdrawal from</FreeWillPriorityCompulsiveWithdrawl>
+  <FreeWillPriorityCompulsiveYearning>yearning to do</FreeWillPriorityCompulsiveYearning>
+  <FreeWillPriorityCompulsiveTantrum>tantrum over</FreeWillPriorityCompulsiveTantrum>
+  <FreeWillPriorityCompulsiveHysteria>hysterical about</FreeWillPriorityCompulsiveHysteria>
+  <FreeWillPriorityInvigorating>invigorated by</FreeWillPriorityInvigorating>
+  <FreeWillPriorityBoredBy>bored by</FreeWillPriorityBoredBy>
+  <FreeWillPriorityReactionInitial>allergic symptoms from</FreeWillPriorityReactionInitial>
+  <FreeWillPriorityReactionItching>itching from</FreeWillPriorityReactionItching>
+  <FreeWillPriorityReactionSneezing>sneezing from</FreeWillPriorityReactionSneezing>
+  <FreeWillPriorityReactionSwelling>swelling from</FreeWillPriorityReactionSwelling>
+  <FreeWillPriorityReactionAnaphylaxis>can't breath from</FreeWillPriorityReactionAnaphylaxis>
+  <FreeWillPriorityNoReaction>no allergic symptoms from</FreeWillPriorityNoReaction>
+  <FreeWillPriorityNoFreeWill>no free will</FreeWillPriorityNoFreeWill>
+  <FreeWillPriorityColonyPolicy>colony policy</FreeWillPriorityColonyPolicy>
+
 </LanguageData>
