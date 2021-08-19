@@ -132,14 +132,17 @@ namespace FreeWill
             {
                 return;
             }
-            if (pawn.IsSlave && worldComp.HasFreeWill(pawn))
+            if (pawn.IsSlaveOfColony)
             {
-                var ok = worldComp.TryRemoveFreeWill(pawn);
-                if (!ok)
+                if (worldComp.HasFreeWill(pawn))
                 {
-                    Log.ErrorOnce("could not remove free will from slave", 164752145);
+                    var ok = worldComp.TryRemoveFreeWill(pawn);
+                    if (!ok)
+                    {
+                        Log.ErrorOnce("could not remove free will from slave", 164752145);
+                    }
+                    return;
                 }
-                return;
             }
             worldComp.CheckFreeWillStatus(pawn);
             try

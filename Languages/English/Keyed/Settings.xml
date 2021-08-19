@@ -12,9 +12,10 @@
   <!-- Mod ITab -->
   <FreeWillITab>Free will</FreeWillITab>
   <FreeWillITabCheckbox>Free will</FreeWillITabCheckbox>
-  <FreeWillFreePawnTip>{0} subscribes to an ideology that allows specific work to be assigned when needed.</FreeWillFreePawnTip>
-  <FreeWillFreePawnTipEnabled>{0} subscribes to an ideology that prohibits telling others what to do. {1} will always choose their own work tasks.</FreeWillFreePawnTipEnabled>
-  <FreeWillFreePawnTipDisabled>{0} subscribes to an ideology that enforces adherence to a strict work schedule. {1} must always be given their work tasks.</FreeWillFreePawnTipDisabled>
+  <FreeWillITabWorkScheduleSlave>{0} is currently enslaved and must always be given their work tasks.</FreeWillITabWorkScheduleSlave>
+  <FreeWillITabWorkScheduleCanChange>Allows {0} to choose their own work tasks. This might affect their mood if it goes against their ideology.</FreeWillITabWorkScheduleCanChange>
+  <FreeWillITabWorkScheduleProhibited>{0} subscribes to an ideology that prohibits telling others what to do. {1} will always choose their own work tasks.</FreeWillITabWorkScheduleProhibited>
+  <FreeWillITabWorkScheduleMandatory>{0} subscribes to an ideology that enforces adherence to a strict work schedule. {1} must always be given their work tasks.</FreeWillITabWorkScheduleMandatory>
   <FreeWillWorkPreference>Work preference</FreeWillWorkPreference>
   <FreeWillWorkAssignment>Work assignment</FreeWillWorkAssignment>
 

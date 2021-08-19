@@ -188,22 +188,32 @@ namespace FreeWill
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;
 
-                var canChange = !worldComp.FreeWillCanChange(pawn);
-                Widgets.CheckboxLabeled(rect, "FreeWillITabCheckbox".TranslateSimple(), ref isFree, canChange, null, null, false);
+                var canChange = worldComp.FreeWillCanChange(pawn);
+                Widgets.CheckboxLabeled(rect, "FreeWillITabCheckbox".TranslateSimple(), ref isFree, !canChange, null, null, false);
                 if (Mouse.IsOver(rect))
                 {
                     string tip;
-                    if (canChange && !isFree)
+                    if (pawn.IsSlaveOfColony)
                     {
-                        tip = "FreeWillFreePawnTipDisabled".Translate(pawn.NameShortColored, pawn.Ideo.MemberNamePlural.CapitalizeFirst()).CapitalizeFirst();
+                        // pawn is slave
+                        tip = "FreeWillITabWorkScheduleSlave".Translate(pawn.NameShortColored);
                     }
-                    else if (canChange && isFree)
+                    else if (canChange)
                     {
-                        tip = "FreeWillFreePawnTipEnabled".Translate(pawn.NameShortColored, pawn.Ideo.MemberNamePlural.CapitalizeFirst()).CapitalizeFirst();
+                        tip = "FreeWillITabWorkScheduleCanChange".Translate(pawn.NameShortColored);
                     }
                     else
                     {
-                        tip = "FreeWillFreePawnTip".Translate(pawn.NameShortColored);
+                        if (isFree)
+                        {
+                            // free will mandatory - work schedule prohibited
+                            tip = "FreeWillITabWorkScheduleProhibited".Translate(pawn.NameShortColored, pawn.Ideo.MemberNamePlural.CapitalizeFirst()).CapitalizeFirst();
+                        }
+                        else
+                        {
+                            // free will prohibited - work schedule mandatory
+                            tip = "FreeWillITabWorkScheduleMandatory".Translate(pawn.NameShortColored, pawn.Ideo.MemberNamePlural.CapitalizeFirst()).CapitalizeFirst();
+                        }
                     }
 
                     TooltipHandler.TipRegion(rect, tip);

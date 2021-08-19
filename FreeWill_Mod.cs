@@ -53,7 +53,7 @@ namespace FreeWill
                         List<Pawn> newPawns = new List<Pawn>();
                         foreach (Pawn pawn in oldPawns())
                         {
-                            if (worldComp.HasFreeWill(pawn))
+                            if (worldComp.HasFreeWill(pawn) && !pawn.IsSlaveOfColony)
                             {
                                 continue;
                             }

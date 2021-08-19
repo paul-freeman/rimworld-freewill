@@ -36,7 +36,7 @@
     <impact>Medium</impact>
     <displayOrderInIssue>20</displayOrderInIssue>
     <displayOrderInImpact>900</displayOrderInImpact>
-    <defaultSelectionWeight>2</defaultSelectionWeight>
+    <defaultSelectionWeight>1</defaultSelectionWeight>
     <associatedMemes>
       <li>Collectivist</li>
     </associatedMemes>
@@ -51,14 +51,29 @@
   </PreceptDef>
 
   <PreceptDef>
+    <defName>Free_Will_Flexible</defName>
+    <issue>Free_Will</issue>
+    <description>It doesn't matter if there is a list of tasks or not. The work needs to be done either way.</description>
+    <label>don't care</label>
+    <impact>Low</impact>
+    <displayOrderInIssue>30</displayOrderInIssue>
+    <displayOrderInImpact>900</displayOrderInImpact>
+    <defaultSelectionWeight>1</defaultSelectionWeight>
+    <conflictingMemes>
+      <li>Collectivist</li>
+      <li>Individualist</li>
+    </conflictingMemes>
+  </PreceptDef>
+
+  <PreceptDef>
     <defName>Free_Will_Preferred</defName>
     <issue>Free_Will</issue>
     <description>Autonomy is more important than restricting freedom. The work will get done eventually.</description>
     <label>preferred</label>
     <impact>Medium</impact>
-    <displayOrderInIssue>30</displayOrderInIssue>
+    <displayOrderInIssue>40</displayOrderInIssue>
     <displayOrderInImpact>900</displayOrderInImpact>
-    <defaultSelectionWeight>2</defaultSelectionWeight>
+    <defaultSelectionWeight>1</defaultSelectionWeight>
     <associatedMemes>
       <li>Individualist</li>
     </associatedMemes>
@@ -78,7 +93,7 @@
     <description>Interfering with someone's autonomy is unacceptable and cannot be tolerated.</description>
     <label>mandatory</label>
     <impact>High</impact>
-    <displayOrderInIssue>40</displayOrderInIssue>
+    <displayOrderInIssue>50</displayOrderInIssue>
     <displayOrderInImpact>200</displayOrderInImpact>
     <defaultSelectionWeight>1</defaultSelectionWeight>
     <associatedMemes>
@@ -87,6 +102,11 @@
     <conflictingMemes>
       <li>Collectivist</li>
     </conflictingMemes>
+    <comps>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>EnforcedWorkSchedule_Disapproved</thought>
+      </li>
+    </comps>
   </PreceptDef>
 
   <!-- Thoughts -->

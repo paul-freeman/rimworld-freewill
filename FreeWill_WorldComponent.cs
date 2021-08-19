@@ -45,9 +45,26 @@ namespace FreeWill
         public bool HasFreeWill(Pawn pawn)
         {
             var pawnKey = pawn.GetUniqueLoadID();
+
+            if (pawn.IsSlaveOfColony)
+            {
+                freePawns[pawnKey] = false;
+                return false;
+            }
+            else if (pawn.Ideo.HasPrecept(freeWillProhibited))
+            {
+                freePawns[pawnKey] = false;
+                return false;
+            }
+            else if (pawn.Ideo.HasPrecept(freeWillMandatory))
+            {
+                freePawns[pawnKey] = true;
+                return true;
+            }
+
             if (!freePawns.ContainsKey(pawnKey))
             {
-                if (pawn.Ideo.HasPrecept(freeWillProhibited) || pawn.Ideo.HasPrecept(freeWillDisapproved))
+                if (pawn.Ideo.HasPrecept(freeWillDisapproved) || pawn.Ideo.HasPrecept(freeWillProhibited))
                 {
                     freePawns[pawnKey] = false;
                     return false;
@@ -63,6 +80,10 @@ namespace FreeWill
 
         public bool FreeWillCanChange(Pawn pawn)
         {
+            if (pawn.IsSlaveOfColony)
+            {
+                return false;
+            }
             var canChange = pawn.Ideo.HasPrecept(freeWillPreferred) || pawn.Ideo.HasPrecept(freeWillDisapproved);
             if (!canChange)
             {
@@ -106,7 +127,7 @@ namespace FreeWill
         public bool TryRemoveFreeWill(Pawn pawn)
         {
             var pawnKey = pawn.GetUniqueLoadID();
-            if (pawn.Ideo.HasPrecept(freeWillMandatory))
+            if (!pawn.IsSlaveOfColony && pawn.Ideo.HasPrecept(freeWillMandatory))
             {
                 return false;
             }
