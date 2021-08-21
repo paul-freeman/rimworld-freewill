@@ -34,7 +34,13 @@ created.
 Each ideology will now include the [i]Free will[/i] precept. There are a few
 options:
 
-[img]https://imgur.com/bUXlfNa[/img]
+[list]
+    [*] [b]Mandatory[/b] - free will is always on and cannot be toggled
+    [*] [b]Preferred[/b] - free will can be disabled, but there is a mood penalty
+    [*] [b]Flexible[/b] - free will can be toggled without penalty
+    [*] [b]Disapproved[/b] - free will can be enabled, but there is a mood penalty
+    [*] [b]Prohibited[/b] - free will cannot be enabled ([i]this is essentially the Vanilla RimWorld experience[/i])
+[/list]
 
 Depending on the choice, colonists may not appear on the work tab, and will
 instead rely on the AI (their "free will") to set their work priorities.
