@@ -1,0 +1,73 @@
+[i]PLEASE NOTE: This mod requires the Ideology DLC.[/i]
+
+[h1]Free Will[/h1]
+[b]Imbue your colonists with free will and let their ideology determine how they
+use this new power![/b]
+
+This mod adds a powerful work tab AI placed within a new [i]Ideology[/i] precept
+called [i]Free will[/i]. The ability to control colonists (via the work tab) is
+now entirely dependent on their ideology.
+
+Free Will is the result of: 1000 hours of gameplay, 100s of hours of development,
+and countless hours of testing by the amazing subscribers of my beta version,
+[url=https://steamcommunity.com/sharedfiles/filedetails/?id=2019368012]YouDoYou[/url].
+
+[h2]Why would I want this?[/h2]
+Setting up the work tab becomes a burden after hundreds of hours of gameplay.
+Starting a colony with mandatory free will allows you to create colonies much
+quicker and focus on story goals, rather than wasting time setting up work
+tasks.
+
+Specifically:
+[list]
+    [*] Players new to the game might find it nice to automate the priorities and focus on learning other game mechanics.
+    [*] Experienced players might be tired of setting up work tabs over and over.
+    [*] Hardcore players might enjoy the challenge of having to manage even more unruly colonists.
+    [*] Streamers might enjoy having a mod that skips the boring stuff and brings even more story into RimWorld.
+[/list]
+
+The mod follows in the tradition of RimWorld being a story generator. It will
+not make the game easier to play, but it should help enrich the story that gets
+created.
+
+[h2]How do I set it up?[/h2]
+Each ideology will now include the [i]Free will[/i] precept. There are a few
+options:
+
+[img]https://imgur.com/bUXlfNa[/img]
+
+Depending on the choice, colonists may not appear on the work tab, and will
+instead rely on the AI (their "free will") to set their work priorities.
+
+If allowed, you can toggle free will in the colonist's [i]Free Will[/i] tab, but
+setting it to something they don't like may incure a mood penalty.
+
+[h2]How do colonists with free will choose what to do?[/h2]
+Colonists with free will enabled will prioritize work on their own. You can see
+the calculations for each work type in the [i]Free Will[/i] tab. Priorities will
+change in response to a number of game events.
+
+Here is a rough guide to understanding the AI:
+[list]
+    [*] Colonists want to do things they are good at doing.
+    [*] Colonists don't want to do things they are bad at doing.
+    [*] Colonists want to pursue their passions if they are in a good mood.
+    [*] Colonists want to clean more if they find the environment messy.
+    [*] Colonists want to rest if their health is low.
+    [*] Colonists who are bored will look for anything they are capable of doing.
+[/list]
+[i]The colony will assign someone to every work type (unless no one can do it).[/i]
+
+[h2]What about slaves?[/h2]
+Slaves never have free will.
+
+[h2]Non-steam download?[/h2]
+Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub releases[/url].
+
+[h1] Tips for playing with free will on! [/h1]
+[list]
+    [*] Don't queue up too much work at one time.
+    [*] A dirty base usually means the colonists have too much to do.
+    [*] Idle colonists usually means there is not enough work to do.
+    [*] Make decisions based on why you colonists want to do - trust me!
+[/list]
