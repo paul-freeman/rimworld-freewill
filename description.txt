@@ -1,8 +1,7 @@
 [i]PLEASE NOTE: This mod requires the Ideology DLC.[/i]
 
 [h1]Free Will[/h1]
-[b]Imbue your colonists with free will and let their ideology determine how they
-use this new power![/b]
+[b]Expand the story of RimWorld by imbuing your colonists with free will![/b]
 
 This mod adds a powerful work tab AI placed within a new [i]Ideology[/i] precept
 called [i]Free will[/i]. The ability to control colonists (via the work tab) is
@@ -76,7 +75,7 @@ global adjustment to any work type in the mod settings.
 [h2]Non-steam download?[/h2]
 Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub releases[/url].
 
-[h1]Tips for playing with Free Will[/h1]
+[h2]Tips for playing with Free Will[/h2]
 [list]
     [*] Don't queue up too much work at one time.
     [*] A dirty base usually means the colonists have too much to do.
@@ -84,8 +83,11 @@ Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub 
     [*] Make decisions based on what your colonists want to do - trust me!
 [/list]
 
-[h1]Known issues[/h1]
+[h2]Reported mod compatibility issues[/h2]
 [list]
-    [*] When used with [b]Simple Sidearms[/b] it may disable hunting regardless
+    [*] When used with [b]Simple Sidearms[/b], hunting may be disabled regardless
         of having a hunting weapon as a sidearm.
+    [*] When used with [b]Work Tab[/b], pawns may not show up in the work tab,
+        regardless of free will setting.
+    [*] When used with [b]Save Our Ship 2[/b], pawns may not extinguish mechanites.
 [/list]
