@@ -23,6 +23,7 @@ namespace FreeWill
 
         private PreceptDef freeWillProhibited;
         private PreceptDef freeWillDisapproved;
+        private PreceptDef freeWillFlexible;
         private PreceptDef freeWillPreferred;
         private PreceptDef freeWillMandatory;
 
@@ -35,6 +36,7 @@ namespace FreeWill
 
             freeWillProhibited = DefDatabase<PreceptDef>.GetNamed("Free_Will_Prohibited");
             freeWillDisapproved = DefDatabase<PreceptDef>.GetNamed("Free_Will_Disapproved");
+            freeWillFlexible = DefDatabase<PreceptDef>.GetNamed("Free_Will_Flexible");
             freeWillPreferred = DefDatabase<PreceptDef>.GetNamed("Free_Will_Preferred");
             freeWillMandatory = DefDatabase<PreceptDef>.GetNamed("Free_Will_Mandatory");
 
@@ -84,7 +86,7 @@ namespace FreeWill
             {
                 return false;
             }
-            var canChange = pawn.Ideo.HasPrecept(freeWillPreferred) || pawn.Ideo.HasPrecept(freeWillDisapproved);
+            var canChange = pawn.Ideo.HasPrecept(freeWillPreferred) || pawn.Ideo.HasPrecept(freeWillDisapproved) || pawn.Ideo.HasPrecept(freeWillFlexible);
             if (!canChange)
             {
                 CheckFreeWillStatus(pawn);
