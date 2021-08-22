@@ -16,7 +16,7 @@
     <issue>Free_Will</issue>
     <description>The work schedule exists to protect us. We blindly obey!</description>
     <label>prohibited</label>
-    <impact>High</impact>
+    <impact>Low</impact>
     <displayOrderInIssue>10</displayOrderInIssue>
     <displayOrderInImpact>200</displayOrderInImpact>
     <defaultSelectionWeight>1</defaultSelectionWeight>
@@ -55,7 +55,7 @@
     <issue>Free_Will</issue>
     <description>It doesn't matter if there is a list of tasks or not. The work needs to be done either way.</description>
     <label>don't care</label>
-    <impact>Low</impact>
+    <impact>Medium</impact>
     <displayOrderInIssue>30</displayOrderInIssue>
     <displayOrderInImpact>900</displayOrderInImpact>
     <defaultSelectionWeight>1</defaultSelectionWeight>
@@ -70,7 +70,7 @@
     <issue>Free_Will</issue>
     <description>Autonomy is more important than restricting freedom. The work will get done eventually.</description>
     <label>preferred</label>
-    <impact>Medium</impact>
+    <impact>High</impact>
     <displayOrderInIssue>40</displayOrderInIssue>
     <displayOrderInImpact>900</displayOrderInImpact>
     <defaultSelectionWeight>1</defaultSelectionWeight>
@@ -83,6 +83,9 @@
     <comps>
       <li Class="PreceptComp_SituationalThought">
         <thought>EnforcedWorkSchedule_Disapproved</thought>
+      </li>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>Free_Will_Streak</thought>
       </li>
     </comps>
   </PreceptDef>
@@ -105,6 +108,9 @@
     <comps>
       <li Class="PreceptComp_SituationalThought">
         <thought>EnforcedWorkSchedule_Disapproved</thought>
+      </li>
+      <li Class="PreceptComp_SituationalThought">
+        <thought>Free_Will_Streak</thought>
       </li>
     </comps>
   </PreceptDef>
@@ -131,6 +137,33 @@
         <label>enforced work schedule</label>
         <description>This work schedule is too restrictive. Why can't I make my own decisions?</description>
         <baseMoodEffect>-5</baseMoodEffect>
+      </li>
+    </stages>
+  </ThoughtDef>
+
+  <ThoughtDef>
+    <defName>Free_Will_Streak</defName>
+    <workerClass>ThoughtWorker_Precept_FreeWillStreak</workerClass>
+    <stages>
+      <li>
+        <label>doing my own thing</label>
+        <description>I'm making my own decisions and I like it. I hope it lasts.</description>
+        <baseMoodEffect>1</baseMoodEffect>
+      </li>
+      <li>
+        <label>working independently</label>
+        <description>My decisions are trusted. This is how it should always be.</description>
+        <baseMoodEffect>5</baseMoodEffect>
+      </li>
+      <li>
+        <label>consistent freedom</label>
+        <description>I will live or die based on my own choices.</description>
+        <baseMoodEffect>10</baseMoodEffect>
+      </li>
+      <li>
+        <label>trusted autonomy</label>
+        <description>There's no fate but what we make for ourselves.</description>
+        <baseMoodEffect>20</baseMoodEffect>
       </li>
     </stages>
   </ThoughtDef>

@@ -5,6 +5,7 @@ using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace FreeWill
 {
@@ -74,6 +75,36 @@ namespace FreeWill
                 Log.ErrorOnce("FreeWill mod failed to patch the work tab", 654762154);
                 ___pawnsGetter = oldPawns;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(Pawn_JobTracker), "StartJob")]
+    public class FreeWillOverride
+    {
+        static FreeWill_WorldComponent worldComp;
+        static void Postfix(Pawn ___pawn, Job __0)
+        {
+            if (___pawn == null)
+            {
+                return;
+            }
+            if (!___pawn.IsColonistPlayerControlled)
+            {
+                return;
+            }
+            if (worldComp == null)
+            {
+                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+            }
+            if (!worldComp.HasFreeWill(___pawn))
+            {
+                return;
+            }
+            if (!__0.playerForced)
+            {
+                return;
+            }
+            worldComp.FreeWillOverride(___pawn);
         }
     }
 }

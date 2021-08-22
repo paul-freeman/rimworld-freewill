@@ -20,6 +20,7 @@
     <Compile Include="ITabs\ITab_Pawn_FreeWill.cs" />
     <Compile Include="ThoughtWorkers\EnforcedWorkSchedule.cs" />
     <Compile Include="ThoughtWorkers\NoWorkSchedule.cs" />
+    <Compile Include="ThoughtWorkers\ThoughtWorker_Precept_FreeWillStreak.cs" />
     <Compile Include="Priority.cs" />
     <Folder Include="About\" />
     <Folder Include="Assemblies\" />

@@ -20,6 +20,7 @@ namespace FreeWill
         }
 
         private Dictionary<string, bool> freePawns = new Dictionary<string, bool>();
+        private Dictionary<string, int> freeWillOverride = new Dictionary<string, int>();
 
         private PreceptDef freeWillProhibited;
         private PreceptDef freeWillDisapproved;
@@ -33,6 +34,7 @@ namespace FreeWill
         public FreeWill_WorldComponent(World world) : base(world)
         {
             freePawns = new Dictionary<string, bool> { };
+            freeWillOverride = new Dictionary<string, int> { };
 
             freeWillProhibited = DefDatabase<PreceptDef>.GetNamed("Free_Will_Prohibited");
             freeWillDisapproved = DefDatabase<PreceptDef>.GetNamed("Free_Will_Disapproved");
@@ -46,38 +48,60 @@ namespace FreeWill
 
         public bool HasFreeWill(Pawn pawn)
         {
-            var pawnKey = pawn.GetUniqueLoadID();
-
-            if (pawn.IsSlaveOfColony)
+            try
             {
-                freePawns[pawnKey] = false;
-                return false;
-            }
-            else if (pawn.Ideo.HasPrecept(freeWillProhibited))
-            {
-                freePawns[pawnKey] = false;
-                return false;
-            }
-            else if (pawn.Ideo.HasPrecept(freeWillMandatory))
-            {
-                freePawns[pawnKey] = true;
-                return true;
-            }
-
-            if (!freePawns.ContainsKey(pawnKey))
-            {
-                if (pawn.Ideo.HasPrecept(freeWillDisapproved) || pawn.Ideo.HasPrecept(freeWillProhibited))
+                if (pawn == null)
+                {
+                    return false;
+                }
+                if (!pawn.IsColonistPlayerControlled)
+                {
+                    return false;
+                }
+                var pawnKey = pawn.GetUniqueLoadID();
+                if (freePawns == null)
+                {
+                    freePawns = new Dictionary<string, bool>();
+                }
+                if (pawn.IsSlaveOfColony)
                 {
                     freePawns[pawnKey] = false;
                     return false;
                 }
-                else
+                if (pawn.Ideo == null)
+                {
+                    return false;
+                }
+                if (pawn.Ideo.HasPrecept(freeWillProhibited))
+                {
+                    freePawns[pawnKey] = false;
+                    return false;
+                }
+                if (pawn.Ideo.HasPrecept(freeWillMandatory))
                 {
                     freePawns[pawnKey] = true;
                     return true;
                 }
+                if (!freePawns.ContainsKey(pawnKey))
+                {
+                    if (pawn.Ideo.HasPrecept(freeWillDisapproved) || pawn.Ideo.HasPrecept(freeWillProhibited))
+                    {
+                        freePawns[pawnKey] = false;
+                        return false;
+                    }
+                    else
+                    {
+                        freePawns[pawnKey] = true;
+                        return true;
+                    }
+                }
+                return freePawns[pawnKey];
             }
-            return freePawns[pawnKey];
+            catch (System.Exception err)
+            {
+                Log.ErrorOnce("could not check free will of " + pawn.LabelCap + ": " + err.ToString(), 64415433);
+                throw;
+            }
         }
 
         public bool FreeWillCanChange(Pawn pawn)
@@ -135,6 +159,54 @@ namespace FreeWill
             }
             freePawns[pawnKey] = false;
             return true;
+        }
+
+        public void FreeWillOverride(Pawn pawn)
+        {
+            try
+            {
+                if (pawn == null)
+                {
+                    return;
+                }
+                var pawnKey = pawn.GetUniqueLoadID();
+                if (freeWillOverride == null)
+                {
+                    freeWillOverride = new Dictionary<string, int> { };
+                }
+                freeWillOverride[pawnKey] = Find.TickManager.TicksGame;
+            }
+            catch (System.Exception err)
+            {
+                Log.ErrorOnce("error during FreeWillOverride: " + err.ToString(), 1454146);
+            }
+        }
+
+        public int FreeWillTicks(Pawn pawn)
+        {
+            try
+            {
+                if (pawn == null)
+                {
+                    return 0;
+                }
+                var pawnKey = pawn.GetUniqueLoadID();
+                if (freeWillOverride == null)
+                {
+                    freeWillOverride = new Dictionary<string, int> { };
+                }
+                if (!freeWillOverride.ContainsKey(pawnKey))
+                {
+                    freeWillOverride[pawnKey] = Find.TickManager.TicksGame;
+                    return 0;
+                }
+                return Find.TickManager.TicksGame - freeWillOverride[pawnKey];
+            }
+            catch (System.Exception err)
+            {
+                Log.ErrorOnce("error during FreeWillTicks: " + err.ToString(), 1454147);
+                return 0;
+            }
         }
 
         public bool HasInterestsFramework()
@@ -231,6 +303,7 @@ namespace FreeWill
         {
             base.ExposeData();
             Scribe_Collections.Look(ref this.freePawns, "FreeWillFreePawns", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref this.freeWillOverride, "FreeWillFreeWillOverride", LookMode.Value, LookMode.Value);
         }
     }
 }

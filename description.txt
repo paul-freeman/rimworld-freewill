@@ -67,13 +67,25 @@ Here is a rough guide to understanding the AI:
 [h2]What about slaves?[/h2]
 Slaves never have free will.
 
+[h2]Compatibility with other mods[/h2]
+You should be able to use this with other mods, even if those mods add or change
+work types. However, the AI is balanced for the vanilla work types. It will use
+"fallback" logic for any work type it doesn't recognise. You can also apply a
+global adjustment to any work type in the mod settings.
+
 [h2]Non-steam download?[/h2]
 Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub releases[/url].
 
-[h1] Tips for playing with free will on! [/h1]
+[h1]Tips for playing with Free Will[/h1]
 [list]
     [*] Don't queue up too much work at one time.
     [*] A dirty base usually means the colonists have too much to do.
     [*] Idle colonists usually means there is not enough work to do.
-    [*] Make decisions based on why you colonists want to do - trust me!
+    [*] Make decisions based on what your colonists want to do - trust me!
+[/list]
+
+[h1]Known issues[/h1]
+[list]
+    [*] When used with [b]Simple Sidearms[/b] it may disable hunting regardless
+        of having a hunting weapon as a sidearm.
 [/list]

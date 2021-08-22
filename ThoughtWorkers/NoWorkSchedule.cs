@@ -10,7 +10,11 @@ public class ThoughtWorker_Precept_NoWorkSchedule : ThoughtWorker_Precept
         {
             var worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
             // free pawns should have this thought
-            return worldComp.HasFreeWill(pawn);
+            if (worldComp.HasFreeWill(pawn))
+            {
+                return ThoughtState.ActiveDefault;
+            }
+            return ThoughtState.Inactive;
         }
         return false;
     }

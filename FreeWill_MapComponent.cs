@@ -267,18 +267,22 @@ namespace FreeWill
             List<Thing> list = this.map.listerThings.ThingsInGroup(ThingRequestGroup.Refuelable);
             foreach (Thing thing in list)
             {
-                CompRefuelable refuel = thing.TryGetComp<CompRefuelable>();
-                if (refuel == null)
+                CompRefuelable refuelable = thing.TryGetComp<CompRefuelable>();
+                if (refuelable == null)
                 {
                     continue;
                 }
-                if (!refuel.HasFuel)
+                if (!refuelable.allowAutoRefuel)
+                {
+                    continue;
+                }
+                if (!refuelable.HasFuel)
                 {
                     refuelNeeded = true;
                     refuelNeededNow = true;
                     return;
                 }
-                if (!refuel.IsFull)
+                if (!refuelable.IsFull)
                 {
                     refuelNeeded = true;
                     continue;
