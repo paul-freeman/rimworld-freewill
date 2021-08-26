@@ -4,7 +4,7 @@
 [b]Expand the story of RimWorld by imbuing your colonists with free will![/b]
 
 This mod adds a powerful work tab AI placed within a new [i]Ideology[/i] precept
-called [i]Free will[/i]. The ability to control colonists (via the work tab) is
+called [i]Free Will[/i]. The ability to control colonists (via the work tab) is
 now entirely dependent on their ideology.
 
 Free Will is the result of: 1000 hours of gameplay, 100s of hours of development,
@@ -30,7 +30,7 @@ not make the game easier to play, but it should help enrich the story that gets
 created.
 
 [h2]How do I set it up?[/h2]
-Each ideology will now include the [i]Free will[/i] precept. There are a few
+Each ideology will now include the [i]Free Will[/i] precept. There are a few
 options:
 
 [list]
@@ -46,6 +46,10 @@ instead rely on the AI (their "free will") to set their work priorities.
 
 If allowed, you can toggle free will in the colonist's [i]Free Will[/i] tab, but
 setting it to something they don't like may incure a mood penalty.
+
+The default settings are usually recommended for vanilla RimWorld, but there are
+a wide range of mod settings available to help tweak it to work with your mod
+collection.
 
 [h2]How do colonists with free will choose what to do?[/h2]
 Colonists with free will enabled will prioritize work on their own. You can see
@@ -75,19 +79,17 @@ global adjustment to any work type in the mod settings.
 [h2]Non-steam download?[/h2]
 Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub releases[/url].
 
+[h2]Unstable version[/h2]
+There is an unstable version of the mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2584338180]here[/url].
+
+This is the version I play on my computer and has all the stuff I'm working on -
+which could include new features and bug fixes. Completely a [i]use at your own
+risk[/i] situation.
+
 [h2]Tips for playing with Free Will[/h2]
 [list]
     [*] Don't queue up too much work at one time.
     [*] A dirty base usually means the colonists have too much to do.
     [*] Idle colonists usually means there is not enough work to do.
     [*] Make decisions based on what your colonists want to do - trust me!
-[/list]
-
-[h2]Reported mod compatibility issues[/h2]
-[list]
-    [*] When used with [b]Simple Sidearms[/b], hunting may be disabled regardless
-        of having a hunting weapon as a sidearm.
-    [*] When used with [b]Work Tab[/b], pawns may not show up in the work tab,
-        regardless of free will setting.
-    [*] When used with [b]Save Our Ship 2[/b], pawns may not extinguish mechanites.
 [/list]

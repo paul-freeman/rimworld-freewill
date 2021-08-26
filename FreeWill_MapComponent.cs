@@ -110,9 +110,9 @@ namespace FreeWill
                         return;
                 }
             }
-            catch (System.Exception err)
+            catch (System.Exception)
             {
-                Log.Error("could not set priority: " + err.Message);
+                Log.ErrorOnce("Free Will: could not set priority", 14147584);
             }
         }
 
@@ -139,7 +139,7 @@ namespace FreeWill
                     var ok = worldComp.TryRemoveFreeWill(pawn);
                     if (!ok)
                     {
-                        Log.ErrorOnce("could not remove free will from slave", 164752145);
+                        Log.ErrorOnce("Free Will: could not remove free will from slave", 164752145);
                     }
                     return;
                 }
@@ -162,10 +162,14 @@ namespace FreeWill
                     priorities[pawn][workTypeDef].ApplyPriorityToGame();
                 }
             }
-            catch (System.Exception err)
+            catch (System.Exception)
             {
-                Log.Error("could not set priorities for pawn: " + pawn.Name + ": marking " + pawn.Name + " as not having free will: " + err.ToString());
-                worldComp.TryRemoveFreeWill(pawn);
+                Log.ErrorOnce("Free Will: could not set priorities for pawn: " + pawn.Name + ": marking " + pawn.Name + " as not having free will", 752116445);
+                var ok = worldComp.TryRemoveFreeWill(pawn);
+                if (!ok)
+                {
+                    Log.ErrorOnce("Free Will: could not remove free will", 752116446);
+                }
             }
         }
 
@@ -340,7 +344,7 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("could not check active alerts");
+                Log.ErrorOnce("Free Will: could not check active alerts", 58548754);
             }
         }
     }

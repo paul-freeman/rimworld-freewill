@@ -31,15 +31,12 @@
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Stable' ">
     <PostBuildEvent>
-md "$(ProjectDir)"
 md "$(ProjectDir)\Assemblies"
-md "$(ProjectDir)\Defs"
-md "$(ProjectDir)\Languages"
-md "$(ProjectDir)\Patches"
-md "$(ProjectDir)\Textures"
 move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
+rd /s /q "$(TargetDir)"
+md "$(TargetDir)"
 md "$(TargetDir)About"
 md "$(TargetDir)Assemblies"
 md "$(TargetDir)Defs"
@@ -47,6 +44,27 @@ md "$(TargetDir)Languages"
 md "$(TargetDir)Patches"
 md "$(TargetDir)Textures"
 xcopy /y /s "$(ProjectDir)About" "$(TargetDir)About"
+xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
+xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
+xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
+xcopy /y /s "$(ProjectDir)Patches" "$(TargetDir)Patches"
+xcopy /y /s "$(ProjectDir)Textures" "$(TargetDir)Textures"
+</PostBuildEvent>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Unstable' ">
+    <PostBuildEvent>
+md "$(ProjectDir)\Assemblies"
+move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
+rd /s /q "$(TargetDir)"
+md "$(TargetDir)"
+md "$(TargetDir)About"
+md "$(TargetDir)Assemblies"
+md "$(TargetDir)Defs"
+md "$(TargetDir)Languages"
+md "$(TargetDir)Patches"
+md "$(TargetDir)Textures"
+xcopy /y /s "$(ProjectDir)AboutUnstable" "$(TargetDir)About"
 xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
 xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
 xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
