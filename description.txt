@@ -3,19 +3,12 @@
 [h1]Free Will[/h1]
 [b]Expand the story of RimWorld by imbuing your colonists with free will![/b]
 
-This mod adds a powerful work tab AI placed within a new [i]Ideology[/i] precept
-called [i]Free Will[/i]. The ability to control colonists (via the work tab) is
-now entirely dependent on their ideology.
+This mod adds a powerful work tab AI placed within a new [i]Ideology[/i] precept called [i]Free Will[/i]. The ability to control colonists (via the work tab) is now entirely dependent on their ideology.
 
-Free Will is the result of: 1000 hours of gameplay, 100s of hours of development,
-and countless hours of testing by the amazing subscribers of my beta version,
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=2019368012]YouDoYou[/url].
+Free Will is the result of: 1000 hours of gameplay, 100s of hours of development, and countless hours of testing by the amazing subscribers of my beta version, [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2019368012]YouDoYou[/url].
 
 [h2]Why would I want this?[/h2]
-Setting up the work tab becomes a burden after hundreds of hours of gameplay.
-Starting a colony with mandatory free will allows you to create colonies much
-quicker and focus on story goals, rather than wasting time setting up work
-tasks.
+Setting up the work tab becomes a burden after hundreds of hours of gameplay. Starting a colony with mandatory free will allows you to create colonies much quicker and focus on story goals, rather than wasting time setting up work tasks.
 
 Specifically:
 [list]
@@ -25,14 +18,10 @@ Specifically:
     [*] Streamers might enjoy having a mod that skips the boring stuff and brings even more story into RimWorld.
 [/list]
 
-The mod follows in the tradition of RimWorld being a story generator. It will
-not make the game easier to play, but it should help enrich the story that gets
-created.
+The mod follows in the tradition of RimWorld being a story generator. It will not make the game easier to play, but it should help enrich the story that gets created.
 
 [h2]How do I set it up?[/h2]
-Each ideology will now include the [i]Free Will[/i] precept. There are a few
-options:
-
+Each ideology will now include the [i]Free Will[/i] precept. There are a few options:
 [list]
     [*] [b]Mandatory[/b] - free will is always on and cannot be toggled
     [*] [b]Preferred[/b] - free will can be disabled, but there is a mood penalty
@@ -41,20 +30,14 @@ options:
     [*] [b]Prohibited[/b] - free will cannot be enabled ([i]this is essentially the Vanilla RimWorld experience[/i])
 [/list]
 
-Depending on the choice, colonists may not appear on the work tab, and will
-instead rely on the AI (their "free will") to set their work priorities.
+Depending on the choice, colonists may not appear on the work tab, and will instead rely on the AI (their "free will") to set their work priorities.
 
-If allowed, you can toggle free will in the colonist's [i]Free Will[/i] tab, but
-setting it to something they don't like may incure a mood penalty.
+If allowed, you can toggle free will in the colonist's [i]Free Will[/i] tab, but setting it to something they don't like may incure a mood penalty.
 
-The default settings are usually recommended for vanilla RimWorld, but there are
-a wide range of mod settings available to help tweak it to work with your mod
-collection.
+The default settings are usually recommended for vanilla RimWorld, but there are a wide range of mod settings available to help tweak it to work with your mod collection.
 
 [h2]How do colonists with free will choose what to do?[/h2]
-Colonists with free will enabled will prioritize work on their own. You can see
-the calculations for each work type in the [i]Free Will[/i] tab. Priorities will
-change in response to a number of game events.
+Colonists with free will enabled will prioritize work on their own. You can see the calculations for each work type in the [i]Free Will[/i] tab. Priorities will change in response to a number of game events.
 
 Here is a rough guide to understanding the AI:
 [list]
@@ -71,10 +54,9 @@ Here is a rough guide to understanding the AI:
 Slaves never have free will.
 
 [h2]Compatibility with other mods[/h2]
-You should be able to use this with other mods, even if those mods add or change
-work types. However, the AI is balanced for the vanilla work types. It will use
-"fallback" logic for any work type it doesn't recognise. You can also apply a
-global adjustment to any work type in the mod settings.
+You should be able to use this with other mods, even if those mods add or change work types. However, the AI is balanced for the vanilla work types. It will use "fallback" logic for any work type it doesn't recognise. You can also apply a global adjustment to any work type in the mod settings.
+
+There is also a [url=https://steamcommunity.com/workshop/filedetails/discussion/2580837227/3042732243090297511/]discussion[/url] that lists mods with known issues.
 
 [h2]Non-steam download?[/h2]
 Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub releases[/url].
@@ -82,9 +64,7 @@ Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub 
 [h2]Unstable version[/h2]
 There is an unstable version of the mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2584338180]here[/url].
 
-This is the version I play on my computer and has all the stuff I'm working on -
-which could include new features and bug fixes. Completely a [i]use at your own
-risk[/i] situation.
+This is the version I play on my computer and has all the stuff I'm working on - which could include new features and bug fixes. Completely a [i]use at your own risk[/i] situation.
 
 [h2]Tips for playing with Free Will[/h2]
 [list]

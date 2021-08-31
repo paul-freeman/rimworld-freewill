@@ -23,17 +23,24 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
         {
             return ThoughtState.Inactive;
         }
-        if (!pawn.Awake())
-        {
-            return ThoughtState.Inactive;
-        }
         if (!worldComp.HasFreeWill(pawn))
         {
             worldComp.FreeWillOverride(pawn);
             return ThoughtState.Inactive;
         }
-        if (pawn.jobs.jobQueue.AnyPlayerForced)
+        var queue = pawn.jobs.jobQueue;
+        for (int i = 0; i < queue.Count; i++)
         {
+            var job = queue[i].job;
+            if (!job.playerForced)
+            {
+                continue;
+            }
+            if (job.def == RimWorld.JobDefOf.TradeWithPawn)
+            {
+                // trading with pawns is okay
+                continue;
+            }
             worldComp.FreeWillOverride(pawn);
             return ThoughtState.Inactive;
         }

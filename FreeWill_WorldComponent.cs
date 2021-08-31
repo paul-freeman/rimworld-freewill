@@ -62,37 +62,24 @@ namespace FreeWill
         {
             try
             {
-                if (pawn == null)
+                if (pawn == null ||
+                    !pawn.IsColonistPlayerControlled ||
+                    pawn.IsSlaveOfColony ||
+                    pawn.Ideo == null ||
+                    pawn.Ideo.HasPrecept(freeWillProhibited)
+                )
                 {
-                    return false;
-                }
-                if (!pawn.IsColonistPlayerControlled)
-                {
-                    return false;
-                }
-                var pawnKey = pawn.GetUniqueLoadID();
-                if (freePawns == null)
-                {
-                    freePawns = new Dictionary<string, bool>();
-                }
-                if (pawn.IsSlaveOfColony)
-                {
-                    freePawns[pawnKey] = false;
-                    return false;
-                }
-                if (pawn.Ideo == null)
-                {
-                    return false;
-                }
-                if (pawn.Ideo.HasPrecept(freeWillProhibited))
-                {
-                    freePawns[pawnKey] = false;
                     return false;
                 }
                 if (pawn.Ideo.HasPrecept(freeWillMandatory))
                 {
-                    freePawns[pawnKey] = true;
                     return true;
+                }
+
+                var pawnKey = pawn.GetUniqueLoadID();
+                if (freePawns == null)
+                {
+                    freePawns = new Dictionary<string, bool>();
                 }
                 if (!freePawns.ContainsKey(pawnKey))
                 {

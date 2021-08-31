@@ -185,7 +185,8 @@ namespace FreeWill
             float colonistWeight = 1.0f / numPawns;
             foreach (Pawn pawn in map.mapPawns.FreeColonistsSpawned)
             {
-                if (pawn.Downed)
+                bool inBed = pawn.CurrentBed() != null;
+                if (pawn.Downed && !inBed)
                 {
                     percentPawnsDowned += colonistWeight;
                 }

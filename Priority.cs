@@ -615,6 +615,10 @@ namespace FreeWill
 
         public void ApplyPriorityToGame()
         {
+            if (!Current.Game.playSettings.useWorkPriorities)
+            {
+                Current.Game.playSettings.useWorkPriorities = true;
+            }
             pawn.workSettings.SetPriority(workTypeDef, this.ToGamePriority());
         }
 
@@ -1113,9 +1117,22 @@ namespace FreeWill
                 }
                 return neverDo("FreeWillPriorityPawnDowned".TranslateSimple());
             }
+            if (mapComp.PercentPawnsDowned <= 0.0f)
+            {
+                return this;
+            }
             if (workTypeDef.defName == DOCTOR)
             {
                 return add(mapComp.PercentPawnsDowned, "FreeWillPriorityOtherPawnsDowned".TranslateSimple());
+            }
+            if (workTypeDef.defName == SMITHING ||
+                workTypeDef.defName == TAILORING ||
+                workTypeDef.defName == ART ||
+                workTypeDef.defName == CRAFTING ||
+                workTypeDef.defName == RESEARCHING
+                )
+            {
+                return neverDo("FreeWillPriorityOtherPawnsDowned".TranslateSimple());
             }
             return this;
         }
@@ -1199,11 +1216,32 @@ namespace FreeWill
                 return this;
             }
 
-            // increase doctor priority for all pawns
+            if (pawn.health.HasHediffsNeedingTend())
+            {
+                // this pawn needs treatment
+                return this.considerThisPawnNeedsTreatment();
+            }
+            else
+            {
+                // another pawn needs treatment
+                return this.considerAnotherPawnNeedsTreatment();
+            }
+        }
+
+        private Priority considerThisPawnNeedsTreatment()
+        {
+
+            if (workTypeDef.defName == PATIENT || workTypeDef.defName == PATIENT_BED_REST)
+            {
+                // patient and bed rest are activated and set to 100%
+                return this
+                    .alwaysDo("FreeWillPriorityNeedTreatment".TranslateSimple())
+                    .set(1.0f, "FreeWillPriorityNeedTreatment".TranslateSimple())
+                    ;
+            }
             if (workTypeDef.defName == DOCTOR)
             {
-                // this pawn is the one who needs treatment and they can self tend
-                if (pawn.health.HasHediffsNeedingTend() && pawn.playerSettings.selfTend)
+                if (pawn.playerSettings.selfTend)
                 {
                     // this pawn can self tend, so activate doctor skill and set
                     // to 100%
@@ -1212,6 +1250,26 @@ namespace FreeWill
                         .set(1.0f, "FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple())
                         ;
                 }
+                // doctoring stays the same
+                return this;
+            }
+            // don't do other work types
+            return neverDo("FreeWillPriorityNeedTreatment".TranslateSimple());
+        }
+
+        private Priority considerAnotherPawnNeedsTreatment()
+        {
+            if (workTypeDef.defName == FIREFIGHTER ||
+                workTypeDef.defName == PATIENT_BED_REST
+                )
+            {
+                // don't adjust these work types
+                return this;
+            }
+
+            // increase doctor priority for all pawns
+            if (workTypeDef.defName == DOCTOR)
+            {
                 // increase the doctor priority by the percentage of pawns
                 // needing treatment
                 //
@@ -1220,19 +1278,30 @@ namespace FreeWill
                 return add(mapComp.PercentPawnsNeedingTreatment, "FreeWillPriorityOthersNeedTreatment".TranslateSimple());
             }
 
-            // this pawn is the one who needs treatment
-            if (pawn.health.HasHediffsNeedingTend())
+            if (workTypeDef.defName == RESEARCHING)
             {
-                if (workTypeDef.defName == PATIENT || workTypeDef.defName == PATIENT_BED_REST)
+                // don't research when someone is dying please... it's rude
+                return neverDo("FreeWillPriorityOthersNeedTreatment".TranslateSimple());
+            }
+
+            if (workTypeDef.defName == SMITHING ||
+                workTypeDef.defName == TAILORING ||
+                workTypeDef.defName == ART ||
+                workTypeDef.defName == CRAFTING
+                )
+            {
+                // crafting work types are low priority when someone is injured
+                if (this.value > 0.3f)
                 {
-                    // patient and bed rest are activated and set to 100%
-                    return this
-                        .alwaysDo("FreeWillPriorityNeedTreatment".TranslateSimple())
-                        .set(1.0f, "FreeWillPriorityNeedTreatment".TranslateSimple())
-                        ;
+                    return add(-(this.value - 0.3f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple());
                 }
-                // don't do other work types
-                return neverDo("FreeWillPriorityNeedTreatment".TranslateSimple());
+                return this;
+            }
+
+            // any other work type is capped at 0.6
+            if (this.value > 0.6f)
+            {
+                return add(-(this.value - 0.6f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple());
             }
             return this;
         }
