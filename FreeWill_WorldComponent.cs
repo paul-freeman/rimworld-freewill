@@ -43,8 +43,11 @@ namespace FreeWill
 
             checkedForInterestsMod = false;
             interestsStrings = new List<string> { };
+        }
 
-            // add Free Will ideology if and ideos don't have it
+        public override void WorldComponentTick()
+        {
+            // add Free Will ideology if an ideo doesn't have it
             foreach (Ideo ideo in Find.IdeoManager.IdeosListForReading)
             {
                 if (!ideo.HasPrecept(freeWillProhibited)
@@ -53,9 +56,11 @@ namespace FreeWill
                         && !ideo.HasPrecept(freeWillPreferred)
                         && !ideo.HasPrecept(freeWillMandatory))
                 {
-                    ideo.AddPrecept(PreceptMaker.MakePrecept(freeWillFlexible), init: true);
+                    Log.Message("Adding free will precept, \"flexible\", to " + ideo.name + " ideology.");
+                    ideo.AddPrecept(PreceptMaker.MakePrecept(freeWillFlexible), init: false);
                 }
             }
+            base.WorldComponentTick();
         }
 
         public bool HasFreeWill(Pawn pawn)

@@ -11,7 +11,10 @@ namespace FreeWill
         const bool ConsiderBrawlersNotHuntingDefault = true;
         const bool ConsiderHasHuntingWeaponDefault = true;
         const float ConsiderMovementSpeedDefault = 1.0f;
+        const float ConsiderPassionsDefault = 1.0f;
+        const float ConsiderBestAtDoingDefault = 0.0f;
         const float ConsiderFoodPoisoningDefault = 1.0f;
+        const float ConsiderLowFoodDefault = 1.0f;
         const float ConsiderOwnRoomDefault = 1.0f;
         const float ConsiderPlantsBlightedDefault = 1.0f;
         const float ConsiderGauranlenPruningDefault = 1.0f;
@@ -19,7 +22,10 @@ namespace FreeWill
         public bool ConsiderBrawlersNotHunting = ConsiderBrawlersNotHuntingDefault;
         public bool ConsiderHasHuntingWeapon = ConsiderHasHuntingWeaponDefault;
         public float ConsiderMovementSpeed = ConsiderMovementSpeedDefault;
+        public float ConsiderPassions = ConsiderPassionsDefault;
+        public float ConsiderBestAtDoing = ConsiderBestAtDoingDefault;
         public float ConsiderFoodPoisoning = ConsiderFoodPoisoningDefault;
+        public float ConsiderLowFood = ConsiderLowFoodDefault;
         public float ConsiderOwnRoom = ConsiderOwnRoomDefault;
         public float ConsiderPlantsBlighted = ConsiderPlantsBlightedDefault;
         public float ConsiderGauranlenPruning = ConsiderGauranlenPruningDefault;
@@ -69,6 +75,39 @@ namespace FreeWill
             if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
             {
                 ConsiderMovementSpeed = ConsiderMovementSpeedDefault;
+            }
+            ls.GapLine(30.0f);
+
+            s1 = "FreeWillConsiderPassions".TranslateSimple();
+            s2 = String.Format("{0}x", ConsiderPassions);
+            s3 = "FreeWillConsiderPassionsLong".TranslateSimple();
+            ls.LabelDouble(s1, s2, tip: s3);
+            ConsiderPassions = Mathf.RoundToInt(ls.Slider(ConsiderPassions, 0.0f, 10.0f) * 10.0f) / 10.0f;
+            if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
+            {
+                ConsiderPassions = ConsiderPassionsDefault;
+            }
+            ls.GapLine(30.0f);
+
+            s1 = "FreeWillConsiderBestAtDoing".TranslateSimple();
+            s2 = String.Format("{0}x", ConsiderBestAtDoing);
+            s3 = "FreeWillConsiderBestAtDoingLong".TranslateSimple();
+            ls.LabelDouble(s1, s2, tip: s3);
+            ConsiderBestAtDoing = Mathf.RoundToInt(ls.Slider(ConsiderBestAtDoing, 0.0f, 10.0f) * 10.0f) / 10.0f;
+            if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
+            {
+                ConsiderBestAtDoing = ConsiderBestAtDoingDefault;
+            }
+            ls.GapLine(30.0f);
+
+            s1 = "FreeWillConsiderLowFood".TranslateSimple();
+            s2 = String.Format("{0}x", ConsiderLowFood);
+            s3 = "FreeWillConsiderLowFoodLong".TranslateSimple();
+            ls.LabelDouble(s1, s2, tip: s3);
+            ConsiderLowFood = Mathf.RoundToInt(ls.Slider(ConsiderLowFood, 0.0f, 10.0f) * 10.0f) / 10.0f;
+            if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
+            {
+                ConsiderLowFood = ConsiderLowFoodDefault;
             }
             ls.GapLine(30.0f);
 
@@ -154,7 +193,10 @@ namespace FreeWill
         public override void ExposeData()
         {
             Scribe_Values.Look(ref ConsiderMovementSpeed, "freeWillConsiderMovementSpeed", ConsiderMovementSpeedDefault, true);
+            Scribe_Values.Look(ref ConsiderPassions, "freeWillConsiderPassions", ConsiderPassionsDefault, true);
+            Scribe_Values.Look(ref ConsiderBestAtDoing, "freeWillConsiderBestAtDoing", ConsiderBestAtDoingDefault, true);
             Scribe_Values.Look(ref ConsiderFoodPoisoning, "freeWillConsiderFoodPoisoning", ConsiderFoodPoisoningDefault, true);
+            Scribe_Values.Look(ref ConsiderLowFood, "freeWillConsiderLowFood", ConsiderLowFoodDefault, true);
             Scribe_Values.Look(ref ConsiderOwnRoom, "freeWillConsiderOwnRoom", ConsiderOwnRoomDefault, true);
             Scribe_Values.Look(ref ConsiderBrawlersNotHunting, "freeWillBrawlersNotHunting", ConsiderBrawlersNotHuntingDefault, true);
             Scribe_Values.Look(ref ConsiderHasHuntingWeapon, "freeWillHuntingWeapon", ConsiderHasHuntingWeaponDefault, true);

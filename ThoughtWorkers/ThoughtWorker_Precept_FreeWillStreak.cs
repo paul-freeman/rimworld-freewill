@@ -45,19 +45,19 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
             return ThoughtState.Inactive;
         }
         var ticks = worldComp.FreeWillTicks(pawn);
-        if (ticks > 900000)
+        if (ticks > 3600000)
         {
             return ThoughtState.ActiveAtStage(3);
         }
-        if (ticks > 300000)
+        if (ticks > 900000)
         {
             return ThoughtState.ActiveAtStage(2);
         }
-        if (ticks > 60000)
+        if (ticks > 300000)
         {
             return ThoughtState.ActiveAtStage(1);
         }
-        if (ticks > 2500)
+        if (ticks > 60000)
         {
             return ThoughtState.ActiveAtStage(0);
         }

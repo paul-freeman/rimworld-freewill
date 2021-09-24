@@ -98,7 +98,6 @@
     <impact>High</impact>
     <displayOrderInIssue>50</displayOrderInIssue>
     <displayOrderInImpact>200</displayOrderInImpact>
-    <defaultSelectionWeight>1</defaultSelectionWeight>
     <associatedMemes>
       <li>Individualist</li>
     </associatedMemes>

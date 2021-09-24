@@ -54,7 +54,11 @@ Here is a rough guide to understanding the AI:
 Slaves never have free will.
 
 [h2]Compatibility with other mods[/h2]
-You should be able to use this with other mods, even if those mods add or change work types. However, the AI is balanced for the vanilla work types. It will use "fallback" logic for any work type it doesn't recognise. You can also apply a global adjustment to any work type in the mod settings.
+You should be able to use this with other mods. However, [b]the AI is balanced for vanilla pawns and vanilla work types[/b].
+
+For proper balance, I recommend only using this mod with visual or item mods. Mods will likely disrupt the balance if they: add other pawn types, modifiy skills/passions, or add work types.
+
+That being said, there is "fallback" logic for any work type it doesn't recognise and there are tons of balance settings available so you can customise the behaviour.
 
 There is also a [url=https://steamcommunity.com/workshop/filedetails/discussion/2580837227/3042732243090297511/]discussion[/url] that lists mods with known issues.
 
@@ -65,6 +69,9 @@ Check my [url=https://github.com/paul-freeman/rimworld-freewill/releases]GitHub 
 There is an unstable version of the mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2584338180]here[/url].
 
 This is the version I play on my computer and has all the stuff I'm working on - which could include new features and bug fixes. Completely a [i]use at your own risk[/i] situation.
+
+[h2]Is it safe to add/remove from save games?[/h2]
+No. When you add it to a save game, it is not able to set the free will precept correctly for all the factions. Removing it is also difficult, because the lost precept seems to be unhandled by the game. Save yourself frustration and start a new game.
 
 [h2]Tips for playing with Free Will[/h2]
 [list]

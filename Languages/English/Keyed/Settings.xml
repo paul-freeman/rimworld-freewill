@@ -22,8 +22,14 @@
   <!-- Considerations-->
   <FreeWillConsiderMovementSpeed>Consider movement speed</FreeWillConsiderMovementSpeed>
   <FreeWillConsiderMovementSpeedLong>Colonists perfer work that suits their movement speed.</FreeWillConsiderMovementSpeedLong>
+  <FreeWillConsiderBestAtDoing>Consider colonist passions</FreeWillConsiderBestAtDoing>
+  <FreeWillConsiderBestAtDoingLong>Colonists perfer work they are passionate about.</FreeWillConsiderBestAtDoingLong>
+  <FreeWillConsiderBestAtDoing>Consider best at doing</FreeWillConsiderBestAtDoing>
+  <FreeWillConsiderBestAtDoingLong>Colonists perfer work when they are the best in the colony at doing it.</FreeWillConsiderBestAtDoingLong>
   <FreeWillConsiderFoodPoisoning>Consider food poisoning</FreeWillConsiderFoodPoisoning>
   <FreeWillConsiderFoodPoisoningLong>Pawns will clean more and cook less when a cooking area has a food poisoning risk.</FreeWillConsiderFoodPoisoningLong>
+  <FreeWillConsiderLowFood>Consider low food</FreeWillConsiderLowFood>
+  <FreeWillConsiderLowFoodLong>Pawns will hunt, farm, haul, and cook more if food is low.</FreeWillConsiderLowFoodLong>
   <FreeWillConsiderOwnRoom>Consider own room</FreeWillConsiderOwnRoom>
   <FreeWillConsiderOwnRoomLong>Pawns will clean more when in their own room.</FreeWillConsiderOwnRoomLong>
   <FreeWillConsiderBrawlersNotHunting>Consider brawlers for not hunting</FreeWillConsiderBrawlersNotHunting>
@@ -50,6 +56,7 @@
   <FreeWillPriorityNeedTreatmentSelfTend>can self tend</FreeWillPriorityNeedTreatmentSelfTend>
   <FreeWillPriorityOthersNeedTreatment>others need treatment</FreeWillPriorityOthersNeedTreatment>
   <FreeWillPriorityPetsInjured>pets injured</FreeWillPriorityPetsInjured>
+  <FreeWillPriorityPrisonersInjured>prisoners injured</FreeWillPriorityPrisonersInjured>
   <FreeWillPriorityFireInHomeArea>home on fire</FreeWillPriorityFireInHomeArea>
   <FreeWillPriorityFireOnMap>fire in the area</FreeWillPriorityFireOnMap>
   <FreeWillPriorityHealth>current health</FreeWillPriorityHealth>
@@ -57,6 +64,15 @@
   <FreeWillPriorityBored>bored</FreeWillPriorityBored>
   <FreeWillPriorityRefueling>refueling required</FreeWillPriorityRefueling>
   <FreeWillPriorityFilthyCookingArea>dirty cooking area</FreeWillPriorityFilthyCookingArea>
+  <FreeWillPriorityBestAtDoing>best at doing</FreeWillPriorityBestAtDoing>
+  <FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing>{0} is amazing at this</FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing>
+  <FreeWillPrioritySomeoneMuchMuchBetterAtDoing>{0} is great at this</FreeWillPrioritySomeoneMuchMuchBetterAtDoing>
+  <FreeWillPrioritySomeoneMuchBetterAtDoing>{0} is much better at this</FreeWillPrioritySomeoneMuchBetterAtDoing>
+  <FreeWillPrioritySomeoneBetterAtDoing>{0} is better at this</FreeWillPrioritySomeoneBetterAtDoing>
+  <FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing>{0} is doing amazing at this</FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing>
+  <FreeWillPrioritySomeoneMuchMuchBetterIsDoing>{0} is doing great at this</FreeWillPrioritySomeoneMuchMuchBetterIsDoing>
+  <FreeWillPrioritySomeoneMuchBetterIsDoing>{0} is doing much better at this</FreeWillPrioritySomeoneMuchBetterIsDoing>
+  <FreeWillPrioritySomeoneBetterIsDoing>{0} is doing better at this</FreeWillPrioritySomeoneBetterIsDoing>
   <FreeWillPriorityNoOneElseDoing>no one else doing</FreeWillPriorityNoOneElseDoing>
   <FreeWillPriorityInspired>inspired</FreeWillPriorityInspired>
   <FreeWillPriorityNotInHomeArea>not in home area</FreeWillPriorityNotInHomeArea>
@@ -66,8 +82,9 @@
   <FreeWillPriorityOwnRoom>should clean my room</FreeWillPriorityOwnRoom>
   <FreeWillPriorityThingsDeteriorating>things deteriorating</FreeWillPriorityThingsDeteriorating>
   <FreeWillPriorityBlight>blight</FreeWillPriorityBlight>
-  <FreeWillPriorityPruneGauranlenTree>my tree needs pruning</FreeWillPriorityPruneGauranlenTree>
+  <FreeWillPriorityPruneGauranlenTree>gauranlen tree needs pruning</FreeWillPriorityPruneGauranlenTree>
   <FreeWillPriorityNeedWarmClothes>need warm clothes</FreeWillPriorityNeedWarmClothes>
+  <FreeWillPriorityAnimalsRoaming>animals roaming</FreeWillPriorityAnimalsRoaming>
   <FreeWillPriorityBrawler>brawler</FreeWillPriorityBrawler>
   <FreeWillPriorityNoHuntingWeapon>no hunting weapon</FreeWillPriorityNoHuntingWeapon>
   <FreeWillPriorityCurrentlyDoing>continuing current task</FreeWillPriorityCurrentlyDoing>
@@ -80,8 +97,8 @@
   <FreeWillPriorityExpectionsLetDown>very messy</FreeWillPriorityExpectionsLetDown>
   <FreeWillPriorityExpectionsIgnored>mess everywhere</FreeWillPriorityExpectionsIgnored>
   <FreeWillPriorityBeautyDefault>beauty default</FreeWillPriorityBeautyDefault>
-  <FreeWillPriorityMajorPassionFor>major passion for</FreeWillPriorityMajorPassionFor>
-  <FreeWillPriorityMinorPassionFor>minor passion for</FreeWillPriorityMinorPassionFor>
+  <FreeWillPriorityMajorPassionFor>major passion for {0}</FreeWillPriorityMajorPassionFor>
+  <FreeWillPriorityMinorPassionFor>minor passion for {0}</FreeWillPriorityMinorPassionFor>
   <FreeWillPriorityMinorAversionTo>minor aversion to</FreeWillPriorityMinorAversionTo>
   <FreeWillPriorityMajorAversionTo>major aversion to</FreeWillPriorityMajorAversionTo>
   <FreeWillPriorityCompulsiveItch>itching to do</FreeWillPriorityCompulsiveItch>

@@ -31,6 +31,8 @@ namespace FreeWill
         private float percentPawnsNeedingTreatment;
         public int NumPetsNeedingTreatment { get { return numPetsNeedingTreatment; } }
         private int numPetsNeedingTreatment;
+        public int NumPrisonersNeedingTreatment { get { return numPrisonersNeedingTreatment; } }
+        private int numPrisonersNeedingTreatment;
         public float PercentPawnsDowned { get { return percentPawnsDowned; } }
         private float percentPawnsDowned;
         public bool ThingsDeteriorating { get { return thingsDeteriorating; } }
@@ -45,14 +47,16 @@ namespace FreeWill
         private bool refuelNeeded;
         public bool PlantsBlighted { get { return plantsBlighted; } }
         private bool plantsBlighted;
-        public float TotalFood { get { return totalFood; } }
-        private float totalFood;
         public bool NeedWarmClothes { get { return needWarmClothes; } }
         private bool needWarmClothes;
         public bool AlertColonistLeftUnburied { get { return alertColonistLeftUnburied; } }
         private bool alertColonistLeftUnburied;
+        public bool AlertAnimalRoaming { get { return alertAnimalRoaming; } }
+        private bool alertAnimalRoaming;
+        public bool AlertLowFood { get { return alertLowFood; } }
+        private bool alertLowFood;
 
-        const int NUM_PREP_CASES = 7;
+        const int NUM_PREP_CASES = 8;
         private int counter = -NUM_PREP_CASES;
 
         public FreeWill_MapComponent(Map map) : base(map)
@@ -75,17 +79,20 @@ namespace FreeWill
                 counter++;
                 switch (i)
                 {
+                    case -8:
+                        checkPrisonerHealth();
+                        return;
                     case -7:
-                        checkColonyHealth();
+                        checkPetsHealth();
                         return;
                     case -6:
-                        checkThingsDeteriorating();
+                        checkColonyHealth();
                         return;
                     case -5:
-                        checkBlight();
+                        checkThingsDeteriorating();
                         return;
                     case -4:
-                        checkColonyFoodLevel();
+                        checkBlight();
                         return;
                     case -3:
                         checkMapFire();
@@ -173,12 +180,24 @@ namespace FreeWill
             }
         }
 
-        private void checkColonyHealth()
+        private void checkPrisonerHealth()
+        {
+            numPrisonersNeedingTreatment =
+                (from p in map.mapPawns.PrisonersOfColony
+                 where p.health.HasHediffsNeedingTend()
+                 select p).Count();
+        }
+
+        private void checkPetsHealth()
         {
             numPetsNeedingTreatment =
                 (from p in map.mapPawns.PawnsInFaction(Faction.OfPlayer)
                  where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
                  select p).Count();
+        }
+
+        private void checkColonyHealth()
+        {
             numPawns = map.mapPawns.FreeColonistsSpawnedCount;
             percentPawnsDowned = 0.0f;
             percentPawnsNeedingTreatment = 0.0f;
@@ -202,11 +221,12 @@ namespace FreeWill
             thingsDeteriorating = false;
             foreach (Thing thing in map.listerHaulables.ThingsPotentiallyNeedingHauling())
             {
-                if (SteadyEnvironmentEffects.FinalDeteriorationRate(thing) != 0)
+                if (thing.IsInValidStorage() || SteadyEnvironmentEffects.FinalDeteriorationRate(thing) == 0)
                 {
-                    thingsDeteriorating = true;
-                    return;
+                    continue;
                 }
+                thingsDeteriorating = true;
+                return;
             }
         }
 
@@ -241,11 +261,6 @@ namespace FreeWill
                 this.plantsBlighted = false;
                 return;
             }
-        }
-
-        private void checkColonyFoodLevel()
-        {
-            totalFood = map.resourceCounter.TotalHumanEdibleNutrition;
         }
 
         private void checkMapFire()
@@ -305,6 +320,8 @@ namespace FreeWill
                     return;
                 }
                 // unset all the alerts
+                this.alertLowFood = false;
+                this.alertAnimalRoaming = false;
                 this.needWarmClothes = false;
                 this.alertColonistLeftUnburied = false;
                 // check current alerts
@@ -316,8 +333,14 @@ namespace FreeWill
                     }
                     switch (alert)
                     {
+                        case Alert_LowFood a:
+                            this.alertLowFood = true;
+                            break;
                         case Alert_NeedWarmClothes a:
                             this.needWarmClothes = true;
+                            break;
+                        case Alert_AnimalRoaming a:
+                            this.alertAnimalRoaming = true;
                             break;
                         case Alert_ColonistLeftUnburied a:
                             if (this.map.mapPawns.AnyFreeColonistSpawned)

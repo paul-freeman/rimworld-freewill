@@ -145,17 +145,16 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
                         .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerInjuredPrisoners()
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -171,6 +170,7 @@ namespace FreeWill
                         .alwaysDo("FreeWillPriorityBedrestDefault".TranslateSimple())
                         .considerHealth()
                         .considerBuildingImmunity()
+                        .considerLowFood(-0.2f)
                         .considerCompletingTask()
                         .considerColonistsNeedingTreatment()
                         .considerBored()
@@ -182,8 +182,8 @@ namespace FreeWill
                     return this
                         .set(0.5f, "FreeWillPriorityBasicWorkDefault".TranslateSimple())
                         .considerThoughts()
-                        .considerNeedingWarmClothes()
                         .considerHealth()
+                        .considerLowFood(-0.3f)
                         .considerBored()
                         .neverDoIf(this.pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple())
                         .considerBuildingImmunity()
@@ -198,17 +198,15 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -224,17 +222,15 @@ namespace FreeWill
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerAnimalsRoaming()
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -249,18 +245,16 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(0.2f)
                         .considerColonistLeftUnburied()
                         .considerFoodPoisoning()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -276,17 +270,15 @@ namespace FreeWill
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerHasHuntingWeapon()
                         .considerBrawlersNotHunting()
@@ -303,17 +295,15 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -328,17 +318,15 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -353,17 +341,15 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -377,11 +363,12 @@ namespace FreeWill
                     return this
                         .considerRelevantSkills()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerGauranlenPruning()
-                        .considerLowFood()
+                        .considerLowFood(0.3f)
                         .considerHealth()
                         .considerPlantsBlighted()
                         .considerBored()
@@ -398,17 +385,15 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -423,17 +408,16 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
+                        .considerLowFood(-0.3f)
                         .considerNeedingWarmClothes()
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -448,17 +432,15 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -473,17 +455,15 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -503,9 +483,7 @@ namespace FreeWill
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(0.2f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
@@ -525,6 +503,7 @@ namespace FreeWill
                         .considerIsAnyoneElseDoing()
                         .considerThoughts()
                         .considerOwnRoom()
+                        .considerLowFood(-0.2f)
                         .considerFoodPoisoning()
                         .considerHealth()
                         .considerBored()
@@ -540,17 +519,15 @@ namespace FreeWill
                     return this
                         .considerRelevantSkills()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.4f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -569,9 +546,7 @@ namespace FreeWill
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
@@ -591,17 +566,15 @@ namespace FreeWill
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
                         .considerRefueling()
-                        .considerInjuredPets()
-                        .considerLowFood()
-                        .considerNeedingWarmClothes()
+                        .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
-                        .considerThingsDeteriorating()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -767,16 +740,22 @@ namespace FreeWill
         private Priority considerInspiration()
         {
             if (!this.pawn.mindState.inspirationHandler.Inspired)
+            {
                 return this;
-            Inspiration i = this.pawn.mindState.inspirationHandler.CurState;
-            foreach (WorkTypeDef workTypeDefB in i?.def?.requiredNonDisabledWorkTypes ?? new List<WorkTypeDef>())
+            }
+            Inspiration inspiration = this.pawn.mindState.inspirationHandler.CurState;
+            if (this.workTypeDef.defName == HUNTING && inspiration.def.defName == "Frenzy_Shoot")
+            {
+                return add(0.4f, "FreeWillPriorityInspired".TranslateSimple());
+            }
+            foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredNonDisabledWorkTypes ?? new List<WorkTypeDef>())
             {
                 if (this.workTypeDef.defName == workTypeDefB.defName)
                 {
                     return add(0.4f, "FreeWillPriorityInspired".TranslateSimple());
                 }
             }
-            foreach (WorkTypeDef workTypeDefB in i?.def?.requiredAnyNonDisabledWorkType ?? new List<WorkTypeDef>())
+            foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredAnyNonDisabledWorkType ?? new List<WorkTypeDef>())
             {
                 if (this.workTypeDef.defName == workTypeDefB.defName)
                 {
@@ -810,9 +789,18 @@ namespace FreeWill
 
         private Priority considerNeedingWarmClothes()
         {
-            if (this.workTypeDef.defName == TAILORING && this.mapComp.NeedWarmClothes)
+            if (this.mapComp.NeedWarmClothes)
             {
                 return add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple());
+            }
+            return this;
+        }
+
+        private Priority considerAnimalsRoaming()
+        {
+            if (this.mapComp.AlertAnimalRoaming)
+            {
+                return add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple());
             }
             return this;
         }
@@ -941,27 +929,42 @@ namespace FreeWill
 
         private Priority considerPassion()
         {
-            var relevantSkills = workTypeDef.relevantSkills;
-
-            for (int i = 0; i < relevantSkills.Count; i++)
+            try
             {
-                float x;
-                switch (pawn.skills.GetSkill(relevantSkills[i]).passion)
+                if (worldComp.settings.ConsiderPassions == 0f)
                 {
-                    case Passion.None:
-                        continue;
-                    case Passion.Major:
-                        x = pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
-                        add(x, "FreeWillPriorityMajorPassionFor".TranslateSimple() + " " + relevantSkills[i].skillLabel);
-                        continue;
-                    case Passion.Minor:
-                        x = pawn.needs.mood.CurLevel * 0.25f / relevantSkills.Count;
-                        add(x, "FreeWillPriorityMinorPassionFor".TranslateSimple() + " " + relevantSkills[i].skillLabel);
-                        continue;
-                    default:
-                        considerInterest(pawn, relevantSkills[i], relevantSkills.Count, workTypeDef);
-                        continue;
+                    return this;
                 }
+                var relevantSkills = workTypeDef.relevantSkills;
+                float x;
+                for (int i = 0; i < relevantSkills.Count; i++)
+                {
+                    switch (pawn.skills.GetSkill(relevantSkills[i]).passion)
+                    {
+                        case Passion.None:
+                            continue;
+                        case Passion.Major:
+                            x = worldComp.settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
+                            this
+                                .alwaysDo("FreeWillPriorityMajorPassionFor".Translate(relevantSkills[i].skillLabel))
+                                .add(x, "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[i].skillLabel));
+                            continue;
+                        case Passion.Minor:
+                            x = worldComp.settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.25f / relevantSkills.Count;
+                            this
+                                .alwaysDo("FreeWillPriorityMinorPassionFor".Translate(relevantSkills[i].skillLabel))
+                                .add(x, "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[i].skillLabel));
+                            continue;
+                        default:
+                            considerInterest(pawn, relevantSkills[i], relevantSkills.Count, workTypeDef);
+                            continue;
+                    }
+                }
+            }
+            catch (System.Exception err)
+            {
+                Log.ErrorOnce("could not consider passions: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 228486541);
+                worldComp.settings.ConsiderPassions = 0.0f;
             }
             return this;
         }
@@ -1437,38 +1440,145 @@ namespace FreeWill
             return this.alwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple());
         }
 
-        private Priority considerInjuredPets()
+        private Priority considerBestAtDoing()
         {
-            if (workTypeDef.defName == DOCTOR)
+            try
             {
-                int n = mapComp.NumPawns;
-                if (n == 0)
+                if (worldComp.settings.ConsiderBestAtDoing == 0.0f)
                 {
                     return this;
                 }
-                float numPetsNeedingTreatment = mapComp.NumPetsNeedingTreatment;
-                return add(UnityEngine.Mathf.Clamp01(numPetsNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple());
+                var allPawns = this.pawn.Map.mapPawns.FreeColonistsSpawned;
+                if (allPawns.Count() <= 1)
+                {
+                    return this;
+                }
+                bool isBest = true;
+                float pawnSkill = this.pawn.skills.AverageOfRelevantSkillsFor(workTypeDef);
+                float impactPerPawn = worldComp.settings.ConsiderBestAtDoing / (float)allPawns.Count();
+                foreach (Pawn other in allPawns)
+                {
+                    if (other == null || other == this.pawn || !other.Awake() || other.Downed || other.Dead)
+                    {
+                        continue;
+                    }
+                    float skillDiff = other.skills.AverageOfRelevantSkillsFor(workTypeDef) - pawnSkill;
+                    if (skillDiff > 0.0f)
+                    {
+                        // not the best
+                        isBest = false;
+                        var isDoing = other.CurJob != null && other.CurJob.workGiverDef != null && other.CurJob.workGiverDef.workType == workTypeDef;
+                        var isMuchBetter = skillDiff >= 5.0f;
+                        var isMuchMuchBetter = skillDiff >= 10.0f;
+                        var isMuchMuchMuchBetter = skillDiff >= 15.0f;
+                        if (isDoing)
+                        {
+                            if (isMuchMuchMuchBetter)
+                            {
+                                this.add(1.5f * -impactPerPawn, "FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
+                            }
+                            else if (isMuchMuchBetter)
+                            {
+                                this.add(1.5f * -impactPerPawn * 0.8f, "FreeWillPrioritySomeoneMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
+                            }
+                            else if (isMuchBetter)
+                            {
+                                this.add(1.5f * -impactPerPawn * 0.6f, "FreeWillPrioritySomeoneMuchBetterIsDoing".Translate(other.LabelShortCap));
+                            }
+                            else
+                            {
+                                this.add(1.5f * -impactPerPawn * 0.4f, "FreeWillPrioritySomeoneBetterIsDoing".Translate(other.LabelShortCap));
+                            }
+                        }
+                        else
+                        {
+                            if (isMuchMuchMuchBetter)
+                            {
+                                this.add(-impactPerPawn, "FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
+                            }
+                            else if (isMuchMuchBetter)
+                            {
+                                this.add(-impactPerPawn * 0.8f, "FreeWillPrioritySomeoneMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
+                            }
+                            else if (isMuchBetter)
+                            {
+                                this.add(-impactPerPawn * 0.6f, "FreeWillPrioritySomeoneMuchBetterAtDoing".Translate(other.LabelShortCap));
+                            }
+                            else
+                            {
+                                this.add(-impactPerPawn * 0.4f, "FreeWillPrioritySomeoneBetterAtDoing".Translate(other.LabelShortCap));
+                            }
+                        }
+                    }
+                }
+                if (isBest)
+                {
+                    return this.multiply(1.5f * worldComp.settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple());
+                }
+                return this;
+            }
+            catch (System.Exception err)
+            {
+                Log.ErrorOnce("could not consider being the best at something: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 76898214);
+                worldComp.settings.ConsiderBestAtDoing = 0.0f;
             }
             return this;
         }
 
-        private Priority considerLowFood()
+        private Priority considerInjuredPets()
         {
-            if (this.mapComp.TotalFood < 4f * (float)this.mapComp.NumPawns)
+            if (workTypeDef.defName != DOCTOR)
             {
-                if (this.workTypeDef.defName == COOKING)
+                return this;
+            }
+
+            int n = mapComp.NumPawns;
+            if (n == 0)
+            {
+                return this;
+            }
+            float numPetsNeedingTreatment = mapComp.NumPetsNeedingTreatment;
+            return add(UnityEngine.Mathf.Clamp01(numPetsNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple());
+        }
+
+        private Priority considerInjuredPrisoners()
+        {
+            if (workTypeDef.defName != DOCTOR)
+            {
+                return this;
+            }
+
+            int n = mapComp.NumPawns;
+            if (n == 0)
+            {
+                return this;
+            }
+            float numPrisonersNeedingTreatment = mapComp.NumPrisonersNeedingTreatment;
+            return add(UnityEngine.Mathf.Clamp01(numPrisonersNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPrisonersInjured".TranslateSimple());
+        }
+
+        private Priority considerLowFood(float adjustment)
+        {
+            try
+            {
+                if (worldComp.settings.ConsiderLowFood == 0.0f || !this.mapComp.AlertLowFood)
                 {
-                    return this.add(0.4f, "FreeWillPriorityLowFood".TranslateSimple());
+                    return this;
                 }
-                if (this.workTypeDef.defName == HUNTING || this.workTypeDef.defName == PLANT_CUTTING)
-                {
-                    return this.add(0.2f, "FreeWillPriorityLowFood".TranslateSimple());
-                }
+
+                // don't adjust hauling if nothing deteriorating (i.e. food in the field)
                 if ((this.workTypeDef.defName == HAULING || this.workTypeDef.defName == HAULING_URGENT)
-                    && this.pawn.Map.GetComponent<FreeWill_MapComponent>().ThingsDeteriorating)
+                    && !this.mapComp.ThingsDeteriorating)
                 {
-                    return this.add(0.15f, "FreeWillPriorityLowFood".TranslateSimple());
+                    return this;
                 }
+
+                return this.add(adjustment * worldComp.settings.ConsiderLowFood, "FreeWillPriorityLowFood".TranslateSimple());
+            }
+            catch (System.Exception err)
+            {
+                Log.ErrorOnce("could not consider low food: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 10979710);
+                worldComp.settings.ConsiderLowFood = 0.0f;
             }
             return this;
         }
@@ -1557,7 +1667,7 @@ namespace FreeWill
             }
             catch (System.Exception err)
             {
-                Log.ErrorOnce("could not consider pruning gauranlen tree: " + "this consideration will be disabled in the mod settings to avoid future errors" + err.ToString(), 45846314);
+                Log.ErrorOnce("could not consider pruning gauranlen tree: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 45846314);
                 worldComp.settings.ConsiderGauranlenPruning = 0.0f;
             }
             return this;
