@@ -22,8 +22,10 @@
   <!-- Considerations-->
   <FreeWillConsiderMovementSpeed>Consider movement speed</FreeWillConsiderMovementSpeed>
   <FreeWillConsiderMovementSpeedLong>Colonists perfer work that suits their movement speed.</FreeWillConsiderMovementSpeedLong>
-  <FreeWillConsiderBestAtDoing>Consider colonist passions</FreeWillConsiderBestAtDoing>
-  <FreeWillConsiderBestAtDoingLong>Colonists perfer work they are passionate about.</FreeWillConsiderBestAtDoingLong>
+  <FreeWillConsiderPassions>Consider colonist passions</FreeWillConsiderPassions>
+  <FreeWillConsiderPassionsLong>Colonists perfer work they are passionate about.</FreeWillConsiderPassionsLong>
+  <FreeWillConsiderBeauty>Consider area beauty</FreeWillConsiderBeauty>
+  <FreeWillConsiderBeautyLong>Colonists perfer having a beautiful area around them.</FreeWillConsiderBeautyLong>
   <FreeWillConsiderBestAtDoing>Consider best at doing</FreeWillConsiderBestAtDoing>
   <FreeWillConsiderBestAtDoingLong>Colonists perfer work when they are the best in the colony at doing it.</FreeWillConsiderBestAtDoingLong>
   <FreeWillConsiderFoodPoisoning>Consider food poisoning</FreeWillConsiderFoodPoisoning>
@@ -43,6 +45,7 @@
 
   <!-- Priority strings -->
   <FreeWillPriorityGlobalDefault>base priority</FreeWillPriorityGlobalDefault>
+  <FreeWillPriorityError>error</FreeWillPriorityError>
   <FreeWillPriorityEnabled>enabled</FreeWillPriorityEnabled>
   <FreeWillPriorityDisabled>disabled</FreeWillPriorityDisabled>
   <FreeWillPriorityPermanentlyDisabled>permanently disabled</FreeWillPriorityPermanentlyDisabled>

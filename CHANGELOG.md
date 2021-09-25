@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+  - cleaning and hauling tasks will only be prioritized if the local area is not
+    beautiful and there is also a cleaning or hauling tasks to do
+  - some work types will be lowered if there is a cleaning or hauling task that
+    needs to be done in the local area
+  - if error is encounted setting a priority, this will be shown in the free
+    will tab
   - reconfigured priorities when low food alert is active
   - injured prisoners will increase doctoring priority
   - roaming animal alert will increase handling priority

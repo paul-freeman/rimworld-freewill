@@ -12,6 +12,7 @@ namespace FreeWill
         const bool ConsiderHasHuntingWeaponDefault = true;
         const float ConsiderMovementSpeedDefault = 1.0f;
         const float ConsiderPassionsDefault = 1.0f;
+        const float ConsiderBeautyDefault = 1.0f;
         const float ConsiderBestAtDoingDefault = 0.0f;
         const float ConsiderFoodPoisoningDefault = 1.0f;
         const float ConsiderLowFoodDefault = 1.0f;
@@ -23,6 +24,7 @@ namespace FreeWill
         public bool ConsiderHasHuntingWeapon = ConsiderHasHuntingWeaponDefault;
         public float ConsiderMovementSpeed = ConsiderMovementSpeedDefault;
         public float ConsiderPassions = ConsiderPassionsDefault;
+        public float ConsiderBeauty = ConsiderBeautyDefault;
         public float ConsiderBestAtDoing = ConsiderBestAtDoingDefault;
         public float ConsiderFoodPoisoning = ConsiderFoodPoisoningDefault;
         public float ConsiderLowFood = ConsiderLowFoodDefault;
@@ -86,6 +88,17 @@ namespace FreeWill
             if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
             {
                 ConsiderPassions = ConsiderPassionsDefault;
+            }
+            ls.GapLine(30.0f);
+
+            s1 = "FreeWillConsiderBeauty".TranslateSimple();
+            s2 = String.Format("{0}x", ConsiderBeauty);
+            s3 = "FreeWillConsiderBeautyLong".TranslateSimple();
+            ls.LabelDouble(s1, s2, tip: s3);
+            ConsiderBeauty = Mathf.RoundToInt(ls.Slider(ConsiderBeauty, 0.0f, 10.0f) * 10.0f) / 10.0f;
+            if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
+            {
+                ConsiderBeauty = ConsiderBeautyDefault;
             }
             ls.GapLine(30.0f);
 
@@ -194,6 +207,7 @@ namespace FreeWill
         {
             Scribe_Values.Look(ref ConsiderMovementSpeed, "freeWillConsiderMovementSpeed", ConsiderMovementSpeedDefault, true);
             Scribe_Values.Look(ref ConsiderPassions, "freeWillConsiderPassions", ConsiderPassionsDefault, true);
+            Scribe_Values.Look(ref ConsiderBeauty, "freeWillConsiderBeauty", ConsiderBeautyDefault, true);
             Scribe_Values.Look(ref ConsiderBestAtDoing, "freeWillConsiderBestAtDoing", ConsiderBestAtDoingDefault, true);
             Scribe_Values.Look(ref ConsiderFoodPoisoning, "freeWillConsiderFoodPoisoning", ConsiderFoodPoisoningDefault, true);
             Scribe_Values.Look(ref ConsiderLowFood, "freeWillConsiderLowFood", ConsiderLowFoodDefault, true);

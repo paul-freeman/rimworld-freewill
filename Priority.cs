@@ -5,6 +5,7 @@ using RimWorld;
 using System.Linq;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 
 namespace FreeWill
@@ -87,7 +88,10 @@ namespace FreeWill
             catch (System.Exception err)
             {
                 Log.ErrorOnce("could not set " + workTypeDef.defName + " priority for pawn: " + pawn.Name + ": " + err.Message, 15448413);
-                this.set(0.2f, "FreeWillPriorityGlobalDefault".TranslateSimple()).compute();
+                this
+                    .alwaysDo("FreeWillPriorityError".TranslateSimple())
+                    .set(0.4f, "FreeWillPriorityError".TranslateSimple())
+                    ;
             }
         }
 
@@ -109,7 +113,7 @@ namespace FreeWill
         {
             this.enabled = false;
             this.disabled = false;
-            if (this.pawn.GetDisabledWorkTypes(true).Contains(this.workTypeDef))
+            if (pawn.WorkTypeIsDisabled(workTypeDef))
             {
                 return this.neverDo("FreeWillPriorityPermanentlyDisabled".TranslateSimple());
             }
@@ -386,6 +390,7 @@ namespace FreeWill
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
+                        .considerBeautyExpectations()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -409,6 +414,7 @@ namespace FreeWill
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
+                        .considerBeautyExpectations()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -433,6 +439,7 @@ namespace FreeWill
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
+                        .considerBeautyExpectations()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -456,6 +463,7 @@ namespace FreeWill
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
+                        .considerBeautyExpectations()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -520,6 +528,7 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
+                        .considerBeautyExpectations()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -1675,35 +1684,158 @@ namespace FreeWill
 
         private Priority considerBeautyExpectations()
         {
-            if (this.workTypeDef.defName != CLEANING && this.workTypeDef.defName != HAULING && this.workTypeDef.defName != HAULING_URGENT)
-            {
-                return this;
-            }
             try
             {
-                float e = expectationGrid[ExpectationsUtility.CurrentExpectationFor(this.pawn).defName][this.pawn.needs.beauty.CurCategory];
-                if (e < 0.2f)
+                if (worldComp.settings.ConsiderBeauty == 0.0f)
                 {
-                    return this.set(e, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                    return this;
                 }
-                if (e < 0.4f)
+                BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
+                float expectations = worldComp.settings.ConsiderBeauty * expectationGrid[ExpectationsUtility.CurrentExpectationFor(this.pawn).defName][this.pawn.needs.beauty.CurCategory];
+                switch (workTypeDef.defName)
                 {
-                    return this.set(e, "FreeWillPriorityExpectionsMet".TranslateSimple());
-                }
-                if (e < 0.6f)
-                {
-                    return this.set(e, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
-                }
-                if (e < 0.8f)
-                {
-                    return this.set(e, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
-                }
-                return this.set(e, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                    case HAULING:
+                    case HAULING_URGENT:
+                        // check for haulable
+                        if (!areaHasHaulables(BeautyUtility.beautyRelevantCells))
+                        {
+                            // no hauling job
+                            return this;
+                        }
+                        if (expectations < 0.2f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                        }
+                        if (expectations < 0.4f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                        }
+                        if (expectations < 0.6f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                        }
+                        if (expectations < 0.8f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                        }
+                        return this.set(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                    case CLEANING:
+                        // check for cleanable
+                        if (!areaHasFilth(BeautyUtility.beautyRelevantCells))
+                        {
+                            // no cleaning job
+                            return this;
+                        }
+                        if (expectations < 0.2f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                        }
+                        if (expectations < 0.4f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                        }
+                        if (expectations < 0.6f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                        }
+                        if (expectations < 0.8f)
+                        {
+                            return this.set(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                        }
+                        return this.set(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                    default:
+                        // any other work type is decreased if either job is present
+                        if (!areaHasHaulables(BeautyUtility.beautyRelevantCells) && !areaHasFilth(BeautyUtility.beautyRelevantCells))
+                        {
+                            // nothing to do
+                            return this;
+                        }
+                        if (expectations < 0.2f)
+                        {
+                            return this.set(-expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                        }
+                        if (expectations < 0.4f)
+                        {
+                            return this.set(-expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                        }
+                        if (expectations < 0.6f)
+                        {
+                            return this.set(-expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                        }
+                        if (expectations < 0.8f)
+                        {
+                            return this.set(-expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                        }
+                        return this.set(-expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                } // switch
             }
-            catch
+            catch (System.Exception err)
             {
-                return this.set(0.3f, "FreeWillPriorityBeautyDefault".TranslateSimple());
+                Log.ErrorOnce("could not consider beauty: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 228652891);
+                worldComp.settings.ConsiderBeauty = 0.0f;
+                return this;
             }
+        }
+
+        private bool areaHasHaulables(List<IntVec3> area)
+        {
+            var areaHasHaulingJobToDo = false;
+            foreach (IntVec3 cell in BeautyUtility.beautyRelevantCells)
+            {
+                foreach (Thing thing in cell.GetThingList(pawn.Map))
+                {
+                    if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, thing, false))
+                    {
+                        continue;
+                    }
+                    if (HaulAIUtility.HaulToStorageJob(pawn, thing) != null)
+                    {
+                        areaHasHaulingJobToDo = true;
+                        break;
+                    }
+                }
+                if (areaHasHaulingJobToDo)
+                {
+                    break;
+                }
+            }
+            return areaHasHaulingJobToDo;
+        }
+
+        private bool areaHasFilth(List<IntVec3> area)
+        {
+            var areaHasCleaningJobToDo = false;
+            foreach (IntVec3 cell in area)
+            {
+                foreach (Thing thing in cell.GetThingList(pawn.Map))
+                {
+                    Filth filth = thing as Filth;
+                    if (filth == null)
+                    {
+                        continue;
+                    }
+                    if (!filth.Map.areaManager.Home[filth.Position])
+                    {
+                        continue;
+                    }
+                    if (!pawn.CanReserve(thing, 1, -1, null, false))
+                    {
+                        continue;
+                    }
+                    if (filth.TicksSinceThickened < 600)
+                    {
+                        continue;
+                    }
+                    areaHasCleaningJobToDo = true;
+                    break;
+                }
+                if (areaHasCleaningJobToDo)
+                {
+                    break;
+                }
+            }
+            return areaHasCleaningJobToDo;
+
         }
 
         private Priority considerRelevantSkills()
