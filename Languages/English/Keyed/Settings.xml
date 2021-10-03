@@ -53,6 +53,9 @@
   <FreeWillPriorityPatientDefault>patient default</FreeWillPriorityPatientDefault>
   <FreeWillPriorityBedrestDefault>bedrest default</FreeWillPriorityBedrestDefault>
   <FreeWillPriorityBasicWorkDefault>basic work default</FreeWillPriorityBasicWorkDefault>
+  <FreeWillPriorityHaulingDefault>hauling default</FreeWillPriorityHaulingDefault>
+  <FreeWillPriorityUrgentHaulingDefault>urgent hauling default</FreeWillPriorityUrgentHaulingDefault>
+  <FreeWillPriorityCleaningDefault>cleaning default</FreeWillPriorityCleaningDefault>
   <FreeWillPriorityPawnDowned>downed</FreeWillPriorityPawnDowned>
   <FreeWillPriorityOtherPawnsDowned>others downed</FreeWillPriorityOtherPawnsDowned>
   <FreeWillPriorityNeedTreatment>need treatment</FreeWillPriorityNeedTreatment>
@@ -62,6 +65,7 @@
   <FreeWillPriorityPrisonersInjured>prisoners injured</FreeWillPriorityPrisonersInjured>
   <FreeWillPriorityFireInHomeArea>home on fire</FreeWillPriorityFireInHomeArea>
   <FreeWillPriorityFireOnMap>fire in the area</FreeWillPriorityFireOnMap>
+  <FreeWillPriorityOperation>operation scheduled</FreeWillPriorityOperation>
   <FreeWillPriorityHealth>current health</FreeWillPriorityHealth>
   <FreeWillPriorityBuildingImmunity>building immunity</FreeWillPriorityBuildingImmunity>
   <FreeWillPriorityBored>bored</FreeWillPriorityBored>

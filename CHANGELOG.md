@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+  - increase patient and patient bedrest priority when operation is needed
+  - modified cleaning and hauling logic
   - cleaning and hauling tasks will only be prioritized if the local area is not
     beautiful and there is also a cleaning or hauling tasks to do
   - some work types will be lowered if there is a cleaning or hauling task that

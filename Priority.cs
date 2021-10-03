@@ -141,6 +141,7 @@ namespace FreeWill
                         .considerCompletingTask()
                         .considerColonistsNeedingTreatment()
                         .considerDownedColonists()
+                        .considerOperation()
                         .considerColonyPolicy()
                         ;
 
@@ -153,7 +154,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerInjuredPets()
                         .considerInjuredPrisoners()
                         .considerColonistLeftUnburied()
@@ -179,6 +179,7 @@ namespace FreeWill
                         .considerColonistsNeedingTreatment()
                         .considerBored()
                         .considerDownedColonists()
+                        .considerOperation()
                         .considerColonyPolicy()
                         ;
 
@@ -206,7 +207,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -230,7 +230,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerAnimalsRoaming()
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -253,7 +252,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(0.2f)
                         .considerColonistLeftUnburied()
                         .considerFoodPoisoning()
@@ -278,7 +276,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -303,7 +300,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -326,7 +322,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -349,7 +344,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -394,7 +388,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -418,7 +411,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerNeedingWarmClothes()
                         .considerColonistLeftUnburied()
@@ -443,7 +435,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -467,7 +458,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -483,6 +473,7 @@ namespace FreeWill
 
                 case HAULING:
                     return this
+                        .set(0.3f, "FreeWillPriorityHaulingDefault".TranslateSimple())
                         .considerBeautyExpectations()
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
@@ -507,6 +498,7 @@ namespace FreeWill
 
                 case CLEANING:
                     return this
+                        .set(0.3f, "FreeWillPriorityCleaningDefault".TranslateSimple())
                         .considerBeautyExpectations()
                         .considerIsAnyoneElseDoing()
                         .considerThoughts()
@@ -532,7 +524,6 @@ namespace FreeWill
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.4f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -547,6 +538,7 @@ namespace FreeWill
 
                 case HAULING_URGENT:
                     return this
+                        .set(0.5f, "FreeWillPriorityUrgentHaulingDefault".TranslateSimple())
                         .considerBeautyExpectations()
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
@@ -574,12 +566,12 @@ namespace FreeWill
                         .considerRelevantSkills()
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
+                        .considerBeautyExpectations()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
-                        .considerRefueling()
                         .considerLowFood(-0.3f)
                         .considerColonistLeftUnburied()
                         .considerHealth()
@@ -830,13 +822,9 @@ namespace FreeWill
 
         private Priority considerHasHuntingWeapon()
         {
-            if (!Priority.worldComp.settings.ConsiderHasHuntingWeapon)
-            {
-                return this;
-            }
             try
             {
-                if (this.workTypeDef.defName != HUNTING)
+                if (!Priority.worldComp.settings.ConsiderHasHuntingWeapon)
                 {
                     return this;
                 }
@@ -1164,17 +1152,13 @@ namespace FreeWill
 
         private Priority considerRefueling()
         {
-            if (workTypeDef.defName != HAULING && workTypeDef.defName != HAULING_URGENT)
-            {
-                return this;
-            }
             if (mapComp.RefuelNeededNow)
             {
-                return this.add(0.25f, "FreeWillPriorityRefueling".TranslateSimple());
+                return this.add(0.35f, "FreeWillPriorityRefueling".TranslateSimple());
             }
             if (mapComp.RefuelNeeded)
             {
-                return this.add(0.10f, "FreeWillPriorityRefueling".TranslateSimple());
+                return this.add(0.20f, "FreeWillPriorityRefueling".TranslateSimple());
             }
             return this;
         }
@@ -1192,6 +1176,15 @@ namespace FreeWill
             if (mapComp.MapFires > 0 && workTypeDef.defName == FIREFIGHTER)
             {
                 return add(Mathf.Clamp01(mapComp.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple());
+            }
+            return this;
+        }
+
+        private Priority considerOperation()
+        {
+            if (HealthAIUtility.ShouldHaveSurgeryDoneNow(pawn))
+            {
+                return set(1.0f, "FreeWillPriorityOperation".TranslateSimple());
             }
             return this;
         }
@@ -1619,9 +1612,9 @@ namespace FreeWill
         {
             if (this.workTypeDef.defName == HAULING || this.workTypeDef.defName == HAULING_URGENT)
             {
-                if (this.pawn.Map.GetComponent<FreeWill_MapComponent>().ThingsDeteriorating)
+                if (mapComp.ThingsDeteriorating)
                 {
-                    return this.add(0.2f, "FreeWillPriorityThingsDeteriorating".TranslateSimple());
+                    return this.multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple());
                 }
             }
             return this;
@@ -1704,21 +1697,21 @@ namespace FreeWill
                         }
                         if (expectations < 0.2f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
                         }
                         if (expectations < 0.4f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
                         }
                         if (expectations < 0.6f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
                         }
                         if (expectations < 0.8f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
                         }
-                        return this.set(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                        return this.add(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
                     case CLEANING:
                         // check for cleanable
                         if (!areaHasFilth(BeautyUtility.beautyRelevantCells))
@@ -1728,21 +1721,21 @@ namespace FreeWill
                         }
                         if (expectations < 0.2f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
                         }
                         if (expectations < 0.4f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
                         }
                         if (expectations < 0.6f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
                         }
                         if (expectations < 0.8f)
                         {
-                            return this.set(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
                         }
-                        return this.set(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                        return this.add(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
                     default:
                         // any other work type is decreased if either job is present
                         if (!areaHasHaulables(BeautyUtility.beautyRelevantCells) && !areaHasFilth(BeautyUtility.beautyRelevantCells))
@@ -1752,21 +1745,21 @@ namespace FreeWill
                         }
                         if (expectations < 0.2f)
                         {
-                            return this.set(-expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
                         }
                         if (expectations < 0.4f)
                         {
-                            return this.set(-expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
                         }
                         if (expectations < 0.6f)
                         {
-                            return this.set(-expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
                         }
                         if (expectations < 0.8f)
                         {
-                            return this.set(-expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
                         }
-                        return this.set(-expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                        return this.add(-expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
                 } // switch
             }
             catch (System.Exception err)
@@ -1782,17 +1775,41 @@ namespace FreeWill
             var areaHasHaulingJobToDo = false;
             foreach (IntVec3 cell in BeautyUtility.beautyRelevantCells)
             {
-                foreach (Thing thing in cell.GetThingList(pawn.Map))
+                foreach (Thing t in cell.GetThingList(pawn.Map))
                 {
-                    if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, thing, false))
+                    if (t.IsForbidden(Faction.OfPlayer))
                     {
                         continue;
                     }
-                    if (HaulAIUtility.HaulToStorageJob(pawn, thing) != null)
+                    if (!t.def.alwaysHaulable)
                     {
-                        areaHasHaulingJobToDo = true;
-                        break;
+                        if (!t.def.EverHaulable)
+                        {
+                            continue;
+                        }
+                        if (pawn.Map.designationManager.DesignationOn(t, DesignationDefOf.Haul) == null && !t.IsInAnyStorage())
+                        {
+                            continue;
+                        }
                     }
+                    if (t.IsInValidBestStorage())
+                    {
+                        continue;
+                    }
+                    if (t.IsForbidden(pawn))
+                    {
+                        continue;
+                    }
+                    if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+                    {
+                        continue;
+                    }
+                    if (pawn.carryTracker.MaxStackSpaceEver(t.def) <= 0)
+                    {
+                        continue;
+                    }
+                    areaHasHaulingJobToDo = true;
+                    break;
                 }
                 if (areaHasHaulingJobToDo)
                 {
