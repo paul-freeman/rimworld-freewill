@@ -1073,7 +1073,9 @@ namespace FreeWill
                     }
                     return neverDo("FreeWillPriorityBoredBy".TranslateSimple() + " " + skillDef.skillLabel);
                 case "DAllergic":
-                    foreach (var hediff in pawn.health.hediffSet.GetHediffs<Hediff>())
+                    List<Hediff> resultHediffs = new List<Hediff>();
+                    pawn.health.hediffSet.GetHediffs<Hediff>(ref resultHediffs);
+                    foreach (var hediff in resultHediffs)
                     {
                         if (hediff.def.defName == "DAllergicReaction")
                         {
