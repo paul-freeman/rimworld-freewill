@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- fixed issue where guest pawns were not able to use free will
+- fixed issue where loading a saved game would throw an error
+
 ## v1.4.0
 
 - increase patient and patient bedrest priority when operation is needed
