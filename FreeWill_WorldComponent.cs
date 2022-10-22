@@ -132,7 +132,7 @@ namespace FreeWill
                 var canChange = !pawn.Ideo.HasPrecept(freeWillMandatory) && !pawn.Ideo.HasPrecept(freeWillProhibited);
                 if (!canChange)
                 {
-                    CheckFreeWillStatus(pawn);
+                    EnsureFreeWillStatusIsCorrect(pawn);
                 }
                 return canChange;
             }
@@ -148,7 +148,7 @@ namespace FreeWill
             }
         }
 
-        public void CheckFreeWillStatus(Pawn pawn)
+        public void EnsureFreeWillStatusIsCorrect(Pawn pawn)
         {
             try
             {

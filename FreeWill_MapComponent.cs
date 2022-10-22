@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Verse;
@@ -9,6 +10,8 @@ namespace FreeWill
 {
     public class FreeWill_MapComponent : MapComponent
     {
+        private static Action[] mapCompnentsCheckActions;
+
         private Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> priorities;
         private readonly FieldInfo activeAlertsField;
         private FreeWill_WorldComponent worldComp;
@@ -56,8 +59,7 @@ namespace FreeWill
         public bool AlertLowFood { get { return alertLowFood; } }
         private bool alertLowFood;
 
-        const int NUM_PREP_CASES = 8;
-        private int counter = -NUM_PREP_CASES;
+        private int counter;
 
         public FreeWill_MapComponent(Map map) : base(map)
         {
@@ -68,59 +70,47 @@ namespace FreeWill
         public override void MapComponentTick()
         {
             base.MapComponentTick();
+
+            mapCompnentsCheckActions = mapCompnentsCheckActions ?? new Action[]{
+                checkPrisonerHealth,
+                checkPetsHealth,
+                checkColonyHealth,
+                checkThingsDeteriorating,
+                checkBlight,
+                checkMapFire,
+                checkRefuelNeeded,
+                checkActiveAlerts,
+            };
+            worldComp = worldComp ?? Find.World.GetComponent<FreeWill_WorldComponent>();
+
             try
             {
-                if (worldComp == null)
-                {
-                    worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
-                }
-
-                int i = counter;
-                counter++;
-                switch (i)
-                {
-                    case -8:
-                        checkPrisonerHealth();
-                        return;
-                    case -7:
-                        checkPetsHealth();
-                        return;
-                    case -6:
-                        checkColonyHealth();
-                        return;
-                    case -5:
-                        checkThingsDeteriorating();
-                        return;
-                    case -4:
-                        checkBlight();
-                        return;
-                    case -3:
-                        checkMapFire();
-                        return;
-                    case -2:
-                        checkRefuelNeeded();
-                        return;
-                    case -1:
-                        checkActiveAlerts();
-                        return;
-                    default:
-                        int worktypeCount = DefDatabase<WorkTypeDef>.AllDefsListForReading.Count();
-                        int pawnCount = this.map.mapPawns.FreeColonistsSpawnedCount;
-                        if (i >= worktypeCount * pawnCount)
-                        {
-                            counter = -NUM_PREP_CASES;
-                            return;
-                        }
-                        int pawnIndex = i / worktypeCount;
-                        int worktypeIndex = i % worktypeCount;
-                        SetPriorities(pawnIndex, worktypeIndex);
-                        return;
-                }
+                getMapComponentTickAction(this.counter)();
+                this.counter++;
             }
             catch (System.Exception)
             {
-                Log.ErrorOnce("Free Will: could not set priority", 14147584);
+                Log.ErrorOnce($"Free Will: could not perform tick action: counter = {this.counter}", 14147584);
             }
+        }
+
+        private Action getMapComponentTickAction(int i)
+        {
+            if (i < mapCompnentsCheckActions.Length)
+            {
+                return mapCompnentsCheckActions[i];
+            }
+            i -= mapCompnentsCheckActions.Length;
+            int worktypeCount = DefDatabase<WorkTypeDef>.AllDefsListForReading.Count();
+            int pawnCount = this.map.mapPawns.FreeColonistsSpawnedCount;
+            if (i >= worktypeCount * pawnCount)
+            {
+                this.counter = 0;
+                return getMapComponentTickAction(0);
+            }
+            int pawnIndex = i / worktypeCount;
+            int worktypeIndex = i % worktypeCount;
+            return setPriorityAction(pawnIndex, worktypeIndex);
         }
 
         public Dictionary<WorkTypeDef, Priority> GetPriorities(Pawn pawn)
@@ -132,12 +122,12 @@ namespace FreeWill
             return this.priorities[pawn];
         }
 
-        private void SetPriorities(int pawnIndex, int worktypeIndex)
+        private Action setPriorityAction(int pawnIndex, int worktypeIndex)
         {
             Pawn pawn = map.mapPawns.FreeColonistsSpawned[pawnIndex];
             if (pawn == null)
             {
-                return;
+                return () => { };
             }
             if (pawn.IsSlaveOfColony)
             {
@@ -148,10 +138,10 @@ namespace FreeWill
                     {
                         Log.ErrorOnce("Free Will: could not remove free will from slave", 164752145);
                     }
-                    return;
+                    return () => { };
                 }
             }
-            worldComp.CheckFreeWillStatus(pawn);
+            worldComp.EnsureFreeWillStatusIsCorrect(pawn);
             try
             {
                 var workTypeDef = DefDatabase<WorkTypeDef>.AllDefsListForReading[worktypeIndex];
@@ -166,8 +156,9 @@ namespace FreeWill
                 priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
                 if (worldComp.HasFreeWill(pawn))
                 {
-                    priorities[pawn][workTypeDef].ApplyPriorityToGame();
+                    return priorities[pawn][workTypeDef].ApplyPriorityToGame;
                 }
+                return () => { };
             }
             catch (System.Exception)
             {
@@ -177,6 +168,7 @@ namespace FreeWill
                 {
                     Log.ErrorOnce("Free Will: could not remove free will", 752116446);
                 }
+                return () => { };
             }
         }
 
