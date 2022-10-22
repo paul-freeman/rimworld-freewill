@@ -69,6 +69,7 @@
   <FreeWillPriorityHealth>current health</FreeWillPriorityHealth>
   <FreeWillPriorityBuildingImmunity>building immunity</FreeWillPriorityBuildingImmunity>
   <FreeWillPriorityBored>bored</FreeWillPriorityBored>
+  <FreeWillPriorityWasBored>was recently bored</FreeWillPriorityWasBored>
   <FreeWillPriorityRefueling>refueling required</FreeWillPriorityRefueling>
   <FreeWillPriorityFilthyCookingArea>dirty cooking area</FreeWillPriorityFilthyCookingArea>
   <FreeWillPriorityBestAtDoing>best at doing</FreeWillPriorityBestAtDoing>

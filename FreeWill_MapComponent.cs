@@ -13,6 +13,7 @@ namespace FreeWill
         private static Action[] mapCompnentsCheckActions;
 
         private Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> priorities;
+        private Dictionary<Pawn, int> lastBored;
         private readonly FieldInfo activeAlertsField;
         private FreeWill_WorldComponent worldComp;
 
@@ -59,7 +60,7 @@ namespace FreeWill
         public bool AlertLowFood { get { return alertLowFood; } }
         private bool alertLowFood;
 
-        private int mapTickCounter = 0;
+        private int actionCounter = 0;
 
         public FreeWill_MapComponent(Map map) : base(map)
         {
@@ -85,12 +86,12 @@ namespace FreeWill
 
             try
             {
-                getMapComponentTickAction(this.mapTickCounter)();
-                this.mapTickCounter++;
+                getMapComponentTickAction(this.actionCounter)();
+                this.actionCounter++;
             }
             catch (System.Exception e)
             {
-                Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {this.mapTickCounter}: {e}", 14147584);
+                Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {this.actionCounter}: {e}", 14147584);
             }
         }
 
@@ -107,7 +108,7 @@ namespace FreeWill
                 int pawnCount = this.map.mapPawns.FreeColonistsSpawnedCount;
                 if (i >= worktypeCount * pawnCount)
                 {
-                    this.mapTickCounter = 0;
+                    this.actionCounter = 0;
                     return getMapComponentTickAction(0);
                 }
                 int pawnIndex = i / worktypeCount;
@@ -117,9 +118,23 @@ namespace FreeWill
             // show stack trace
             catch (System.Exception e)
             {
-                Log.ErrorOnce($"Free Will: could not get map component tick action: mapTickCounter = {this.mapTickCounter}: {e}", 14847584);
+                Log.ErrorOnce($"Free Will: could not get map component tick action: mapTickCounter = {this.actionCounter}: {e}", 14847584);
                 return () => { };
             }
+        }
+
+        public void UpdateLastBored(Pawn pawn)
+        {
+            this.lastBored[pawn] = Find.TickManager.TicksGame;
+        }
+
+        public int GetLastBored(Pawn pawn)
+        {
+            if (this.lastBored.ContainsKey(pawn))
+            {
+                return this.lastBored[pawn];
+            }
+            return 0;
         }
 
         public Dictionary<WorkTypeDef, Priority> GetPriorities(Pawn pawn)

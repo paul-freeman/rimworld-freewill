@@ -817,7 +817,15 @@ namespace FreeWill
 
         private Priority considerBored()
         {
-            return this.alwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple());
+            const int boredomMemory = 2500; // 1 hour in game
+            if (this.pawn.mindState.IsIdle)
+            {
+                (this.mapComp as FreeWill_MapComponent)?.UpdateLastBored(this.pawn);
+                return this.alwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple());
+            }
+            var lastBored = (this.mapComp as FreeWill_MapComponent)?.GetLastBored(this.pawn);
+            var wasBored = lastBored != 0 && Find.TickManager.TicksGame - lastBored < boredomMemory;
+            return this.alwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple());
         }
 
         private Priority considerHasHuntingWeapon()
