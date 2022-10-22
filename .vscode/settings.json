@@ -1,4 +1,7 @@
 {
     "editor.codeLens": true,
-    "diffEditor.codeLens": true
+    "diffEditor.codeLens": true,
+    "[markdown]": {
+        "editor.formatOnSave": false,
+    }
 }
