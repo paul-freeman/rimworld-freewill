@@ -64,8 +64,9 @@ namespace FreeWill
 
         public FreeWill_MapComponent(Map map) : base(map)
         {
-            priorities = new Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> { };
-            activeAlertsField = AccessTools.Field(typeof(AlertsReadout), "AllAlerts");
+            this.priorities = new Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> { };
+            this.lastBored = new Dictionary<Pawn, int> { };
+            this.activeAlertsField = AccessTools.Field(typeof(AlertsReadout), "AllAlerts");
         }
 
         public override void MapComponentTick()
