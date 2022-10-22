@@ -12,10 +12,10 @@ namespace FreeWill
 {
     public class Priority : IComparable
     {
-        static private readonly int disabledCutoff = 100 / (Pawn_WorkSettings.LowestPriority + 1); // 20 if LowestPriority is 4
-        static private readonly int disabledCutoffActiveWorkArea = 100 - disabledCutoff; // 80 if LowestPriority is 4
-        static private readonly float onePriorityWidth = (float)disabledCutoffActiveWorkArea / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
-        static private FreeWill_WorldComponent worldComp;
+        const int disabledCutoff = 100 / (Pawn_WorkSettings.LowestPriority + 1); // 20 if LowestPriority is 4
+        const int disabledCutoffActiveWorkArea = 100 - disabledCutoff; // 80 if LowestPriority is 4
+        const float onePriorityWidth = (float)disabledCutoffActiveWorkArea / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
+        private static FreeWill_WorldComponent worldComp;
 
         private Pawn pawn;
         private FreeWill_MapComponent mapComp;

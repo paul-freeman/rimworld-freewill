@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Verse;
@@ -9,6 +10,8 @@ namespace FreeWill
 {
     public class FreeWill_MapComponent : MapComponent
     {
+        private static Action[] mapCompnentsCheckActions;
+
         private Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> priorities;
         private readonly FieldInfo activeAlertsField;
         private FreeWill_WorldComponent worldComp;
@@ -56,8 +59,7 @@ namespace FreeWill
         public bool AlertLowFood { get { return alertLowFood; } }
         private bool alertLowFood;
 
-        const int NUM_PREP_CASES = 8;
-        private int counter = -NUM_PREP_CASES;
+        private int mapTickCounter = 0;
 
         public FreeWill_MapComponent(Map map) : base(map)
         {
@@ -68,58 +70,55 @@ namespace FreeWill
         public override void MapComponentTick()
         {
             base.MapComponentTick();
+
+            mapCompnentsCheckActions = mapCompnentsCheckActions ?? new Action[]{
+                checkPrisonerHealth,
+                checkPetsHealth,
+                checkColonyHealth,
+                checkThingsDeteriorating,
+                checkBlight,
+                checkMapFire,
+                checkRefuelNeeded,
+                checkActiveAlerts,
+            };
+            worldComp = worldComp ?? Find.World.GetComponent<FreeWill_WorldComponent>();
+
             try
             {
-                if (worldComp == null)
-                {
-                    worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
-                }
-
-                int i = counter;
-                counter++;
-                switch (i)
-                {
-                    case -8:
-                        checkPrisonerHealth();
-                        return;
-                    case -7:
-                        checkPetsHealth();
-                        return;
-                    case -6:
-                        checkColonyHealth();
-                        return;
-                    case -5:
-                        checkThingsDeteriorating();
-                        return;
-                    case -4:
-                        checkBlight();
-                        return;
-                    case -3:
-                        checkMapFire();
-                        return;
-                    case -2:
-                        checkRefuelNeeded();
-                        return;
-                    case -1:
-                        checkActiveAlerts();
-                        return;
-                    default:
-                        int worktypeCount = DefDatabase<WorkTypeDef>.AllDefsListForReading.Count();
-                        int pawnCount = this.map.mapPawns.FreeColonistsSpawnedCount;
-                        if (i >= worktypeCount * pawnCount)
-                        {
-                            counter = -NUM_PREP_CASES;
-                            return;
-                        }
-                        int pawnIndex = i / worktypeCount;
-                        int worktypeIndex = i % worktypeCount;
-                        SetPriorities(pawnIndex, worktypeIndex);
-                        return;
-                }
+                getMapComponentTickAction(this.mapTickCounter)();
+                this.mapTickCounter++;
             }
-            catch (System.Exception)
+            catch (System.Exception e)
             {
-                Log.ErrorOnce("Free Will: could not set priority", 14147584);
+                Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {this.mapTickCounter}: {e}", 14147584);
+            }
+        }
+
+        private Action getMapComponentTickAction(int i)
+        {
+            try
+            {
+                if (i < mapCompnentsCheckActions.Length)
+                {
+                    return mapCompnentsCheckActions[i];
+                }
+                i -= mapCompnentsCheckActions.Length;
+                int worktypeCount = DefDatabase<WorkTypeDef>.AllDefsListForReading.Count();
+                int pawnCount = this.map.mapPawns.FreeColonistsSpawnedCount;
+                if (i >= worktypeCount * pawnCount)
+                {
+                    this.mapTickCounter = 0;
+                    return getMapComponentTickAction(0);
+                }
+                int pawnIndex = i / worktypeCount;
+                int worktypeIndex = i % worktypeCount;
+                return setPriorityAction(pawnIndex, worktypeIndex);
+            }
+            // show stack trace
+            catch (System.Exception e)
+            {
+                Log.ErrorOnce($"Free Will: could not get map component tick action: mapTickCounter = {this.mapTickCounter}: {e}", 14847584);
+                return () => { };
             }
         }
 
@@ -132,12 +131,12 @@ namespace FreeWill
             return this.priorities[pawn];
         }
 
-        private void SetPriorities(int pawnIndex, int worktypeIndex)
+        private Action setPriorityAction(int pawnIndex, int worktypeIndex)
         {
             Pawn pawn = map.mapPawns.FreeColonistsSpawned[pawnIndex];
             if (pawn == null)
             {
-                return;
+                return () => { };
             }
             if (pawn.IsSlaveOfColony)
             {
@@ -148,10 +147,10 @@ namespace FreeWill
                     {
                         Log.ErrorOnce("Free Will: could not remove free will from slave", 164752145);
                     }
-                    return;
+                    return () => { };
                 }
             }
-            worldComp.CheckFreeWillStatus(pawn);
+            worldComp.EnsureFreeWillStatusIsCorrect(pawn);
             try
             {
                 var workTypeDef = DefDatabase<WorkTypeDef>.AllDefsListForReading[worktypeIndex];
@@ -166,8 +165,9 @@ namespace FreeWill
                 priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
                 if (worldComp.HasFreeWill(pawn))
                 {
-                    priorities[pawn][workTypeDef].ApplyPriorityToGame();
+                    return priorities[pawn][workTypeDef].ApplyPriorityToGame;
                 }
+                return () => { };
             }
             catch (System.Exception)
             {
@@ -177,32 +177,44 @@ namespace FreeWill
                 {
                     Log.ErrorOnce("Free Will: could not remove free will", 752116446);
                 }
+                return () => { };
             }
         }
 
         private void checkPrisonerHealth()
         {
+            var prisonersInColony = map?.mapPawns?.PrisonersOfColony;
             numPrisonersNeedingTreatment =
-                (from p in map.mapPawns.PrisonersOfColony
-                 where p.health.HasHediffsNeedingTend()
-                 select p).Count();
+                (prisonersInColony == null)
+                    ? 0
+                    : (from prisoners in map?.mapPawns?.PrisonersOfColony
+                       where prisoners.health.HasHediffsNeedingTend()
+                       select prisoners).Count();
         }
 
         private void checkPetsHealth()
         {
+            var pawnsInFaction = map?.mapPawns?.PawnsInFaction(Faction.OfPlayer);
             numPetsNeedingTreatment =
-                (from p in map.mapPawns.PawnsInFaction(Faction.OfPlayer)
-                 where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
-                 select p).Count();
+                (pawnsInFaction == null)
+                    ? 0
+                    : (from p in pawnsInFaction
+                       where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
+                       select p).Count();
         }
 
         private void checkColonyHealth()
         {
-            numPawns = map.mapPawns.FreeColonistsSpawnedCount;
+            numPawns = map?.mapPawns?.FreeColonistsSpawnedCount ?? 0;
             percentPawnsDowned = 0.0f;
             percentPawnsNeedingTreatment = 0.0f;
             float colonistWeight = 1.0f / numPawns;
-            foreach (Pawn pawn in map.mapPawns.FreeColonistsSpawned)
+            var freeColonistsSpawned = map?.mapPawns?.FreeColonistsSpawned;
+            if (freeColonistsSpawned == null)
+            {
+                return;
+            }
+            foreach (Pawn pawn in freeColonistsSpawned)
             {
                 bool inBed = pawn.CurrentBed() != null;
                 if (pawn.Downed && !inBed)
@@ -218,14 +230,19 @@ namespace FreeWill
 
         private void checkThingsDeteriorating()
         {
-            thingsDeteriorating = false;
-            foreach (Thing thing in map.listerHaulables.ThingsPotentiallyNeedingHauling())
+            this.thingsDeteriorating = false;
+            var thingsPotentiallyNeedingHauling = this.map?.listerHaulables?.ThingsPotentiallyNeedingHauling();
+            if (thingsPotentiallyNeedingHauling == null)
+            {
+                return;
+            }
+            foreach (Thing thing in thingsPotentiallyNeedingHauling)
             {
                 if (thing.IsInValidStorage() || SteadyEnvironmentEffects.FinalDeteriorationRate(thing) == 0)
                 {
                     continue;
                 }
-                thingsDeteriorating = true;
+                this.thingsDeteriorating = true;
                 return;
             }
         }
@@ -234,30 +251,28 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp.settings.ConsiderPlantsBlighted == 0.0f)
+                this.plantsBlighted = false;
+                if ((this.worldComp?.settings?.ConsiderPlantsBlighted ?? 0.0f) == 0.0f)
                 {
                     return;
                 }
-
                 Thing thing = null;
-                (from x in map.listerThings.ThingsInGroup(ThingRequestGroup.Plant)
+                var plants = this.map?.listerThings?.ThingsInGroup(ThingRequestGroup.Plant);
+                if (plants == null)
+                {
+                    return;
+                }
+                (from x in plants
                  where ((Plant)x).Blighted
                  select x).TryRandomElement(out thing);
-                if (thing == null)
-                {
-                    this.plantsBlighted = false;
-                }
-                else
-                {
-                    this.plantsBlighted = true;
-                }
+                this.plantsBlighted = (thing != null);
             }
             catch (System.Exception err)
             {
                 Log.Message("could not check blight levels on map");
                 Log.Message(err.ToString());
                 Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.settings.ConsiderPlantsBlighted = 0.0f;
+                this.worldComp.settings.ConsiderPlantsBlighted = 0.0f;
                 this.plantsBlighted = false;
                 return;
             }
@@ -265,14 +280,17 @@ namespace FreeWill
 
         private void checkMapFire()
         {
-            List<Thing> list = this.map.listerThings.ThingsOfDef(ThingDefOf.Fire);
-            mapFires = list.Count;
+            List<Thing> fires = this.map?.listerThings?.ThingsOfDef(ThingDefOf.Fire);
+            mapFires = fires?.Count ?? 0;
             homeFire = false;
-            for (int j = 0; j < list.Count; j++)
+            if (fires == null)
+            {
+                return;
+            }
+            foreach (Thing fire in fires)
             {
                 mapFires++;
-                Thing thing = list[j];
-                if (this.map.areaManager.Home[thing.Position] && !thing.Position.Fogged(thing.Map))
+                if (this.map.areaManager.Home[fire.Position] && !fire.Position.Fogged(fire.Map))
                 {
                     homeFire = true;
                     return;
@@ -284,8 +302,12 @@ namespace FreeWill
         {
             refuelNeeded = false;
             refuelNeededNow = false;
-            List<Thing> list = this.map.listerThings.ThingsInGroup(ThingRequestGroup.Refuelable);
-            foreach (Thing thing in list)
+            List<Thing> refuelableThings = this.map?.listerThings?.ThingsInGroup(ThingRequestGroup.Refuelable);
+            if (refuelableThings == null)
+            {
+                return;
+            }
+            foreach (Thing thing in refuelableThings)
             {
                 CompRefuelable refuelable = thing.TryGetComp<CompRefuelable>();
                 if (refuelable == null)
