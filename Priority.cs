@@ -59,7 +59,7 @@ namespace FreeWill
                 this.adjustmentStrings = new List<string> { };
 
                 // find the map component for this pawn
-                mapComp = pawn.Map.GetComponent<FreeWill_MapComponent>();
+                mapComp = this.pawn.Map.GetComponent<FreeWill_MapComponent>();
 
                 // find the world component if it is missing
                 if (worldComp == null)
