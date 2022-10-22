@@ -5,6 +5,13 @@
 - fixed issue where guest pawns were not able to use free will
 - fixed issue where loading a saved game would throw an error
 
+## [1.4.1](https://github.com/paul-freeman/rimworld-freewill/compare/v1.4.0...v1.4.1) (2022-10-22)
+
+
+### Bug Fixes
+
+* pawns now have short memory for boredom ([#4](https://github.com/paul-freeman/rimworld-freewill/issues/4)) ([a406ef7](https://github.com/paul-freeman/rimworld-freewill/commit/a406ef7e96b394468061e977b12bbb6e7ccf89f6))
+
 ## v1.4.0
 
 - increase patient and patient bedrest priority when operation is needed
