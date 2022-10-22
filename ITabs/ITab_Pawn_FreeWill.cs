@@ -231,7 +231,7 @@ namespace FreeWill
                     }
                     if (!ok)
                     {
-                        Log.Error("could not change free will");
+                        Log.Error($"could not change free will for {pawn.Name.ToStringShort}");
                     }
                 }
             }
