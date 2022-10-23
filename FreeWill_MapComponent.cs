@@ -83,11 +83,11 @@ namespace FreeWill
                 checkRefuelNeeded,
                 checkActiveAlerts,
             };
-            worldComp = worldComp ?? Find.World.GetComponent<FreeWill_WorldComponent>();
+            worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
 
             try
             {
-                getMapComponentTickAction(this.actionCounter)();
+                getMapComponentTickAction()();
                 this.actionCounter++;
             }
             catch (System.Exception e)
@@ -96,25 +96,25 @@ namespace FreeWill
             }
         }
 
-        private Action getMapComponentTickAction(int i)
+        private Action getMapComponentTickAction()
         {
             try
             {
-                if (i < mapCompnentsCheckActions.Length)
+                if (this.actionCounter < mapCompnentsCheckActions.Length)
                 {
-                    return mapCompnentsCheckActions[i];
+                    return mapCompnentsCheckActions[this.actionCounter];
                 }
-                i -= mapCompnentsCheckActions.Length;
-                int worktypeCount = DefDatabase<WorkTypeDef>.AllDefsListForReading.Count();
-                int pawnCount = this.map.mapPawns.FreeColonistsSpawnedCount;
-                if (i >= worktypeCount * pawnCount)
+                int i = this.actionCounter - mapCompnentsCheckActions.Length;
+                List<WorkTypeDef> workTypeDefs = DefDatabase<WorkTypeDef>.AllDefsListForReading;
+                List<Pawn> pawns = this.map.mapPawns.FreeColonistsSpawned;
+                if (i >= workTypeDefs.Count * pawns.Count)
                 {
                     this.actionCounter = 0;
-                    return getMapComponentTickAction(0);
+                    return getMapComponentTickAction();
                 }
-                int pawnIndex = i / worktypeCount;
-                int worktypeIndex = i % worktypeCount;
-                return setPriorityAction(pawnIndex, worktypeIndex);
+                int pawnIndex = i / workTypeDefs.Count;
+                int worktypeIndex = i % workTypeDefs.Count;
+                return () => setPriorityAction(pawns[pawnIndex], workTypeDefs[worktypeIndex]);
             }
             // show stack trace
             catch (System.Exception e)
@@ -147,12 +147,12 @@ namespace FreeWill
             return this.priorities[pawn];
         }
 
-        private Action setPriorityAction(int pawnIndex, int worktypeIndex)
+        private void setPriorityAction(Pawn pawn, WorkTypeDef workTypeDef)
         {
-            Pawn pawn = map.mapPawns.FreeColonistsSpawned[pawnIndex];
             if (pawn == null)
             {
-                return () => { };
+                Log.ErrorOnce($"Free Will: pawn is null: mapTickCounter = {this.actionCounter}", 584624);
+                return;
             }
             if (pawn.IsSlaveOfColony)
             {
@@ -163,15 +163,15 @@ namespace FreeWill
                     {
                         Log.ErrorOnce("Free Will: could not remove free will from slave", 164752145);
                     }
-                    return () => { };
+                    return;
                 }
             }
             worldComp.EnsureFreeWillStatusIsCorrect(pawn);
             try
             {
-                var workTypeDef = DefDatabase<WorkTypeDef>.AllDefsListForReading[worktypeIndex];
                 if (priorities == null)
                 {
+                    Log.ErrorOnce("Free Will: priorities is null", 2274889);
                     priorities = new Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>>();
                 }
                 if (!priorities.ContainsKey(pawn))
@@ -181,9 +181,9 @@ namespace FreeWill
                 priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
                 if (worldComp.HasFreeWill(pawn))
                 {
-                    return priorities[pawn][workTypeDef].ApplyPriorityToGame;
+                    priorities[pawn][workTypeDef].ApplyPriorityToGame();
                 }
-                return () => { };
+                return;
             }
             catch (System.Exception)
             {
@@ -193,7 +193,7 @@ namespace FreeWill
                 {
                     Log.ErrorOnce("Free Will: could not remove free will", 752116446);
                 }
-                return () => { };
+                return;
             }
         }
 

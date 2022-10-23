@@ -25,7 +25,7 @@ namespace FreeWill
             labelKey = "FreeWillITab";
             scrollPosition = Vector2.zero;
             highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-            worldComp = null;
+            worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
         }
 
         public override bool IsVisible
@@ -49,9 +49,10 @@ namespace FreeWill
                 Log.Error("Free will tab found; no selected pawn to display.");
                 return;
             }
+            worldComp = worldComp ?? Find.World?.GetComponent<FreeWill_WorldComponent>();
             if (worldComp == null)
             {
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+                return;
             }
             Text.Font = GameFont.Small;
             Rect rect = new Rect(0f, topPadding, this.size.x, this.size.y - topPadding).ContractedBy(20f);
@@ -179,6 +180,11 @@ namespace FreeWill
             try
             {
                 if (pawn == null)
+                {
+                    return;
+                }
+                worldComp = worldComp ?? Find.World?.GetComponent<FreeWill_WorldComponent>();
+                if (worldComp == null)
                 {
                     return;
                 }

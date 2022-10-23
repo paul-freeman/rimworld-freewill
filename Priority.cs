@@ -58,14 +58,8 @@ namespace FreeWill
                 this.workTypeDef = workTypeDef;
                 this.adjustmentStrings = new List<string> { };
 
-                // find the map component for this pawn
                 mapComp = this.pawn.Map.GetComponent<FreeWill_MapComponent>();
-
-                // find the world component if it is missing
-                if (worldComp == null)
-                {
-                    worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
-                }
+                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
 
                 // pawn has no free will, so use the player set priority
                 if (!worldComp.HasFreeWill(pawn))

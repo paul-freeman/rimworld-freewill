@@ -1,12 +1,9 @@
 # Changelog
 
-## v1.4.1
+## v1.4.0
 
 * fixed issue where guest pawns were not able to use free will
 * fixed issue where loading a saved game would throw an error
-
-## v1.4.0
-
 * increase patient and patient bedrest priority when operation is needed
 * modified cleaning and hauling logic
 * cleaning and hauling tasks will only be prioritized if the local area is not
