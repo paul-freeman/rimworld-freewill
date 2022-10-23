@@ -18,8 +18,8 @@ namespace FreeWill
             }
         }
 
-        private Dictionary<string, bool> freePawns = new Dictionary<string, bool>();
-        private Dictionary<string, int> freeWillOverride = new Dictionary<string, int>();
+        private Dictionary<string, bool> freePawns;
+        private Dictionary<string, int> freeWillOverride;
 
         private PreceptDef freeWillProhibited;
         private PreceptDef freeWillDisapproved;
@@ -60,57 +60,41 @@ namespace FreeWill
                     ideo.AddPrecept(PreceptMaker.MakePrecept(freeWillFlexible), init: false);
                 }
             }
+            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
             base.WorldComponentTick();
         }
 
         public bool HasFreeWill(Pawn pawn)
         {
-            try
+            if (pawn?.Ideo == null ||
+                !pawn.IsColonistPlayerControlled ||
+                pawn.IsSlaveOfColony ||
+                pawn.Ideo.HasPrecept(freeWillProhibited)
+            )
             {
-                if (pawn == null ||
-                    !pawn.IsColonistPlayerControlled ||
-                    pawn.IsSlaveOfColony ||
-                    pawn.Ideo == null ||
-                    pawn.Ideo.HasPrecept(freeWillProhibited)
-                )
+                return false;
+            }
+            if (pawn.Ideo.HasPrecept(freeWillMandatory))
+            {
+                return true;
+            }
+
+            var pawnKey = pawn.GetUniqueLoadID();
+            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
+            if (!this.freePawns.ContainsKey(pawnKey))
+            {
+                if (pawn.Ideo.HasPrecept(freeWillDisapproved) || pawn.Ideo.HasPrecept(freeWillProhibited))
                 {
+                    this.freePawns[pawnKey] = false;
                     return false;
                 }
-                if (pawn.Ideo.HasPrecept(freeWillMandatory))
+                else
                 {
+                    this.freePawns[pawnKey] = true;
                     return true;
                 }
-
-                var pawnKey = pawn.GetUniqueLoadID();
-                if (freePawns == null)
-                {
-                    freePawns = new Dictionary<string, bool>();
-                }
-                if (!freePawns.ContainsKey(pawnKey))
-                {
-                    if (pawn.Ideo.HasPrecept(freeWillDisapproved) || pawn.Ideo.HasPrecept(freeWillProhibited))
-                    {
-                        freePawns[pawnKey] = false;
-                        return false;
-                    }
-                    else
-                    {
-                        freePawns[pawnKey] = true;
-                        return true;
-                    }
-                }
-                return freePawns[pawnKey];
             }
-            catch (System.NullReferenceException)
-            {
-                Log.ErrorOnce("Free Will: could not check free will of " + pawn.LabelCap + ": null reference", 609751423);
-                return false;
-            }
-            catch (System.Exception)
-            {
-                Log.ErrorOnce("Free Will: could not check free will of " + pawn.LabelCap, 609751424);
-                return false;
-            }
+            return this.freePawns[pawnKey];
         }
 
         public bool FreeWillCanChange(Pawn pawn)
@@ -191,66 +175,32 @@ namespace FreeWill
 
         public bool TryGiveFreeWill(Pawn pawn)
         {
-            try
+            if (pawn?.Ideo == null)
             {
-                if (pawn == null)
-                {
-                    return false;
-                }
-                if (pawn.Ideo == null)
-                {
-                    return false;
-                }
-                var pawnKey = pawn.GetUniqueLoadID();
-                if (pawn.Ideo.HasPrecept(freeWillProhibited))
-                {
-                    return false;
-                }
-                freePawns[pawnKey] = true;
-                return true;
-            }
-            catch (System.NullReferenceException)
-            {
-                Log.ErrorOnce("Free Will: could not try to give free will to pawn: null reference", 38138015);
                 return false;
             }
-            catch (System.Exception)
+            if (pawn.Ideo.HasPrecept(freeWillProhibited))
             {
-                Log.ErrorOnce("Free Will: could not try to give free will to pawn", 38138016);
                 return false;
             }
+            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
+            this.freePawns[pawn.GetUniqueLoadID()] = true;
+            return true;
         }
 
         public bool TryRemoveFreeWill(Pawn pawn)
         {
-            try
+            if (pawn?.Ideo == null)
             {
-                if (pawn == null)
-                {
-                    return false;
-                }
-                if (pawn.Ideo == null)
-                {
-                    return false;
-                }
-                var pawnKey = pawn.GetUniqueLoadID();
-                if (!pawn.IsSlaveOfColony && pawn.Ideo.HasPrecept(freeWillMandatory))
-                {
-                    return false;
-                }
-                freePawns[pawnKey] = false;
-                return true;
-            }
-            catch (System.NullReferenceException)
-            {
-                Log.ErrorOnce("Free Will: could not try to remove free will: null reference", 47484500);
                 return false;
             }
-            catch (System.Exception)
+            if (!pawn.IsSlaveOfColony && pawn.Ideo.HasPrecept(freeWillMandatory))
             {
-                Log.ErrorOnce("Free Will: could not try to remove free will", 47484501);
                 return false;
             }
+            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
+            freePawns[pawn.GetUniqueLoadID()] = false;
+            return true;
         }
 
         public void FreeWillOverride(Pawn pawn)

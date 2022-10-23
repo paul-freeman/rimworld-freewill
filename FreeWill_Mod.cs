@@ -33,16 +33,11 @@ namespace FreeWill
     [HarmonyPatch(typeof(PawnTable), MethodType.Constructor, new Type[] { typeof(PawnTableDef), typeof(Func<IEnumerable<Pawn>>), typeof(int), typeof(int) })]
     public class RemoveFreePawns
     {
-        static FreeWill_WorldComponent worldComp;
         static void Postfix(PawnTableDef def, ref Func<IEnumerable<Pawn>> ___pawnsGetter)
         {
             if (def != PawnTableDefOf.Work)
             {
                 return;
-            }
-            if (worldComp == null)
-            {
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
             }
             Func<IEnumerable<Pawn>> oldPawns = ___pawnsGetter;
             try
@@ -51,6 +46,7 @@ namespace FreeWill
                 {
                     try
                     {
+                        var worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
                         List<Pawn> newPawns = new List<Pawn>();
                         foreach (Pawn pawn in oldPawns())
                         {
@@ -81,7 +77,6 @@ namespace FreeWill
     [HarmonyPatch(typeof(Pawn_JobTracker), "StartJob")]
     public class FreeWillOverride
     {
-        static FreeWill_WorldComponent worldComp;
         static void Postfix(Pawn ___pawn, Job __0)
         {
             if (___pawn == null)
@@ -92,10 +87,7 @@ namespace FreeWill
             {
                 return;
             }
-            if (worldComp == null)
-            {
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
-            }
+            var worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
             if (!worldComp.HasFreeWill(___pawn))
             {
                 return;
