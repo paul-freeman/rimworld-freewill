@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.4.0...v1.5.0) (2022-10-24)
+
+
+### Features
+
+* pawns will consider weapon range before hunting ([#10](https://github.com/paul-freeman/rimworld-freewill/issues/10)) ([16202b9](https://github.com/paul-freeman/rimworld-freewill/commit/16202b99d9835cd757a4694ff8ed48c3d14a3edb))
+
+
+### Bug Fixes
+
+* boredom memory was not working ([#7](https://github.com/paul-freeman/rimworld-freewill/issues/7)) ([4e4d770](https://github.com/paul-freeman/rimworld-freewill/commit/4e4d7701cd8f4243529fba16fe219a15d14a2035))
+* free will does not work during second session ([#9](https://github.com/paul-freeman/rimworld-freewill/issues/9)) ([85c2eff](https://github.com/paul-freeman/rimworld-freewill/commit/85c2eff99670f3efc3746320e138f0cebd02897a))
+* pawns now have short memory for boredom ([#4](https://github.com/paul-freeman/rimworld-freewill/issues/4)) ([a406ef7](https://github.com/paul-freeman/rimworld-freewill/commit/a406ef7e96b394468061e977b12bbb6e7ccf89f6))
+
 ## v1.4.0
 
 * fixed issue where guest pawns were not able to use free will
