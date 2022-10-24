@@ -16,6 +16,7 @@ namespace FreeWill
         const float ConsiderBestAtDoingDefault = 0.0f;
         const float ConsiderFoodPoisoningDefault = 1.0f;
         const float ConsiderLowFoodDefault = 1.0f;
+        const float ConsiderWeaponRangeDefault = 1.0f;
         const float ConsiderOwnRoomDefault = 1.0f;
         const float ConsiderPlantsBlightedDefault = 1.0f;
         const float ConsiderGauranlenPruningDefault = 1.0f;
@@ -28,6 +29,7 @@ namespace FreeWill
         public float ConsiderBestAtDoing = ConsiderBestAtDoingDefault;
         public float ConsiderFoodPoisoning = ConsiderFoodPoisoningDefault;
         public float ConsiderLowFood = ConsiderLowFoodDefault;
+        public float ConsiderWeaponRange = ConsiderWeaponRangeDefault;
         public float ConsiderOwnRoom = ConsiderOwnRoomDefault;
         public float ConsiderPlantsBlighted = ConsiderPlantsBlightedDefault;
         public float ConsiderGauranlenPruning = ConsiderGauranlenPruningDefault;
@@ -124,6 +126,17 @@ namespace FreeWill
             }
             ls.GapLine(30.0f);
 
+            s1 = "FreeWillConsiderWeaponRange".TranslateSimple();
+            s2 = String.Format("{0}x", ConsiderWeaponRange);
+            s3 = "FreeWillConsiderWeaponRangeLong".TranslateSimple();
+            ls.LabelDouble(s1, s2, tip: s3);
+            ConsiderWeaponRange = Mathf.RoundToInt(ls.Slider(ConsiderWeaponRange, 0.0f, 10.0f) * 10.0f) / 10.0f;
+            if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
+            {
+                ConsiderWeaponRange = ConsiderWeaponRangeDefault;
+            }
+            ls.GapLine(30.0f);
+
             s1 = "FreeWillConsiderFoodPoisoning".TranslateSimple();
             s2 = String.Format("{0}x", ConsiderFoodPoisoning);
             s3 = "FreeWillConsiderFoodPoisoningLong".TranslateSimple();
@@ -211,6 +224,7 @@ namespace FreeWill
             Scribe_Values.Look(ref ConsiderBestAtDoing, "freeWillConsiderBestAtDoing", ConsiderBestAtDoingDefault, true);
             Scribe_Values.Look(ref ConsiderFoodPoisoning, "freeWillConsiderFoodPoisoning", ConsiderFoodPoisoningDefault, true);
             Scribe_Values.Look(ref ConsiderLowFood, "freeWillConsiderLowFood", ConsiderLowFoodDefault, true);
+            Scribe_Values.Look(ref ConsiderWeaponRange, "freeWillConsiderWeaponRange", ConsiderWeaponRangeDefault, true);
             Scribe_Values.Look(ref ConsiderOwnRoom, "freeWillConsiderOwnRoom", ConsiderOwnRoomDefault, true);
             Scribe_Values.Look(ref ConsiderBrawlersNotHunting, "freeWillBrawlersNotHunting", ConsiderBrawlersNotHuntingDefault, true);
             Scribe_Values.Look(ref ConsiderHasHuntingWeapon, "freeWillHuntingWeapon", ConsiderHasHuntingWeaponDefault, true);
