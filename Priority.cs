@@ -15,7 +15,7 @@ namespace FreeWill
         const int disabledCutoff = 100 / (Pawn_WorkSettings.LowestPriority + 1); // 20 if LowestPriority is 4
         const int disabledCutoffActiveWorkArea = 100 - disabledCutoff; // 80 if LowestPriority is 4
         const float onePriorityWidth = (float)disabledCutoffActiveWorkArea / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
-        private static FreeWill_WorldComponent worldComp;
+        private FreeWill_WorldComponent worldComp;
 
         private Pawn pawn;
         private FreeWill_MapComponent mapComp;
@@ -271,6 +271,7 @@ namespace FreeWill
                         .considerThoughts()
                         .considerInspiration()
                         .considerLowFood(0.3f)
+                        .considerWeaponRange()
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
@@ -826,7 +827,7 @@ namespace FreeWill
         {
             try
             {
-                if (!Priority.worldComp.settings.ConsiderHasHuntingWeapon)
+                if (!this.worldComp.settings.ConsiderHasHuntingWeapon)
                 {
                     return this;
                 }
@@ -970,7 +971,7 @@ namespace FreeWill
 
         private Priority considerInterest(Pawn pawn, SkillDef skillDef, int skillCount, WorkTypeDef workTypeDef)
         {
-            if (!Priority.worldComp.HasInterestsFramework())
+            if (!this.worldComp.HasInterestsFramework())
             {
                 return this;
             }
@@ -979,7 +980,7 @@ namespace FreeWill
             string interest;
             try
             {
-                interest = Priority.worldComp.interestsStrings[(int)skillRecord.passion];
+                interest = this.worldComp.interestsStrings[(int)skillRecord.passion];
             }
             catch (System.Exception)
             {
@@ -1587,6 +1588,22 @@ namespace FreeWill
                 worldComp.settings.ConsiderLowFood = 0.0f;
             }
             return this;
+        }
+
+        private Priority considerWeaponRange()
+        {
+            if ((this.worldComp?.settings?.ConsiderWeaponRange ?? 0.0f) == 0.0f)
+            {
+                return this;
+            }
+            if (!WorkGiver_HunterHunt.HasHuntingWeapon(pawn))
+            {
+                return this;
+            }
+            const float boltActionRifleRange = 37.0f;
+            float range = this.pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.range;
+            float relativeRange = range / boltActionRifleRange;
+            return this.multiply(relativeRange * this.worldComp.settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple());
         }
 
         private Priority considerAteRawFood()
