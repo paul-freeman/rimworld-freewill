@@ -936,6 +936,9 @@ namespace FreeWill
                     return this;
                 }
                 var relevantSkills = workTypeDef.relevantSkills;
+                const Passion Apathy = (Passion)3;
+                const Passion Natural = (Passion)4;
+                const Passion Critical = (Passion)5;
                 float x;
                 for (int i = 0; i < relevantSkills.Count; i++)
                 {
@@ -954,6 +957,24 @@ namespace FreeWill
                             this
                                 .alwaysDo("FreeWillPriorityMinorPassionFor".Translate(relevantSkills[i].skillLabel))
                                 .add(x, "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[i].skillLabel));
+                            continue;
+                        case Passion.Apathy:
+                            x = worldComp.settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.15f / relevantSkills.Count;
+                            this
+                                .alwaysDo("FreeWillPriorityApathyPassionFor".Translate(relevantSkills[i].skillLabel))
+                                .add(x, "FreeWillPriorityApathyPassionFor".Translate(relevantSkills[i].skillLabel));
+                            continue;
+                        case Passion.Natural:
+                            x = worldComp.settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.4f / relevantSkills.Count;
+                            this
+                                .alwaysDo("FreeWillPriorityNaturalPassionFor".Translate(relevantSkills[i].skillLabel))
+                                .add(x, "FreeWillPriorityNaturalPassionFor".Translate(relevantSkills[i].skillLabel));
+                            continue;
+                        case Passion.Critical:
+                            x = worldComp.settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.75f / relevantSkills.Count;
+                            this
+                                .alwaysDo("FreeWillPriorityCriticalPassionFor".Translate(relevantSkills[i].skillLabel))
+                                .add(x, "FreeWillPriorityCriticalPassionFor".Translate(relevantSkills[i].skillLabel));
                             continue;
                         default:
                             considerInterest(pawn, relevantSkills[i], relevantSkills.Count, workTypeDef);

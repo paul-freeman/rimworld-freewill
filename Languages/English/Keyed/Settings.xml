@@ -110,6 +110,9 @@
   <FreeWillPriorityBeautyDefault>beauty default</FreeWillPriorityBeautyDefault>
   <FreeWillPriorityMajorPassionFor>major passion for {0}</FreeWillPriorityMajorPassionFor>
   <FreeWillPriorityMinorPassionFor>minor passion for {0}</FreeWillPriorityMinorPassionFor>
+  <FreeWillPriorityApathyPassionFor>apathetic</FreeWillPriorityApathyPassionFor>
+  <FreeWillPriorityNaturalPassionFor>natural passion for</FreeWillPriorityNaturalPassionFor>
+  <FreeWillPriorityCriticalPassionFor>critical passion for</FreeWillPriorityCriticalPassionFor>
   <FreeWillPriorityMinorAversionTo>minor aversion to</FreeWillPriorityMinorAversionTo>
   <FreeWillPriorityMajorAversionTo>major aversion to</FreeWillPriorityMajorAversionTo>
   <FreeWillPriorityCompulsiveItch>itching to do</FreeWillPriorityCompulsiveItch>
