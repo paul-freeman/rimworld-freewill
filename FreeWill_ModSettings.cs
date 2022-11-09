@@ -8,6 +8,7 @@ namespace FreeWill
     public class FreeWill_ModSettings : ModSettings
     {
         // mod default settings
+        const int SkipCalcTicksDefault = 20;
         const bool ConsiderBrawlersNotHuntingDefault = true;
         const bool ConsiderHasHuntingWeaponDefault = true;
         const float ConsiderMovementSpeedDefault = 1.0f;
@@ -21,6 +22,7 @@ namespace FreeWill
         const float ConsiderPlantsBlightedDefault = 1.0f;
         const float ConsiderGauranlenPruningDefault = 1.0f;
 
+        public int SkipCalcTicks = SkipCalcTicksDefault;
         public bool ConsiderBrawlersNotHunting = ConsiderBrawlersNotHuntingDefault;
         public bool ConsiderHasHuntingWeapon = ConsiderHasHuntingWeaponDefault;
         public float ConsiderMovementSpeed = ConsiderMovementSpeedDefault;
@@ -70,6 +72,17 @@ namespace FreeWill
             view.height = 9999.0f;
             ls.Begin(new Rect(10, 10, view.width - 40, view.height - 10));
             ls.Gap(30.0f);
+
+            s1 = "FreeWillSkipTicks".TranslateSimple();
+            s2 = String.Format("{0} ticks pause", SkipCalcTicks);
+            s3 = "FreeWillSkipTicksLong".TranslateSimple();
+            ls.LabelDouble(s1, s2, tip: s3);
+            SkipCalcTicks = Mathf.RoundToInt(ls.Slider(SkipCalcTicks, 1.0f, 100.0f));
+            if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
+            {
+                SkipCalcTicks = SkipCalcTicksDefault;
+            }
+            ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderMovementSpeed".TranslateSimple();
             s2 = String.Format("{0}x", ConsiderMovementSpeed);
@@ -218,6 +231,7 @@ namespace FreeWill
 
         public override void ExposeData()
         {
+            Scribe_Values.Look(ref SkipCalcTicks, "freeWillSkipCalcTicks", SkipCalcTicksDefault, true);
             Scribe_Values.Look(ref ConsiderMovementSpeed, "freeWillConsiderMovementSpeed", ConsiderMovementSpeedDefault, true);
             Scribe_Values.Look(ref ConsiderPassions, "freeWillConsiderPassions", ConsiderPassionsDefault, true);
             Scribe_Values.Look(ref ConsiderBeauty, "freeWillConsiderBeauty", ConsiderBeautyDefault, true);
