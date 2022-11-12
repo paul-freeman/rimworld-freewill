@@ -30,6 +30,7 @@ namespace FreeWill
         const string PATIENT = "Patient";
         const string DOCTOR = "Doctor";
         const string PATIENT_BED_REST = "PatientBedRest";
+        const string CHILDCARE = "Childcare";
         const string BASIC_WORKER = "BasicWorker";
         const string WARDEN = "Warden";
         const string HANDLING = "Handling";
@@ -174,6 +175,25 @@ namespace FreeWill
                         .considerBored()
                         .considerDownedColonists()
                         .considerOperation()
+                        .considerColonyPolicy()
+                        ;
+
+                case CHILDCARE:
+                    return this
+                        .considerRelevantSkills()
+                        .considerCarryingCapacity()
+                        .considerIsAnyoneElseDoing()
+                        .considerPassion()
+                        .considerThoughts()
+                        .considerInspiration()
+                        .considerHealth()
+                        .considerAteRawFood()
+                        .considerBored()
+                        .considerFire()
+                        .considerBuildingImmunity()
+                        .considerCompletingTask()
+                        .considerColonistsNeedingTreatment()
+                        .considerDownedColonists()
                         .considerColonyPolicy()
                         ;
 
