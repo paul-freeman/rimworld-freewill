@@ -39,6 +39,8 @@ namespace FreeWill
         private int numPrisonersNeedingTreatment;
         public float PercentPawnsDowned { get { return percentPawnsDowned; } }
         private float percentPawnsDowned;
+        public float PercentPawnsMechHaulers { get { return percentPawnsMechHaulers; } }
+        private float percentPawnsMechHaulers;
         public bool ThingsDeteriorating { get { return thingsDeteriorating; } }
         private bool thingsDeteriorating;
         public int MapFires { get { return mapFires; } }
@@ -77,6 +79,7 @@ namespace FreeWill
                 checkPrisonerHealth,
                 checkPetsHealth,
                 checkColonyHealth,
+                checkPercentPawnsMechHaulers,
                 checkThingsDeteriorating,
                 checkBlight,
                 checkMapFire,
@@ -242,6 +245,34 @@ namespace FreeWill
                     percentPawnsNeedingTreatment += colonistWeight;
                 }
             }
+        }
+
+        private void checkPercentPawnsMechHaulers()
+        {
+            List<Pawn> pawnsInFaction = this.map.mapPawns.PawnsInFaction(Faction.OfPlayer);
+            if (pawnsInFaction == null)
+            {
+                return;
+            }
+            float numMechHaulers = 0;
+            float total = 0;
+            foreach (Pawn pawn in pawnsInFaction)
+            {
+                if (pawn.IsColonistPlayerControlled && pawn.Dead)
+                {
+                    continue;
+                }
+                if (pawn.IsColonyMechPlayerControlled && pawn.IsCharging())
+                {
+                    continue;
+                }
+                if (pawn.IsColonyMechPlayerControlled && pawn.RaceProps.mechEnabledWorkTypes.Contains(WorkTypeDefOf.Hauling))
+                {
+                    numMechHaulers++;
+                }
+                total++;
+            }
+            percentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
         }
 
         private void checkThingsDeteriorating()
