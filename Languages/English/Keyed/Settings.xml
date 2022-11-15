@@ -64,6 +64,7 @@
   <FreeWillPriorityNeedTreatmentSelfTend>can self tend</FreeWillPriorityNeedTreatmentSelfTend>
   <FreeWillPriorityOthersNeedTreatment>others need treatment</FreeWillPriorityOthersNeedTreatment>
   <FreeWillPriorityPetsInjured>pets injured</FreeWillPriorityPetsInjured>
+  <FreeWillPriorityMechHaulers>mech haulers</FreeWillPriorityMechHaulers>
   <FreeWillPriorityPrisonersInjured>prisoners injured</FreeWillPriorityPrisonersInjured>
   <FreeWillPriorityFireInHomeArea>home on fire</FreeWillPriorityFireInHomeArea>
   <FreeWillPriorityFireOnMap>fire in the area</FreeWillPriorityFireOnMap>

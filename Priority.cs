@@ -493,6 +493,7 @@ namespace FreeWill
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
+                        .considerMechHaulers()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -1448,10 +1449,9 @@ namespace FreeWill
 
         private Priority considerIsAnyoneElseDoing()
         {
-            float pawnSkill = this.pawn.skills.AverageOfRelevantSkillsFor(this.workTypeDef);
-            foreach (Pawn other in this.pawn.Map.mapPawns.FreeColonistsSpawned)
+            foreach (Pawn other in this.pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
             {
-                if (other == this.pawn)
+                if (other == null || other == this.pawn)
                 {
                     continue;
                 }
@@ -1475,7 +1475,7 @@ namespace FreeWill
                 {
                     return this;
                 }
-                var allPawns = this.pawn.Map.mapPawns.FreeColonistsSpawned;
+                var allPawns = this.pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
                 if (allPawns.Count() <= 1)
                 {
                     return this;
@@ -1485,11 +1485,23 @@ namespace FreeWill
                 float impactPerPawn = worldComp.settings.ConsiderBestAtDoing / (float)allPawns.Count();
                 foreach (Pawn other in allPawns)
                 {
-                    if (other == null || other == this.pawn || !other.Awake() || other.Downed || other.Dead)
+                    if (other == null || other == this.pawn)
                     {
                         continue;
                     }
-                    float skillDiff = other.skills.AverageOfRelevantSkillsFor(workTypeDef) - pawnSkill;
+                    if (other.IsColonistPlayerControlled && (!other.Awake() || other.Downed || other.Dead))
+                    {
+                        continue;
+                    }
+                    if (other.IsColonyMechPlayerControlled && !other.RaceProps.mechEnabledWorkTypes.Contains(this.workTypeDef))
+                    {
+                        continue;
+                    }
+                    float otherSkill =
+                        (other.IsColonistPlayerControlled)
+                            ? other.skills.AverageOfRelevantSkillsFor(workTypeDef)
+                            : other.RaceProps.mechFixedSkillLevel;
+                    float skillDiff = otherSkill - pawnSkill;
                     if (skillDiff > 0.0f)
                     {
                         // not the best
@@ -1566,6 +1578,12 @@ namespace FreeWill
             }
             float numPetsNeedingTreatment = mapComp.NumPetsNeedingTreatment;
             return add(UnityEngine.Mathf.Clamp01(numPetsNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple());
+        }
+
+        private Priority considerMechHaulers()
+        {
+            float percentPawnsMechHaulers = this.mapComp.PercentPawnsMechHaulers;
+            return add(-percentPawnsMechHaulers, "FreeWillPriorityMechHaulers".TranslateSimple());
         }
 
         private Priority considerInjuredPrisoners()
