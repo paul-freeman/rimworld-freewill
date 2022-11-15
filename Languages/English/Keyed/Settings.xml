@@ -73,6 +73,8 @@
   <FreeWillPriorityBuildingImmunity>building immunity</FreeWillPriorityBuildingImmunity>
   <FreeWillPriorityBored>bored</FreeWillPriorityBored>
   <FreeWillPriorityWasBored>was recently bored</FreeWillPriorityWasBored>
+  <FreeWillPrioritySuppressionNeed>slave suppression needed</FreeWillPrioritySuppressionNeed>
+  <FreeWillPriorityColonistLeftUnburied>colonist left unburied</FreeWillPriorityColonistLeftUnburied>
   <FreeWillPriorityRefueling>refueling required</FreeWillPriorityRefueling>
   <FreeWillPriorityFilthyCookingArea>dirty cooking area</FreeWillPriorityFilthyCookingArea>
   <FreeWillPriorityBestAtDoing>best at doing</FreeWillPriorityBestAtDoing>
@@ -85,6 +87,7 @@
   <FreeWillPrioritySomeoneMuchBetterIsDoing>{0} is doing much better at this</FreeWillPrioritySomeoneMuchBetterIsDoing>
   <FreeWillPrioritySomeoneBetterIsDoing>{0} is doing better at this</FreeWillPrioritySomeoneBetterIsDoing>
   <FreeWillPriorityNoOneElseDoing>no one else doing</FreeWillPriorityNoOneElseDoing>
+  <FreeWillPriorityMechanoidDamaged>mechanoid damaged</FreeWillPriorityMechanoidDamaged>
   <FreeWillPriorityInspired>inspired</FreeWillPriorityInspired>
   <FreeWillPriorityNotInHomeArea>not in home area</FreeWillPriorityNotInHomeArea>
   <FreeWillPriorityHungerLevel>hunger level</FreeWillPriorityHungerLevel>

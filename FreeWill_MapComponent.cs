@@ -41,6 +41,8 @@ namespace FreeWill
         private float percentPawnsDowned;
         public float PercentPawnsMechHaulers { get { return percentPawnsMechHaulers; } }
         private float percentPawnsMechHaulers;
+        public float SuppressionNeed { get { return suppressionNeed; } }
+        private float suppressionNeed;
         public bool ThingsDeteriorating { get { return thingsDeteriorating; } }
         private bool thingsDeteriorating;
         public int MapFires { get { return mapFires; } }
@@ -61,6 +63,8 @@ namespace FreeWill
         private bool alertAnimalRoaming;
         public bool AlertLowFood { get { return alertLowFood; } }
         private bool alertLowFood;
+        public bool AlertMechDamaged { get { return alertMechDamaged; } }
+        private bool alertMechDamaged;
 
         private int actionCounter = 0;
 
@@ -85,6 +89,7 @@ namespace FreeWill
                 checkMapFire,
                 checkRefuelNeeded,
                 checkActiveAlerts,
+                checkSuppressionNeed,
             };
             worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
 
@@ -200,6 +205,29 @@ namespace FreeWill
             }
         }
 
+        private void checkSuppressionNeed()
+        {
+            suppressionNeed = 0.0f;
+            foreach (Pawn slave in map?.mapPawns?.SlavesOfColonySpawned)
+            {
+                Need_Suppression need_Suppression = slave?.needs.TryGetNeed<Need_Suppression>();
+                if (need_Suppression == null)
+                {
+                    continue;
+                }
+                if (!need_Suppression.CanBeSuppressedNow)
+                {
+                    continue;
+                }
+                suppressionNeed = 0.2f;
+                if (need_Suppression.IsHigh)
+                {
+                    suppressionNeed = 0.4f;
+                    return;
+                }
+            }
+        }
+
         private void checkPrisonerHealth()
         {
             var prisonersInColony = map?.mapPawns?.PrisonersOfColony;
@@ -258,11 +286,11 @@ namespace FreeWill
             float total = 0;
             foreach (Pawn pawn in pawnsInFaction)
             {
-                if (pawn.IsColonistPlayerControlled && pawn.Dead)
+                if (!pawn.IsColonistPlayerControlled && !pawn.IsColonyMechPlayerControlled)
                 {
                     continue;
                 }
-                if (pawn.IsColonyMechPlayerControlled && pawn.IsCharging())
+                if (!pawn.Awake() || pawn.Downed || pawn.Dead || pawn.IsCharging())
                 {
                     continue;
                 }
@@ -393,6 +421,7 @@ namespace FreeWill
                 this.alertAnimalRoaming = false;
                 this.needWarmClothes = false;
                 this.alertColonistLeftUnburied = false;
+                this.alertMechDamaged = false;
                 // check current alerts
                 foreach (Alert alert in (List<Alert>)activeAlertsField.GetValue(ui.alerts))
                 {
@@ -429,6 +458,9 @@ namespace FreeWill
                                     break;
                                 }
                             }
+                            break;
+                        case Alert_MechDamaged a:
+                            this.alertMechDamaged = true;
                             break;
                         default:
                             break;

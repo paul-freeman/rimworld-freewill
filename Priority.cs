@@ -222,6 +222,7 @@ namespace FreeWill
                         .considerThoughts()
                         .considerInspiration()
                         .considerLowFood(-0.3f)
+                        .considerSuppressionNeed()
                         .considerColonistLeftUnburied()
                         .considerHealth()
                         .considerAteRawFood()
@@ -397,6 +398,7 @@ namespace FreeWill
                     return this
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
+                        .considerRepairingMech()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
                         .considerBeautyExpectations()
@@ -493,7 +495,6 @@ namespace FreeWill
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
                         .considerIsAnyoneElseDoing()
-                        .considerMechHaulers()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -503,6 +504,7 @@ namespace FreeWill
                         .considerHealth()
                         .considerAteRawFood()
                         .considerThingsDeteriorating()
+                        .considerMechHaulers()
                         .considerBored()
                         .considerFire()
                         .considerBuildingImmunity()
@@ -822,11 +824,20 @@ namespace FreeWill
             return this;
         }
 
+        private Priority considerSuppressionNeed()
+        {
+            if (this.mapComp.SuppressionNeed != 0.0f)
+            {
+                return add(this.mapComp.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple());
+            }
+            return this;
+        }
+
         private Priority considerColonistLeftUnburied()
         {
             if (this.mapComp.AlertColonistLeftUnburied && (this.workTypeDef.defName == HAULING || this.workTypeDef.defName == HAULING_URGENT))
             {
-                return add(0.4f, "AlertColonistLeftUnburied".TranslateSimple());
+                return add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple());
             }
             return this;
         }
@@ -1447,24 +1458,54 @@ namespace FreeWill
             }
         }
 
+        private Priority considerRepairingMech()
+        {
+            if (!mapComp.AlertMechDamaged)
+            {
+                return this;
+            }
+            if (!MechanitorUtility.IsMechanitor(pawn))
+            {
+                return this;
+            }
+            return this.add(0.4f, "FreeWillPriorityMechanoidDamaged".TranslateSimple());
+        }
+
         private Priority considerIsAnyoneElseDoing()
         {
-            foreach (Pawn other in this.pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
+            try
             {
-                if (other == null || other == this.pawn)
+                foreach (Pawn other in this.pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
                 {
-                    continue;
+                    if (other == null || other == this.pawn)
+                    {
+                        continue;
+                    }
+                    if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
+                    {
+                        continue;
+                    }
+                    if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
+                    {
+                        continue;
+                    }
+                    if ((other.workSettings?.GetPriority(this.workTypeDef) ?? 0) != 0)
+                    {
+                        return this; // someone else is doing
+                    }
+                    if (other.RaceProps?.mechEnabledWorkTypes?.Contains(this.workTypeDef) ?? false)
+                    {
+                        return this; // a mech is doing
+                    }
                 }
-                if (!other.Awake() || other.Downed || other.Dead)
-                {
-                    continue;
-                }
-                if (other.workSettings.GetPriority(this.workTypeDef) != 0)
-                {
-                    return this; // someone else is doing
-                }
+                return this.alwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple());
             }
-            return this.alwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple());
+            catch (System.Exception err)
+            {
+                Log.ErrorOnce(pawn.Name + " could not consider if anyone else is doing " + workTypeDef.defName + ": " + err.ToString(), 59947211);
+                return this;
+            }
+
         }
 
         private Priority considerBestAtDoing()
@@ -1489,7 +1530,11 @@ namespace FreeWill
                     {
                         continue;
                     }
-                    if (other.IsColonistPlayerControlled && (!other.Awake() || other.Downed || other.Dead))
+                    if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
+                    {
+                        continue;
+                    }
+                    if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
                     {
                         continue;
                     }
