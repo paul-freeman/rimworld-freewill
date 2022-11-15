@@ -8,7 +8,10 @@
   <FreeWillDefaultSliderButtonLabel>Default</FreeWillDefaultSliderButtonLabel>
   <FreeWillResetGlobalSlidersButtonLabel>Reset global sliders</FreeWillResetGlobalSlidersButtonLabel>
   <FreeWillResetGlobalSlidersLabel>Reset all global overrides to zero</FreeWillResetGlobalSlidersLabel>
-
+  <FreeWillSkipTicks>Skip ticks</FreeWillSkipTicks>
+  <FreeWillSkipTicksLong>Only run priority calculations every x ticks to save resources.</FreeWillSkipTicksLong>
+  
+  
   <!-- Mod ITab -->
   <FreeWillITab>Free will</FreeWillITab>
   <FreeWillITabCheckbox>Free will</FreeWillITabCheckbox>

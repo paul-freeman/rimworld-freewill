@@ -92,15 +92,18 @@ namespace FreeWill
                 checkSuppressionNeed,
             };
             worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+            if (Find.TickManager.TicksGame % worldComp.settings.SkipCalcTicks == 0)
+            {
 
-            try
-            {
-                getMapComponentTickAction()();
-                this.actionCounter++;
-            }
-            catch (System.Exception e)
-            {
-                Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {this.actionCounter}: {e}", 14147584);
+                try
+                {
+                    getMapComponentTickAction()();
+                    this.actionCounter++;
+                }
+                catch (System.Exception e)
+                {
+                    Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {this.actionCounter}: {e}", 14147584);
+                }
             }
         }
 
