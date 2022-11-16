@@ -79,22 +79,22 @@ namespace FreeWill
         {
             base.MapComponentTick();
 
-            mapCompnentsCheckActions = mapCompnentsCheckActions ?? new Action[]{
-                checkPrisonerHealth,
-                checkPetsHealth,
-                checkColonyHealth,
-                checkPercentPawnsMechHaulers,
-                checkThingsDeteriorating,
-                checkBlight,
-                checkMapFire,
-                checkRefuelNeeded,
-                checkActiveAlerts,
-                checkSuppressionNeed,
-            };
-            worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
-
             try
             {
+                mapCompnentsCheckActions = mapCompnentsCheckActions ?? new Action[]{
+                    checkPrisonerHealth,
+                    checkPetsHealth,
+                    checkColonyHealth,
+                    checkPercentPawnsMechHaulers,
+                    checkThingsDeteriorating,
+                    checkBlight,
+                    checkMapFire,
+                    checkRefuelNeeded,
+                    checkActiveAlerts,
+                    checkSuppressionNeed,
+                };
+                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+
                 getMapComponentTickAction()();
                 this.actionCounter++;
             }
@@ -124,11 +124,9 @@ namespace FreeWill
                 int worktypeIndex = i % workTypeDefs.Count;
                 return () => setPriorityAction(pawns[pawnIndex], workTypeDefs[worktypeIndex]);
             }
-            // show stack trace
             catch (System.Exception e)
             {
-                Log.ErrorOnce($"Free Will: could not get map component tick action: mapTickCounter = {this.actionCounter}: {e}", 14847584);
-                return () => { };
+                throw new Exception("could not get map component tick action", e);
             }
         }
 
@@ -207,24 +205,36 @@ namespace FreeWill
 
         private void checkSuppressionNeed()
         {
-            suppressionNeed = 0.0f;
-            foreach (Pawn slave in map?.mapPawns?.SlavesOfColonySpawned)
+            try
             {
-                Need_Suppression need_Suppression = slave?.needs.TryGetNeed<Need_Suppression>();
-                if (need_Suppression == null)
+                suppressionNeed = 0.0f;
+                List<Pawn> slavesOfColonySpawned = this.map?.mapPawns?.SlavesOfColonySpawned;
+                if (slavesOfColonySpawned == null)
                 {
-                    continue;
-                }
-                if (!need_Suppression.CanBeSuppressedNow)
-                {
-                    continue;
-                }
-                suppressionNeed = 0.2f;
-                if (need_Suppression.IsHigh)
-                {
-                    suppressionNeed = 0.4f;
                     return;
                 }
+                foreach (Pawn slave in slavesOfColonySpawned)
+                {
+                    Need_Suppression needsSuppression = slave?.needs?.TryGetNeed<Need_Suppression>();
+                    if (needsSuppression == null)
+                    {
+                        continue;
+                    }
+                    if (!needsSuppression.CanBeSuppressedNow)
+                    {
+                        continue;
+                    }
+                    suppressionNeed = 0.2f;
+                    if (needsSuppression.IsHigh)
+                    {
+                        suppressionNeed = 0.4f;
+                        return;
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                throw new Exception("could not check suppression need", e);
             }
         }
 
@@ -277,30 +287,37 @@ namespace FreeWill
 
         private void checkPercentPawnsMechHaulers()
         {
-            List<Pawn> pawnsInFaction = this.map.mapPawns.PawnsInFaction(Faction.OfPlayer);
-            if (pawnsInFaction == null)
+            try
             {
-                return;
+                List<Pawn> pawnsInFaction = this.map?.mapPawns?.PawnsInFaction(Faction.OfPlayer);
+                if (pawnsInFaction == null)
+                {
+                    return;
+                }
+                float numMechHaulers = 0;
+                float total = 0;
+                foreach (Pawn pawn in pawnsInFaction)
+                {
+                    if (!pawn.IsColonistPlayerControlled && !pawn.IsColonyMechPlayerControlled)
+                    {
+                        continue;
+                    }
+                    if (!pawn.Awake() || pawn.Downed || pawn.Dead || pawn.IsCharging())
+                    {
+                        continue;
+                    }
+                    if (pawn.IsColonyMechPlayerControlled && pawn.RaceProps.mechEnabledWorkTypes.Contains(WorkTypeDefOf.Hauling))
+                    {
+                        numMechHaulers++;
+                    }
+                    total++;
+                }
+                percentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
             }
-            float numMechHaulers = 0;
-            float total = 0;
-            foreach (Pawn pawn in pawnsInFaction)
+            catch (System.Exception e)
             {
-                if (!pawn.IsColonistPlayerControlled && !pawn.IsColonyMechPlayerControlled)
-                {
-                    continue;
-                }
-                if (!pawn.Awake() || pawn.Downed || pawn.Dead || pawn.IsCharging())
-                {
-                    continue;
-                }
-                if (pawn.IsColonyMechPlayerControlled && pawn.RaceProps.mechEnabledWorkTypes.Contains(WorkTypeDefOf.Hauling))
-                {
-                    numMechHaulers++;
-                }
-                total++;
+                throw new Exception("could not check percent of mech haulers", e);
             }
-            percentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
         }
 
         private void checkThingsDeteriorating()

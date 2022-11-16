@@ -107,7 +107,6 @@ namespace FreeWill
                 GUI.EndGroup();
                 GUI.color = Color.white;
                 Text.Anchor = TextAnchor.UpperLeft;
-
             }
         }
 
@@ -226,15 +225,7 @@ namespace FreeWill
                 }
                 if (flag != isFree)
                 {
-                    bool ok;
-                    if (isFree)
-                    {
-                        ok = worldComp.TryGiveFreeWill(pawn);
-                    }
-                    else
-                    {
-                        ok = worldComp.TryRemoveFreeWill(pawn);
-                    }
+                    bool ok = (isFree) ? worldComp.TryGiveFreeWill(pawn) : worldComp.TryRemoveFreeWill(pawn);
                     if (!ok)
                     {
                         Log.Error($"could not change free will for {pawn.Name.ToStringShort}");

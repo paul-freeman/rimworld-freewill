@@ -617,18 +617,23 @@ namespace FreeWill
         public string GetTip()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine(workTypeDef.description);
-            if (!this.disabled)
-            {
-                int p = this.ToGamePriority();
-                string str = string.Format("Priority{0}", p).TranslateSimple();
-                string text = str.Colorize(WidgetsWork.ColorOfPriority(p));
-                stringBuilder.AppendLine(text);
-                stringBuilder.AppendLine("------------------------------");
-            }
+            TaggedString workTypeTitle = this.workTypeDef.pawnLabel.CapitalizeFirst().AsTipTitle();
+            stringBuilder.AppendLineTagged(workTypeTitle);
+            stringBuilder.AppendLineTagged(this.workTypeDef.description.Colorize(ColoredText.SubtleGrayColor)).AppendLine();
+            stringBuilder.AppendLineTagged(("FreeWillWorkPreference".Translate().CapitalizeFirst() + ": ").AsTipTitle() + this.value.ToStringPercent());
             foreach (string adj in this.adjustmentStrings)
             {
                 stringBuilder.AppendLine(adj);
+            }
+            stringBuilder.AppendLine();
+            if (!this.disabled)
+            {
+                int p = this.ToGamePriority();
+                string priorityDescriptionStr = string.Format("Priority{0}", p).TranslateSimple();
+                string priorityLevelStr = p + " - " + priorityDescriptionStr;
+                TaggedString colorizedPriorityLevelStr = priorityLevelStr.Colorize(WidgetsWork.ColorOfPriority(p));
+                TaggedString priorityTitle = ("Priority".Translate().CapitalizeFirst() + ": ").AsTipTitle();
+                stringBuilder.AppendLineTagged(priorityTitle + colorizedPriorityLevelStr);
             }
             return stringBuilder.ToString();
         }
@@ -659,22 +664,23 @@ namespace FreeWill
             return gamePriorityValue;
         }
 
-        private Priority set(float x, string s)
+        private Priority set(float x, string description)
         {
             this.value = UnityEngine.Mathf.Clamp01(x);
+            string adjustmentString = " - " + description.CapitalizeFirst() + ": " + this.value.ToStringPercent();
             if (Prefs.DevMode)
             {
                 this.adjustmentStrings.Add("-- reset --");
-                this.adjustmentStrings.Add(string.Format("{0} ({1})", this.value.ToStringPercent(), s));
+                this.adjustmentStrings.Add(adjustmentString);
             }
             else
             {
-                this.adjustmentStrings = new List<string> { string.Format("{0} ({1})", this.value.ToStringPercent(), s) };
+                this.adjustmentStrings = new List<string> { adjustmentString };
             }
             return this;
         }
 
-        private Priority add(float x, string s)
+        private Priority add(float x, string description)
         {
             if (disabled)
             {
@@ -683,30 +689,45 @@ namespace FreeWill
             float newValue = UnityEngine.Mathf.Clamp01(value + x);
             if (newValue > value)
             {
-                adjustmentStrings.Add(string.Format("+{0} ({1})", (newValue - value).ToStringPercent(), s));
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": +" + (newValue - this.value).ToStringPercent();
+                adjustmentStrings.Add(adjustmentString);
                 value = newValue;
             }
             else if (newValue < value)
             {
-                adjustmentStrings.Add(string.Format("{0} ({1})", (newValue - value).ToStringPercent(), s));
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": " + (newValue - this.value).ToStringPercent();
+                adjustmentStrings.Add(adjustmentString);
                 value = newValue;
             }
             else if (newValue == value && Prefs.DevMode)
             {
-                adjustmentStrings.Add(string.Format("+{0} ({1})", (newValue - value).ToStringPercent(), s));
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": +" + (newValue - this.value).ToStringPercent();
+                adjustmentStrings.Add(adjustmentString);
                 value = newValue;
             }
             return this;
         }
 
-        private Priority multiply(float x, string s)
+        private Priority multiply(float x, string description)
         {
             if (disabled)
             {
                 return this;
             }
-            float newValue = UnityEngine.Mathf.Clamp01(value * x);
-            return add(newValue - value, s);
+            float newClampedValue = UnityEngine.Mathf.Clamp01(this.value * x);
+            if (newClampedValue != this.value)
+            {
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": x" + (newClampedValue / this.value).ToStringPercent();
+                adjustmentStrings.Add(adjustmentString);
+                this.value = newClampedValue;
+            }
+            else if (newClampedValue == this.value && Prefs.DevMode)
+            {
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": x" + (newClampedValue - this.value).ToStringPercent();
+                adjustmentStrings.Add(adjustmentString);
+                this.value = newClampedValue;
+            }
+            return this;
         }
 
         private bool isDisabled()
@@ -722,8 +743,8 @@ namespace FreeWill
             }
             if (Prefs.DevMode || this.disabled || this.ToGamePriority() == 0)
             {
-                string text = string.Format("{0} ({1})", "FreeWillPriorityEnabled".TranslateSimple(), s);
-                this.adjustmentStrings.Add(text);
+                string adjustmentString = " - " + s + ": " + "FreeWillPriorityEnabled".TranslateSimple();
+                this.adjustmentStrings.Add(adjustmentString);
             }
             this.enabled = true;
             this.disabled = false;
@@ -743,8 +764,8 @@ namespace FreeWill
             }
             if (Prefs.DevMode || this.enabled || this.ToGamePriority() >= 0)
             {
-                string text = string.Format("{0} ({1})", "FreeWillPriorityDisabled".TranslateSimple(), s);
-                this.adjustmentStrings.Add(text);
+                string adjustmentString = " - " + s + ": " + "FreeWillPriorityDisabled".TranslateSimple();
+                this.adjustmentStrings.Add(adjustmentString);
             }
             this.disabled = true;
             this.enabled = false;

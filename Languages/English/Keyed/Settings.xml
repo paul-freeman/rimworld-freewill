@@ -51,13 +51,13 @@
   <FreeWillPriorityEnabled>enabled</FreeWillPriorityEnabled>
   <FreeWillPriorityDisabled>disabled</FreeWillPriorityDisabled>
   <FreeWillPriorityPermanentlyDisabled>permanently disabled</FreeWillPriorityPermanentlyDisabled>
-  <FreeWillPriorityFirefightingDefault>firefighting default</FreeWillPriorityFirefightingDefault>
-  <FreeWillPriorityPatientDefault>patient default</FreeWillPriorityPatientDefault>
-  <FreeWillPriorityBedrestDefault>bedrest default</FreeWillPriorityBedrestDefault>
-  <FreeWillPriorityBasicWorkDefault>basic work default</FreeWillPriorityBasicWorkDefault>
-  <FreeWillPriorityHaulingDefault>hauling default</FreeWillPriorityHaulingDefault>
-  <FreeWillPriorityUrgentHaulingDefault>urgent hauling default</FreeWillPriorityUrgentHaulingDefault>
-  <FreeWillPriorityCleaningDefault>cleaning default</FreeWillPriorityCleaningDefault>
+  <FreeWillPriorityFirefightingDefault>firefighting base value</FreeWillPriorityFirefightingDefault>
+  <FreeWillPriorityPatientDefault>patient base value</FreeWillPriorityPatientDefault>
+  <FreeWillPriorityBedrestDefault>bedrest base value</FreeWillPriorityBedrestDefault>
+  <FreeWillPriorityBasicWorkDefault>basic work base value</FreeWillPriorityBasicWorkDefault>
+  <FreeWillPriorityHaulingDefault>hauling base value</FreeWillPriorityHaulingDefault>
+  <FreeWillPriorityUrgentHaulingDefault>urgent hauling base value</FreeWillPriorityUrgentHaulingDefault>
+  <FreeWillPriorityCleaningDefault>cleaning base value</FreeWillPriorityCleaningDefault>
   <FreeWillPriorityPawnDowned>downed</FreeWillPriorityPawnDowned>
   <FreeWillPriorityOtherPawnsDowned>others downed</FreeWillPriorityOtherPawnsDowned>
   <FreeWillPriorityNeedTreatment>need treatment</FreeWillPriorityNeedTreatment>
