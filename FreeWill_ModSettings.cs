@@ -8,7 +8,7 @@ namespace FreeWill
     public class FreeWill_ModSettings : ModSettings
     {
         // mod default settings
-        const int SkipCalcTicksDefault = 20;
+        const int SkipCalcTicksDefault = 4;
         const bool ConsiderBrawlersNotHuntingDefault = true;
         const bool ConsiderHasHuntingWeaponDefault = true;
         const float ConsiderMovementSpeedDefault = 1.0f;
