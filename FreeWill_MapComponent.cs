@@ -160,6 +160,10 @@ namespace FreeWill
                 Log.ErrorOnce($"Free Will: pawn is null: mapTickCounter = {this.actionCounter}", 584624);
                 return;
             }
+            if (!pawn.Awake() || pawn.Downed || pawn.Dead)
+            {
+                return;
+            }
             if (pawn.IsSlaveOfColony)
             {
                 if (worldComp.HasFreeWill(pawn))
