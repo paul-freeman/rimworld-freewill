@@ -168,7 +168,7 @@ namespace FreeWill
             }
             if (!pawn.Awake() || pawn.Downed || pawn.Dead)
             {
-                return;
+                return msg;
             }
             if (pawn.IsSlaveOfColony)
             {
