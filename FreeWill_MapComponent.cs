@@ -344,25 +344,12 @@ namespace FreeWill
             return "checkThingsDeteriorating";
         }
 
-        private void checkBlight()
+        private string checkBlight()
         {
             try
             {
-                this.plantsBlighted = false;
-                if ((this.worldComp?.settings?.ConsiderPlantsBlighted ?? 0.0f) == 0.0f)
-                {
-                    return;
-                }
-                Thing thing = null;
-                var plants = this.map?.listerThings?.ThingsInGroup(ThingRequestGroup.Plant);
-                if (plants == null)
-                {
-                    return;
-                }
-                (from x in plants
-                 where ((Plant)x).Blighted
-                 select x).TryRandomElement(out thing);
-                this.plantsBlighted = (thing != null);
+                this.PlantsBlighted = GridsUtility.GetFirstBlight(this.map.Center, this.map) != null;
+                return "checkBlight";
             }
             catch (System.Exception err)
             {
@@ -370,8 +357,8 @@ namespace FreeWill
                 Log.Message(err.ToString());
                 Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
                 this.worldComp.settings.ConsiderPlantsBlighted = 0.0f;
-                this.plantsBlighted = false;
-                return;
+                this.PlantsBlighted = false;
+                return "checkBlight";
             }
         }
 
