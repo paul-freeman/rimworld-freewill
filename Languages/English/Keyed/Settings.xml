@@ -52,8 +52,11 @@
   <FreeWillPriorityDisabled>disabled</FreeWillPriorityDisabled>
   <FreeWillPriorityPermanentlyDisabled>permanently disabled</FreeWillPriorityPermanentlyDisabled>
   <FreeWillPriorityFirefightingDefault>firefighting base value</FreeWillPriorityFirefightingDefault>
+  <FreeWillPriorityFirefightingAlways>always fight fires</FreeWillPriorityFirefightingAlways>
   <FreeWillPriorityPatientDefault>patient base value</FreeWillPriorityPatientDefault>
+  <FreeWillPriorityPatientAlways>always accept treatment</FreeWillPriorityPatientAlways>
   <FreeWillPriorityBedrestDefault>bedrest base value</FreeWillPriorityBedrestDefault>
+  <FreeWillPriorityBedrestAlways>always accept bedrest</FreeWillPriorityBedrestAlways>
   <FreeWillPriorityBasicWorkDefault>basic work base value</FreeWillPriorityBasicWorkDefault>
   <FreeWillPriorityHaulingDefault>hauling base value</FreeWillPriorityHaulingDefault>
   <FreeWillPriorityUrgentHaulingDefault>urgent hauling base value</FreeWillPriorityUrgentHaulingDefault>
@@ -105,9 +108,10 @@
   <FreeWillPriorityCurrentlyDoing>continuing current task</FreeWillPriorityCurrentlyDoing>
   <FreeWillPriorityMovementSpeed>movement speed</FreeWillPriorityMovementSpeed>
   <FreeWillPriorityCarryingCapacity>carrying capacity</FreeWillPriorityCarryingCapacity>
+  <FreeWillPriorityMechGestator>mech in gestator ready</FreeWillPriorityMechGestator>
   <FreeWillPrioritySkillLevel>skill level</FreeWillPrioritySkillLevel>
-  <FreeWillPriorityExpectionsExceeded>superfluously clean</FreeWillPriorityExpectionsExceeded>
-  <FreeWillPriorityExpectionsMet>clean enough</FreeWillPriorityExpectionsMet>
+  <FreeWillPriorityExpectionsExceeded>not messy</FreeWillPriorityExpectionsExceeded>
+  <FreeWillPriorityExpectionsMet>hardly messy</FreeWillPriorityExpectionsMet>
   <FreeWillPriorityExpectionsUnmet>a bit messy</FreeWillPriorityExpectionsUnmet>
   <FreeWillPriorityExpectionsLetDown>very messy</FreeWillPriorityExpectionsLetDown>
   <FreeWillPriorityExpectionsIgnored>mess everywhere</FreeWillPriorityExpectionsIgnored>

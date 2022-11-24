@@ -117,7 +117,7 @@ namespace FreeWill
                 case FIREFIGHTER:
                     return this
                         .set(0.0f, "FreeWillPriorityFirefightingDefault".TranslateSimple())
-                        .alwaysDo("FreeWillPriorityPatientDefault".TranslateSimple())
+                        .alwaysDo("FreeWillPriorityFirefightingAlways".TranslateSimple())
                         .neverDoIf(this.pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple())
                         .considerFire()
                         .considerBuildingImmunity()
@@ -130,7 +130,7 @@ namespace FreeWill
                 case PATIENT:
                     return this
                         .set(0.0f, "FreeWillPriorityPatientDefault".TranslateSimple())
-                        .alwaysDo("FreeWillPriorityPatientDefault".TranslateSimple())
+                        .alwaysDo("FreeWillPriorityPatientAlways".TranslateSimple())
                         .considerHealth()
                         .considerBuildingImmunity()
                         .considerCompletingTask()
@@ -166,7 +166,7 @@ namespace FreeWill
                 case PATIENT_BED_REST:
                     return this
                         .set(0.0f, "FreeWillPriorityBedrestDefault".TranslateSimple())
-                        .alwaysDo("FreeWillPriorityBedrestDefault".TranslateSimple())
+                        .alwaysDo("FreeWillPriorityBedrestAlways".TranslateSimple())
                         .considerHealth()
                         .considerBuildingImmunity()
                         .considerLowFood(-0.2f)
@@ -398,6 +398,7 @@ namespace FreeWill
                     return this
                         .considerRelevantSkills()
                         .considerCarryingCapacity()
+                        .considerFinishedMechGestators()
                         .considerRepairingMech()
                         .considerIsAnyoneElseDoing()
                         .considerBestAtDoing()
@@ -516,7 +517,7 @@ namespace FreeWill
 
                 case CLEANING:
                     return this
-                        .set(0.3f, "FreeWillPriorityCleaningDefault".TranslateSimple())
+                        .set(0.5f, "FreeWillPriorityCleaningDefault".TranslateSimple())
                         .considerBeautyExpectations()
                         .considerIsAnyoneElseDoing()
                         .considerThoughts()
@@ -710,7 +711,7 @@ namespace FreeWill
 
         private Priority multiply(float x, string description)
         {
-            if (disabled)
+            if (disabled || this.value == 0.0f)
             {
                 return this;
             }
@@ -723,7 +724,7 @@ namespace FreeWill
             }
             else if (newClampedValue == this.value && Prefs.DevMode)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": x" + (newClampedValue - this.value).ToStringPercent();
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": x" + (newClampedValue / this.value).ToStringPercent();
                 adjustmentStrings.Add(adjustmentString);
                 this.value = newClampedValue;
             }
@@ -735,7 +736,7 @@ namespace FreeWill
             return this.disabled;
         }
 
-        private Priority alwaysDoIf(bool cond, string s)
+        private Priority alwaysDoIf(bool cond, string description)
         {
             if (!cond || this.enabled)
             {
@@ -743,7 +744,7 @@ namespace FreeWill
             }
             if (Prefs.DevMode || this.disabled || this.ToGamePriority() == 0)
             {
-                string adjustmentString = " - " + s + ": " + "FreeWillPriorityEnabled".TranslateSimple();
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": " + "FreeWillPriorityEnabled".TranslateSimple().CapitalizeFirst();
                 this.adjustmentStrings.Add(adjustmentString);
             }
             this.enabled = true;
@@ -751,12 +752,12 @@ namespace FreeWill
             return this;
         }
 
-        private Priority alwaysDo(string s)
+        private Priority alwaysDo(string description)
         {
-            return this.alwaysDoIf(true, s);
+            return this.alwaysDoIf(true, description);
         }
 
-        private Priority neverDoIf(bool cond, string s)
+        private Priority neverDoIf(bool cond, string description)
         {
             if (!cond || this.disabled)
             {
@@ -764,7 +765,7 @@ namespace FreeWill
             }
             if (Prefs.DevMode || this.enabled || this.ToGamePriority() >= 0)
             {
-                string adjustmentString = " - " + s + ": " + "FreeWillPriorityDisabled".TranslateSimple();
+                string adjustmentString = " - " + description.CapitalizeFirst() + ": " + "FreeWillPriorityDisabled".TranslateSimple().CapitalizeFirst();
                 this.adjustmentStrings.Add(adjustmentString);
             }
             this.disabled = true;
@@ -772,9 +773,9 @@ namespace FreeWill
             return this;
         }
 
-        private Priority neverDo(string s)
+        private Priority neverDo(string description)
         {
-            return this.neverDoIf(true, s);
+            return this.neverDoIf(true, description);
         }
 
         private Priority considerInspiration()
@@ -1018,6 +1019,35 @@ namespace FreeWill
             {
                 Log.ErrorOnce("could not consider passions: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 228486541);
                 worldComp.settings.ConsiderPassions = 0.0f;
+            }
+            return this;
+        }
+
+        private Priority considerFinishedMechGestators()
+        {
+            var mechGestators = this.pawn?.Map?.listerThings?.ThingsInGroup(ThingRequestGroup.MechGestator);
+            if (mechGestators == null)
+            {
+                return this;
+            }
+            foreach (Thing thing in mechGestators)
+            {
+                if (!(thing is Building_MechGestator mechGestator))
+                {
+                    continue;
+                }
+                if (!(mechGestator.ActiveBill is Bill_ProductionMech productionMech))
+                {
+                    continue;
+                }
+                if (productionMech.State != FormingCycleState.Formed)
+                {
+                    continue;
+                }
+                if (productionMech.BoundPawn == this.pawn)
+                {
+                    return this.add(0.4f, "FreeWillPriorityMechGestator".TranslateSimple());
+                }
             }
             return this;
         }
@@ -1489,7 +1519,7 @@ namespace FreeWill
             {
                 return this;
             }
-            return this.add(0.4f, "FreeWillPriorityMechanoidDamaged".TranslateSimple());
+            return this.add(0.6f, "FreeWillPriorityMechanoidDamaged".TranslateSimple());
         }
 
         private Priority considerIsAnyoneElseDoing()
@@ -1679,7 +1709,7 @@ namespace FreeWill
 
                 // don't adjust hauling if nothing deteriorating (i.e. food in the field)
                 if ((this.workTypeDef.defName == HAULING || this.workTypeDef.defName == HAULING_URGENT)
-                    && !this.mapComp.ThingsDeteriorating)
+                    && this.mapComp.ThingsDeteriorating == null)
                 {
                     return this;
                 }
@@ -1737,8 +1767,12 @@ namespace FreeWill
         {
             if (this.workTypeDef.defName == HAULING || this.workTypeDef.defName == HAULING_URGENT)
             {
-                if (mapComp.ThingsDeteriorating)
+                if (mapComp.ThingsDeteriorating != null)
                 {
+                    if (Prefs.DevMode)
+                    {
+                        return this.multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple() + ": " + mapComp.ThingsDeteriorating.def.defName);
+                    }
                     return this.multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple());
                 }
             }
@@ -1844,25 +1878,31 @@ namespace FreeWill
                             // no cleaning job
                             return this;
                         }
+                        const float ADJUSTMENT = 0.2f; // made to match change in base default from 0.3 to 0.5
                         if (expectations < 0.2f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
                         }
                         if (expectations < 0.4f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsMet".TranslateSimple());
                         }
                         if (expectations < 0.6f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
                         }
                         if (expectations < 0.8f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
                         }
-                        return this.add(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                        return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
                     default:
                         // any other work type is decreased if either job is present
+                        if (workTypeDef.defName == SMITHING && MechanitorUtility.IsMechanitor(pawn))
+                        {
+                            // mechanitor smithing is not affected by beauty
+                            return this;
+                        }
                         if (!areaHasHaulables(BeautyUtility.beautyRelevantCells) && !areaHasFilth(BeautyUtility.beautyRelevantCells))
                         {
                             // nothing to do

@@ -10,7 +10,7 @@ namespace FreeWill
 {
     public class FreeWill_MapComponent : MapComponent
     {
-        private static Action[] mapCompnentsCheckActions;
+        private static Func<string>[] mapComponentCheckActions;
 
         private Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> priorities;
         private Dictionary<Pawn, int> lastBored;
@@ -43,8 +43,7 @@ namespace FreeWill
         private float percentPawnsMechHaulers;
         public float SuppressionNeed { get { return suppressionNeed; } }
         private float suppressionNeed;
-        public bool ThingsDeteriorating { get { return thingsDeteriorating; } }
-        private bool thingsDeteriorating;
+        public Thing ThingsDeteriorating { get; private set; }
         public int MapFires { get { return mapFires; } }
         private int mapFires;
         public bool HomeFire { get { return homeFire; } }
@@ -53,8 +52,7 @@ namespace FreeWill
         private bool refuelNeededNow;
         public bool RefuelNeeded { get { return refuelNeeded; } }
         private bool refuelNeeded;
-        public bool PlantsBlighted { get { return plantsBlighted; } }
-        private bool plantsBlighted;
+        public bool PlantsBlighted { get; private set; }
         public bool NeedWarmClothes { get { return needWarmClothes; } }
         private bool needWarmClothes;
         public bool AlertColonistLeftUnburied { get { return alertColonistLeftUnburied; } }
@@ -81,7 +79,8 @@ namespace FreeWill
 
             try
             {
-                mapCompnentsCheckActions = mapCompnentsCheckActions ?? new Action[]{
+                // var startTime = DateTime.Now;
+                mapComponentCheckActions = mapComponentCheckActions ?? new Func<string>[]{
                     checkPrisonerHealth,
                     checkPetsHealth,
                     checkColonyHealth,
@@ -95,8 +94,14 @@ namespace FreeWill
                 };
                 worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
 
-                getMapComponentTickAction()();
+                var msg = getMapComponentTickAction()();
                 this.actionCounter++;
+
+                // var duration = DateTime.Now - startTime;
+                // if (Prefs.DevMode && duration.TotalMilliseconds > 1.5f)
+                // {
+                //     Log.Message("FreeWill: MapComponentTick (" + msg + ") took " + duration.TotalMilliseconds + "ms");
+                // }
             }
             catch (System.Exception e)
             {
@@ -104,15 +109,15 @@ namespace FreeWill
             }
         }
 
-        private Action getMapComponentTickAction()
+        private Func<string> getMapComponentTickAction()
         {
             try
             {
-                if (this.actionCounter < mapCompnentsCheckActions.Length)
+                if (this.actionCounter < mapComponentCheckActions.Length)
                 {
-                    return mapCompnentsCheckActions[this.actionCounter];
+                    return mapComponentCheckActions[this.actionCounter];
                 }
-                int i = this.actionCounter - mapCompnentsCheckActions.Length;
+                int i = this.actionCounter - mapComponentCheckActions.Length;
                 List<WorkTypeDef> workTypeDefs = DefDatabase<WorkTypeDef>.AllDefsListForReading;
                 List<Pawn> pawns = this.map.mapPawns.FreeColonistsSpawned;
                 if (i >= workTypeDefs.Count * pawns.Count)
@@ -153,12 +158,13 @@ namespace FreeWill
             return this.priorities[pawn];
         }
 
-        private void setPriorityAction(Pawn pawn, WorkTypeDef workTypeDef)
+        private string setPriorityAction(Pawn pawn, WorkTypeDef workTypeDef)
         {
+            var msg = pawn.Name.ToStringShort + " " + workTypeDef.defName;
             if (pawn == null)
             {
                 Log.ErrorOnce($"Free Will: pawn is null: mapTickCounter = {this.actionCounter}", 584624);
-                return;
+                return msg;
             }
             if (pawn.IsSlaveOfColony)
             {
@@ -169,7 +175,7 @@ namespace FreeWill
                     {
                         Log.ErrorOnce("Free Will: could not remove free will from slave", 164752145);
                     }
-                    return;
+                    return msg;
                 }
             }
             worldComp.EnsureFreeWillStatusIsCorrect(pawn);
@@ -189,7 +195,7 @@ namespace FreeWill
                 {
                     priorities[pawn][workTypeDef].ApplyPriorityToGame();
                 }
-                return;
+                return msg;
             }
             catch (System.Exception)
             {
@@ -199,11 +205,11 @@ namespace FreeWill
                 {
                     Log.ErrorOnce("Free Will: could not remove free will", 752116446);
                 }
-                return;
+                return msg;
             }
         }
 
-        private void checkSuppressionNeed()
+        private string checkSuppressionNeed()
         {
             try
             {
@@ -211,7 +217,7 @@ namespace FreeWill
                 List<Pawn> slavesOfColonySpawned = this.map?.mapPawns?.SlavesOfColonySpawned;
                 if (slavesOfColonySpawned == null)
                 {
-                    return;
+                    return "checkSuppressionNeed";
                 }
                 foreach (Pawn slave in slavesOfColonySpawned)
                 {
@@ -228,9 +234,10 @@ namespace FreeWill
                     if (needsSuppression.IsHigh)
                     {
                         suppressionNeed = 0.4f;
-                        return;
+                        return "checkSuppressionNeed";
                     }
                 }
+                return "checkSuppressionNeed";
             }
             catch (System.Exception e)
             {
@@ -238,7 +245,7 @@ namespace FreeWill
             }
         }
 
-        private void checkPrisonerHealth()
+        private string checkPrisonerHealth()
         {
             var prisonersInColony = map?.mapPawns?.PrisonersOfColony;
             numPrisonersNeedingTreatment =
@@ -247,9 +254,10 @@ namespace FreeWill
                     : (from prisoners in map?.mapPawns?.PrisonersOfColony
                        where prisoners.health.HasHediffsNeedingTend()
                        select prisoners).Count();
+            return "checkPrisonerHealth";
         }
 
-        private void checkPetsHealth()
+        private string checkPetsHealth()
         {
             var pawnsInFaction = map?.mapPawns?.PawnsInFaction(Faction.OfPlayer);
             numPetsNeedingTreatment =
@@ -258,9 +266,10 @@ namespace FreeWill
                     : (from p in pawnsInFaction
                        where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
                        select p).Count();
+            return "checkPetsHealth";
         }
 
-        private void checkColonyHealth()
+        private string checkColonyHealth()
         {
             numPawns = map?.mapPawns?.FreeColonistsSpawnedCount ?? 0;
             percentPawnsDowned = 0.0f;
@@ -269,7 +278,7 @@ namespace FreeWill
             var freeColonistsSpawned = map?.mapPawns?.FreeColonistsSpawned;
             if (freeColonistsSpawned == null)
             {
-                return;
+                return "checkColonyHealth";
             }
             foreach (Pawn pawn in freeColonistsSpawned)
             {
@@ -283,16 +292,17 @@ namespace FreeWill
                     percentPawnsNeedingTreatment += colonistWeight;
                 }
             }
+            return "checkColonyHealth";
         }
 
-        private void checkPercentPawnsMechHaulers()
+        private string checkPercentPawnsMechHaulers()
         {
             try
             {
                 List<Pawn> pawnsInFaction = this.map?.mapPawns?.PawnsInFaction(Faction.OfPlayer);
                 if (pawnsInFaction == null)
                 {
-                    return;
+                    return "checkPercentPawnsMechHaulers";
                 }
                 float numMechHaulers = 0;
                 float total = 0;
@@ -313,6 +323,7 @@ namespace FreeWill
                     total++;
                 }
                 percentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
+                return "checkPercentPawnsMechHaulers";
             }
             catch (System.Exception e)
             {
@@ -362,14 +373,14 @@ namespace FreeWill
             }
         }
 
-        private void checkMapFire()
+        private string checkMapFire()
         {
             List<Thing> fires = this.map?.listerThings?.ThingsOfDef(ThingDefOf.Fire);
             mapFires = fires?.Count ?? 0;
             homeFire = false;
             if (fires == null)
             {
-                return;
+                return "checkMapFire";
             }
             foreach (Thing fire in fires)
             {
@@ -377,19 +388,20 @@ namespace FreeWill
                 if (this.map.areaManager.Home[fire.Position] && !fire.Position.Fogged(fire.Map))
                 {
                     homeFire = true;
-                    return;
+                    return "checkMapFire";
                 }
             }
+            return "checkMapFire";
         }
 
-        private void checkRefuelNeeded()
+        private string checkRefuelNeeded()
         {
             refuelNeeded = false;
             refuelNeededNow = false;
             List<Thing> refuelableThings = this.map?.listerThings?.ThingsInGroup(ThingRequestGroup.Refuelable);
             if (refuelableThings == null)
             {
-                return;
+                return "checkRefuelNeeded";
             }
             foreach (Thing thing in refuelableThings)
             {
@@ -406,7 +418,7 @@ namespace FreeWill
                 {
                     refuelNeeded = true;
                     refuelNeededNow = true;
-                    return;
+                    return "checkRefuelNeeded";
                 }
                 if (!refuelable.IsFull)
                 {
@@ -414,16 +426,17 @@ namespace FreeWill
                     continue;
                 }
             }
+            return "checkRefuelNeeded";
         }
 
-        public void checkActiveAlerts()
+        public string checkActiveAlerts()
         {
             try
             {
                 UIRoot_Play ui = Find.UIRoot as UIRoot_Play;
                 if (ui == null)
                 {
-                    return;
+                    return "checkActiveAlerts";
                 }
                 // unset all the alerts
                 this.alertLowFood = false;
@@ -475,10 +488,12 @@ namespace FreeWill
                             break;
                     }
                 }
+                return "checkActiveAlerts";
             }
             catch
             {
                 Log.ErrorOnce("Free Will: could not check active alerts", 58548754);
+                return "checkActiveAlerts";
             }
         }
     }
