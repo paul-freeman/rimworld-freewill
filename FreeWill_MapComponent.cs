@@ -320,13 +320,13 @@ namespace FreeWill
             }
         }
 
-        private void checkThingsDeteriorating()
+        private string checkThingsDeteriorating()
         {
-            this.thingsDeteriorating = false;
+            this.ThingsDeteriorating = null;
             var thingsPotentiallyNeedingHauling = this.map?.listerHaulables?.ThingsPotentiallyNeedingHauling();
             if (thingsPotentiallyNeedingHauling == null)
             {
-                return;
+                return "checkThingsDeteriorating";
             }
             foreach (Thing thing in thingsPotentiallyNeedingHauling)
             {
@@ -334,9 +334,14 @@ namespace FreeWill
                 {
                     continue;
                 }
-                this.thingsDeteriorating = true;
-                return;
+                if (thing.IsDessicated())
+                {
+                    continue;
+                }
+                this.ThingsDeteriorating = thing;
+                return "checkThingsDeteriorating";
             }
+            return "checkThingsDeteriorating";
         }
 
         private void checkBlight()
