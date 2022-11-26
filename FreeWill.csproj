@@ -17,6 +17,8 @@
     <Compile Include="FreeWill_ModSettings.cs" />
     <Compile Include="FreeWill_MapComponent.cs" />
     <Compile Include="FreeWill_WorldComponent.cs" />
+    <Compile Include="FreeWillUtility.cs" />
+    <Compile Include="Resources.cs" />
     <Compile Include="ITabs\ITab_Pawn_FreeWill.cs" />
     <Compile Include="ThoughtWorkers\EnforcedWorkSchedule.cs" />
     <Compile Include="ThoughtWorkers\NoWorkSchedule.cs" />

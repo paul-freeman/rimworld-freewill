@@ -73,9 +73,16 @@ namespace FreeWill
             this.activeAlertsField = AccessTools.Field(typeof(AlertsReadout), "AllAlerts");
         }
 
+        public override void FinalizeInit()
+        {
+            base.FinalizeInit();
+            FreeWillUtility.UpdateMapComponent(this);
+        }
+
         public override void MapComponentTick()
         {
             base.MapComponentTick();
+            FreeWillUtility.UpdateMapComponent(this);
 
             try
             {
@@ -156,6 +163,19 @@ namespace FreeWill
                 this.priorities[pawn] = new Dictionary<WorkTypeDef, Priority>();
             }
             return this.priorities[pawn];
+        }
+
+        public Priority GetPriority(Pawn pawn, WorkTypeDef workTypeDef)
+        {
+            if (!this.priorities.ContainsKey(pawn))
+            {
+                this.priorities[pawn] = new Dictionary<WorkTypeDef, Priority>();
+            }
+            if (!this.priorities[pawn].ContainsKey(workTypeDef))
+            {
+                this.priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
+            }
+            return this.priorities[pawn][workTypeDef];
         }
 
         private string setPriorityAction(Pawn pawn, WorkTypeDef workTypeDef)

@@ -251,7 +251,7 @@ namespace FreeWill
                 int p = priority.ToGamePriority();
                 GUI.color = Color.white;
                 Text.Font = GameFont.Small;
-                string t = priority.GetTip();
+                string t = FreeWillUtility.GetTip(priority);
                 Func<string> textGetter = delegate ()
                 {
                     return t;
