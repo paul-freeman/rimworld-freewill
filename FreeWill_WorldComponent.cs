@@ -64,6 +64,12 @@ namespace FreeWill
             base.WorldComponentTick();
         }
 
+        public override void FinalizeInit()
+        {
+            base.FinalizeInit();
+            FreeWillUtility.UpdateWorldComponent(this);
+        }
+
         public bool HasFreeWill(Pawn pawn)
         {
             if (pawn?.Ideo == null ||

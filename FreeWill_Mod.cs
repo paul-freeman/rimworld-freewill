@@ -6,6 +6,7 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using Verse.Sound;
 
 namespace FreeWill
 {
@@ -30,47 +31,21 @@ namespace FreeWill
         }
     }
 
-    [HarmonyPatch(typeof(PawnTable), MethodType.Constructor, new Type[] { typeof(PawnTableDef), typeof(Func<IEnumerable<Pawn>>), typeof(int), typeof(int) })]
-    public class RemoveFreePawns
+    [HarmonyPatch(typeof(PawnColumnWorker_WorkPriority), "DoCell")]
+    class PawnColumnWorker_WorkPriority_Patch
     {
-        static void Postfix(PawnTableDef def, ref Func<IEnumerable<Pawn>> ___pawnsGetter)
+        static bool Prefix(Rect rect, Pawn pawn, PawnTable table, PawnColumnWorker_WorkPriority __instance)
         {
-            if (def != PawnTableDefOf.Work)
+            if (!FreeWillUtility.GetWorldComponent().HasFreeWill(pawn))
             {
-                return;
+                return true;
             }
-            Func<IEnumerable<Pawn>> oldPawns = ___pawnsGetter;
-            try
+            if (pawn.Dead || pawn.workSettings == null || !pawn.workSettings.EverWork)
             {
-                ___pawnsGetter = () =>
-                {
-                    try
-                    {
-                        var worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
-                        List<Pawn> newPawns = new List<Pawn>();
-                        foreach (Pawn pawn in oldPawns())
-                        {
-                            if (worldComp.HasFreeWill(pawn) && !pawn.IsSlaveOfColony)
-                            {
-                                continue;
-                            }
-                            newPawns.Add(pawn);
-                        }
-                        return newPawns;
-                    }
-                    catch
-                    {
-                        Log.ErrorOnce("FreeWill mod could not remove free pawns from work tab - likely due to a mod conflict", 75674514);
-                        return oldPawns();
-                    }
-                };
-                Log.Message("FreeWill mod sucessfully patched the work tab");
+                return true;
             }
-            catch
-            {
-                Log.ErrorOnce("FreeWill mod failed to patch the work tab", 654762154);
-                ___pawnsGetter = oldPawns;
-            }
+            FreeWillUtility.DoCell(rect, pawn, table, __instance);
+            return false;
         }
     }
 
