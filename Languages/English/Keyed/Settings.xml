@@ -57,6 +57,7 @@
   <FreeWillPriorityPatientAlways>always accept treatment</FreeWillPriorityPatientAlways>
   <FreeWillPriorityBedrestDefault>bedrest base value</FreeWillPriorityBedrestDefault>
   <FreeWillPriorityBedrestAlways>always accept bedrest</FreeWillPriorityBedrestAlways>
+  <FreeWillPriorityChildcareDefault>childcare base value</FreeWillPriorityChildcareDefault>
   <FreeWillPriorityBasicWorkDefault>basic work base value</FreeWillPriorityBasicWorkDefault>
   <FreeWillPriorityHaulingDefault>hauling base value</FreeWillPriorityHaulingDefault>
   <FreeWillPriorityUrgentHaulingDefault>urgent hauling base value</FreeWillPriorityUrgentHaulingDefault>

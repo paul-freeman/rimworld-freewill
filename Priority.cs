@@ -179,9 +179,8 @@ namespace FreeWill
 
                 case CHILDCARE:
                     return this
+                        .set(0.5f, "FreeWillPriorityChildcareDefault".TranslateSimple())
                         .considerRelevantSkills()
-                        .considerCarryingCapacity()
-                        .considerIsAnyoneElseDoing()
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
