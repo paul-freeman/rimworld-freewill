@@ -180,7 +180,7 @@ namespace FreeWill
                 case CHILDCARE:
                     return this
                         .set(0.5f, "FreeWillPriorityChildcareDefault".TranslateSimple())
-                        .considerRelevantSkills()
+                        .considerRelevantSkills(shouldAdd: true)
                         .considerPassion()
                         .considerThoughts()
                         .considerInspiration()
@@ -1994,7 +1994,7 @@ namespace FreeWill
 
         }
 
-        private Priority considerRelevantSkills()
+        private Priority considerRelevantSkills(bool shouldAdd = false)
         {
             float _badSkillCutoff = Mathf.Min(3f, this.mapComp.NumPawns);
             float _goodSkillCutoff = _badSkillCutoff + (20f - _badSkillCutoff) / 2f;
@@ -2004,19 +2004,39 @@ namespace FreeWill
             float _avg = this.pawn.skills.AverageOfRelevantSkillsFor(this.WorkTypeDef);
             if (_avg >= _excellentSkillCutoff)
             {
+                if (shouldAdd)
+                {
+                    return this.add(0.9f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                }
                 return this.set(0.9f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             if (_avg >= _greatSkillCutoff)
             {
+                if (shouldAdd)
+                {
+                    return this.add(0.7f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                }
                 return this.set(0.7f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             if (_avg >= _goodSkillCutoff)
             {
+                if (shouldAdd)
+                {
+                    return this.add(0.5f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                }
                 return this.set(0.5f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             if (_avg >= _badSkillCutoff)
             {
+                if (shouldAdd)
+                {
+                    return this.add(0.3f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                }
                 return this.set(0.3f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+            }
+            if (shouldAdd)
+            {
+                return this.add(0.1f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             return this.set(0.1f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
         }
