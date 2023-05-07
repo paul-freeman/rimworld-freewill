@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Verse;
 
-namespace FreeWill
+namespace Rimworld_FreeWillMod
 {
     public class FreeWill_ModSettings : ModSettings
     {

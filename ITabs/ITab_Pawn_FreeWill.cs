@@ -5,7 +5,7 @@ using System.Linq;
 using Verse;
 using RimWorld;
 
-namespace FreeWill
+namespace Rimworld_FreeWillMod
 {
 
     public class ITab_Pawn_FreeWill : ITab

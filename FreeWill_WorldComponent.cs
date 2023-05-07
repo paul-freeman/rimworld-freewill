@@ -5,7 +5,7 @@ using RimWorld;
 using RimWorld.Planet;
 using HarmonyLib;
 
-namespace FreeWill
+namespace Rimworld_FreeWillMod
 {
     public class FreeWill_WorldComponent : WorldComponent
     {

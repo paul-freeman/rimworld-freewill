@@ -7,7 +7,7 @@ using Verse;
 using Verse.AI;
 
 
-namespace FreeWill
+namespace Rimworld_FreeWillMod
 {
     public class Priority : IComparable
     {

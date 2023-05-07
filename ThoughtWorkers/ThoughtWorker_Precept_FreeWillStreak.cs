@@ -1,6 +1,6 @@
 using RimWorld;
 using Verse;
-using FreeWill;
+using Rimworld_FreeWillMod;
 
 public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
 {

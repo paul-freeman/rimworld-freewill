@@ -6,7 +6,7 @@ using System.Linq;
 using RimWorld;
 using HarmonyLib;
 
-namespace FreeWill
+namespace Rimworld_FreeWillMod
 {
     public class FreeWill_MapComponent : MapComponent
     {
@@ -17,52 +17,25 @@ namespace FreeWill
         private readonly FieldInfo activeAlertsField;
         private FreeWill_WorldComponent worldComp;
 
-        public int NumPawns
-        {
-            get
-            {
-                if (numPawns == 0)
-                {
-                    numPawns = this.map.mapPawns.FreeColonistsSpawnedCount;
-                    return numPawns;
-                }
-                return numPawns;
-            }
-        }
-        private int numPawns;
+        public int NumPawns => this.map.mapPawns.FreeColonistsSpawnedCount;
 
-        public float PercentPawnsNeedingTreatment { get { return percentPawnsNeedingTreatment; } }
-        private float percentPawnsNeedingTreatment;
-        public int NumPetsNeedingTreatment { get { return numPetsNeedingTreatment; } }
-        private int numPetsNeedingTreatment;
-        public int NumPrisonersNeedingTreatment { get { return numPrisonersNeedingTreatment; } }
-        private int numPrisonersNeedingTreatment;
-        public float PercentPawnsDowned { get { return percentPawnsDowned; } }
-        private float percentPawnsDowned;
-        public float PercentPawnsMechHaulers { get { return percentPawnsMechHaulers; } }
-        private float percentPawnsMechHaulers;
-        public float SuppressionNeed { get { return suppressionNeed; } }
-        private float suppressionNeed;
+        public float PercentPawnsNeedingTreatment { get; private set; }
+        public int NumPetsNeedingTreatment { get; private set; }
+        public int NumPrisonersNeedingTreatment { get; private set; }
+        public float PercentPawnsDowned { get; private set; }
+        public float PercentPawnsMechHaulers { get; private set; }
+        public float SuppressionNeed { get; private set; }
         public Thing ThingsDeteriorating { get; private set; }
-        public int MapFires { get { return mapFires; } }
-        private int mapFires;
-        public bool HomeFire { get { return homeFire; } }
-        private bool homeFire;
-        public bool RefuelNeededNow { get { return refuelNeededNow; } }
-        private bool refuelNeededNow;
-        public bool RefuelNeeded { get { return refuelNeeded; } }
-        private bool refuelNeeded;
+        public int MapFires { get; private set; }
+        public bool HomeFire { get; private set; }
+        public bool RefuelNeededNow { get; private set; }
+        public bool RefuelNeeded { get; private set; }
         public bool PlantsBlighted { get; private set; }
-        public bool NeedWarmClothes { get { return needWarmClothes; } }
-        private bool needWarmClothes;
-        public bool AlertColonistLeftUnburied { get { return alertColonistLeftUnburied; } }
-        private bool alertColonistLeftUnburied;
-        public bool AlertAnimalRoaming { get { return alertAnimalRoaming; } }
-        private bool alertAnimalRoaming;
-        public bool AlertLowFood { get { return alertLowFood; } }
-        private bool alertLowFood;
-        public bool AlertMechDamaged { get { return alertMechDamaged; } }
-        private bool alertMechDamaged;
+        public bool NeedWarmClothes { get; private set; }
+        public bool AlertColonistLeftUnburied { get; private set; }
+        public bool AlertAnimalRoaming { get; private set; }
+        public bool AlertLowFood { get; private set; }
+        public bool AlertMechDamaged { get; private set; }
 
         private int actionCounter = 0;
 
@@ -237,7 +210,7 @@ namespace FreeWill
         {
             try
             {
-                suppressionNeed = 0.0f;
+                this.SuppressionNeed = 0.0f;
                 List<Pawn> slavesOfColonySpawned = this.map?.mapPawns?.SlavesOfColonySpawned;
                 if (slavesOfColonySpawned == null)
                 {
@@ -254,10 +227,10 @@ namespace FreeWill
                     {
                         continue;
                     }
-                    suppressionNeed = 0.2f;
+                    this.SuppressionNeed = 0.2f;
                     if (needsSuppression.IsHigh)
                     {
-                        suppressionNeed = 0.4f;
+                        this.SuppressionNeed = 0.4f;
                         return "checkSuppressionNeed";
                     }
                 }
@@ -272,7 +245,7 @@ namespace FreeWill
         private string checkPrisonerHealth()
         {
             var prisonersInColony = map?.mapPawns?.PrisonersOfColony;
-            numPrisonersNeedingTreatment =
+            this.NumPrisonersNeedingTreatment =
                 (prisonersInColony == null)
                     ? 0
                     : (from prisoners in map?.mapPawns?.PrisonersOfColony
@@ -284,7 +257,7 @@ namespace FreeWill
         private string checkPetsHealth()
         {
             var pawnsInFaction = map?.mapPawns?.PawnsInFaction(Faction.OfPlayer);
-            numPetsNeedingTreatment =
+            this.NumPetsNeedingTreatment =
                 (pawnsInFaction == null)
                     ? 0
                     : (from p in pawnsInFaction
@@ -295,25 +268,20 @@ namespace FreeWill
 
         private string checkColonyHealth()
         {
-            numPawns = map?.mapPawns?.FreeColonistsSpawnedCount ?? 0;
-            percentPawnsDowned = 0.0f;
-            percentPawnsNeedingTreatment = 0.0f;
-            float colonistWeight = 1.0f / numPawns;
-            var freeColonistsSpawned = map?.mapPawns?.FreeColonistsSpawned;
-            if (freeColonistsSpawned == null)
-            {
-                return "checkColonyHealth";
-            }
+            this.PercentPawnsDowned = 0;
+            this.PercentPawnsNeedingTreatment = 0;
+            float colonistWeight = 1f / (map?.mapPawns?.FreeColonistsSpawnedCount ?? 1);
+            var freeColonistsSpawned = map?.mapPawns?.FreeColonistsSpawned ?? new List<Pawn>();
             foreach (Pawn pawn in freeColonistsSpawned)
             {
                 bool inBed = pawn.CurrentBed() != null;
                 if (pawn.Downed && !inBed)
                 {
-                    percentPawnsDowned += colonistWeight;
+                    this.PercentPawnsDowned += colonistWeight;
                 }
                 if (pawn.health.HasHediffsNeedingTend())
                 {
-                    percentPawnsNeedingTreatment += colonistWeight;
+                    this.PercentPawnsNeedingTreatment += colonistWeight;
                 }
             }
             return "checkColonyHealth";
@@ -346,7 +314,7 @@ namespace FreeWill
                     }
                     total++;
                 }
-                percentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
+                this.PercentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
                 return "checkPercentPawnsMechHaulers";
             }
             catch (System.Exception e)
@@ -400,18 +368,18 @@ namespace FreeWill
         private string checkMapFire()
         {
             List<Thing> fires = this.map?.listerThings?.ThingsOfDef(ThingDefOf.Fire);
-            mapFires = fires?.Count ?? 0;
-            homeFire = false;
+            this.MapFires = fires?.Count ?? 0;
+            this.HomeFire = false;
             if (fires == null)
             {
                 return "checkMapFire";
             }
             foreach (Thing fire in fires)
             {
-                mapFires++;
+                this.MapFires++;
                 if (this.map.areaManager.Home[fire.Position] && !fire.Position.Fogged(fire.Map))
                 {
-                    homeFire = true;
+                    this.HomeFire = true;
                     return "checkMapFire";
                 }
             }
@@ -420,8 +388,8 @@ namespace FreeWill
 
         private string checkRefuelNeeded()
         {
-            refuelNeeded = false;
-            refuelNeededNow = false;
+            this.RefuelNeeded = false;
+            this.RefuelNeededNow = false;
             List<Thing> refuelableThings = this.map?.listerThings?.ThingsInGroup(ThingRequestGroup.Refuelable);
             if (refuelableThings == null)
             {
@@ -440,13 +408,13 @@ namespace FreeWill
                 }
                 if (!refuelable.HasFuel)
                 {
-                    refuelNeeded = true;
-                    refuelNeededNow = true;
+                    this.RefuelNeeded = true;
+                    this.RefuelNeededNow = true;
                     return "checkRefuelNeeded";
                 }
                 if (!refuelable.IsFull)
                 {
-                    refuelNeeded = true;
+                    this.RefuelNeeded = true;
                     continue;
                 }
             }
@@ -463,11 +431,11 @@ namespace FreeWill
                     return "checkActiveAlerts";
                 }
                 // unset all the alerts
-                this.alertLowFood = false;
-                this.alertAnimalRoaming = false;
-                this.needWarmClothes = false;
-                this.alertColonistLeftUnburied = false;
-                this.alertMechDamaged = false;
+                this.AlertLowFood = false;
+                this.AlertAnimalRoaming = false;
+                this.NeedWarmClothes = false;
+                this.AlertColonistLeftUnburied = false;
+                this.AlertMechDamaged = false;
                 // check current alerts
                 foreach (Alert alert in (List<Alert>)activeAlertsField.GetValue(ui.alerts))
                 {
@@ -478,13 +446,13 @@ namespace FreeWill
                     switch (alert)
                     {
                         case Alert_LowFood a:
-                            this.alertLowFood = true;
+                            this.AlertLowFood = true;
                             break;
                         case Alert_NeedWarmClothes a:
-                            this.needWarmClothes = true;
+                            this.NeedWarmClothes = true;
                             break;
                         case Alert_AnimalRoaming a:
-                            this.alertAnimalRoaming = true;
+                            this.AlertAnimalRoaming = true;
                             break;
                         case Alert_ColonistLeftUnburied a:
                             if (this.map.mapPawns.AnyFreeColonistSpawned)
@@ -495,18 +463,18 @@ namespace FreeWill
                                     Corpse corpse = (Corpse)list[i];
                                     if (Alert_ColonistLeftUnburied.IsCorpseOfColonist(corpse))
                                     {
-                                        this.alertColonistLeftUnburied = true;
+                                        this.AlertColonistLeftUnburied = true;
                                         break;
                                     }
                                 }
-                                if (this.alertColonistLeftUnburied)
+                                if (this.AlertColonistLeftUnburied)
                                 {
                                     break;
                                 }
                             }
                             break;
                         case Alert_MechDamaged a:
-                            this.alertMechDamaged = true;
+                            this.AlertMechDamaged = true;
                             break;
                         default:
                             break;

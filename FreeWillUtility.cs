@@ -7,7 +7,7 @@ using RimWorld;
 using RimWorld.Planet;
 using HarmonyLib;
 
-namespace FreeWill
+namespace Rimworld_FreeWillMod
 {
     public static class FreeWillUtility
     {

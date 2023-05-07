@@ -2,7 +2,7 @@ using System.Linq;
 using UnityEngine;
 using Verse;
 
-namespace FreeWill
+namespace Rimworld_FreeWillMod
 {
     [StaticConstructorOnStartup]
     public static class Resources
