@@ -5,19 +5,35 @@ using Verse;
 using System.Linq;
 using RimWorld;
 using HarmonyLib;
+using Verse.AI;
 
-namespace Rimworld_FreeWillMod
+namespace FreeWill
 {
     public class FreeWill_MapComponent : MapComponent
     {
-        private static Func<string>[] mapComponentCheckActions;
+        private static string[] mapComponentCheckActions = new string[]{
+            "checkPrisonerHealth",
+            "checkPetsHealth",
+            "checkColonyHealth",
+            "checkPercentPawnsMechHaulers",
+            "checkThingsDeteriorating",
+            "checkBlight",
+            "checkMapFire",
+            "checkRefuelNeeded",
+            "checkActiveAlerts",
+            "checkSuppressionNeed",
+        };
+
+        private static int couldNotSetPrioritiesHash = ("FreeWill" + "could not set priorities for pawn").GetHashCode();
 
         private Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> priorities;
         private Dictionary<Pawn, int> lastBored;
         private readonly FieldInfo activeAlertsField;
         private FreeWill_WorldComponent worldComp;
 
+        public List<Pawn> PawnsInFaction { get; private set; }
         public int NumPawns => this.map.mapPawns.FreeColonistsSpawnedCount;
+
 
         public float PercentPawnsNeedingTreatment { get; private set; }
         public int NumPetsNeedingTreatment { get; private set; }
@@ -36,6 +52,12 @@ namespace Rimworld_FreeWillMod
         public bool AlertAnimalRoaming { get; private set; }
         public bool AlertLowFood { get; private set; }
         public bool AlertMechDamaged { get; private set; }
+
+        private string pawnIndexCache = "unknown";
+        public bool AreaHasHaulables { get; private set; }
+        public bool AreaHasFilth { get; private set; }
+        public List<Thought> AllThoughts = new List<Thought>();
+        public List<WorkTypeDef> DisabledWorkTypes = new List<WorkTypeDef>();
 
         private int actionCounter = 0;
 
@@ -59,29 +81,10 @@ namespace Rimworld_FreeWillMod
 
             try
             {
-                // var startTime = DateTime.Now;
-                mapComponentCheckActions = mapComponentCheckActions ?? new Func<string>[]{
-                    checkPrisonerHealth,
-                    checkPetsHealth,
-                    checkColonyHealth,
-                    checkPercentPawnsMechHaulers,
-                    checkThingsDeteriorating,
-                    checkBlight,
-                    checkMapFire,
-                    checkRefuelNeeded,
-                    checkActiveAlerts,
-                    checkSuppressionNeed,
-                };
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+                this.worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
 
-                var msg = getMapComponentTickAction()();
+                getMapComponentTickAction();
                 this.actionCounter++;
-
-                // var duration = DateTime.Now - startTime;
-                // if (Prefs.DevMode && duration.TotalMilliseconds > 1.5f)
-                // {
-                //     Log.Message("FreeWill: MapComponentTick (" + msg + ") took " + duration.TotalMilliseconds + "ms");
-                // }
             }
             catch (System.Exception e)
             {
@@ -89,13 +92,49 @@ namespace Rimworld_FreeWillMod
             }
         }
 
-        private Func<string> getMapComponentTickAction()
+        private void getMapComponentTickAction()
         {
             try
             {
                 if (this.actionCounter < mapComponentCheckActions.Length)
                 {
-                    return mapComponentCheckActions[this.actionCounter];
+                    switch (mapComponentCheckActions[this.actionCounter])
+                    {
+                        case "checkPrisonerHealth":
+                            checkPrisonerHealth();
+                            break;
+                        case "checkPetsHealth":
+                            checkPetsHealth();
+                            break;
+                        case "checkColonyHealth":
+                            checkColonyHealth();
+                            break;
+                        case "checkPercentPawnsMechHaulers":
+                            checkPercentPawnsMechHaulers();
+                            break;
+                        case "checkThingsDeteriorating":
+                            checkThingsDeteriorating();
+                            break;
+                        case "checkBlight":
+                            checkBlight();
+                            break;
+                        case "checkMapFire":
+                            checkMapFire();
+                            break;
+                        case "checkRefuelNeeded":
+                            checkRefuelNeeded();
+                            break;
+                        case "checkActiveAlerts":
+                            checkActiveAlerts();
+                            break;
+                        case "checkSuppressionNeed":
+                            checkSuppressionNeed();
+                            break;
+                        default:
+                            Log.ErrorOnce($"Free Will: unknown map component tick action: {mapComponentCheckActions[this.actionCounter]}", 14147585);
+                            break;
+                    }
+                    return;
                 }
                 int i = this.actionCounter - mapComponentCheckActions.Length;
                 List<WorkTypeDef> workTypeDefs = DefDatabase<WorkTypeDef>.AllDefsListForReading;
@@ -103,11 +142,28 @@ namespace Rimworld_FreeWillMod
                 if (i >= workTypeDefs.Count * pawns.Count)
                 {
                     this.actionCounter = 0;
-                    return getMapComponentTickAction();
+                    checkPrisonerHealth();
+                    return;
                 }
                 int pawnIndex = i / workTypeDefs.Count;
                 int worktypeIndex = i % workTypeDefs.Count;
-                return () => setPriorityAction(pawns[pawnIndex], workTypeDefs[worktypeIndex]);
+                Pawn pawn = pawns[pawnIndex];
+                if (pawn.GetUniqueLoadID() != this.pawnIndexCache)
+                {
+                    // new pawn, so check their area
+                    BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
+                    this.AreaHasHaulables = checkIfAreaHasHaulables(pawn, BeautyUtility.beautyRelevantCells);
+                    this.AreaHasFilth = checkIfAreaHasFilth(pawn, BeautyUtility.beautyRelevantCells);
+                    this.pawnIndexCache = pawn.GetUniqueLoadID();
+                    // update their thoughts
+                    pawn.needs.mood.thoughts.GetAllMoodThoughts(this.AllThoughts);
+                    // update their disabled work types
+                    this.DisabledWorkTypes = pawn.GetDisabledWorkTypes(permanentOnly: true);
+
+                }
+                string pawnKey = pawn.GetUniqueLoadID();
+                WorkTypeDef workTypeDef = workTypeDefs[worktypeIndex];
+                setPriorityAction(pawn, pawnKey, workTypeDef);
             }
             catch (System.Exception e)
             {
@@ -147,11 +203,12 @@ namespace Rimworld_FreeWillMod
             if (!this.priorities[pawn].ContainsKey(workTypeDef))
             {
                 this.priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
+                this.priorities[pawn][workTypeDef].Compute();
             }
             return this.priorities[pawn][workTypeDef];
         }
 
-        private string setPriorityAction(Pawn pawn, WorkTypeDef workTypeDef)
+        private string setPriorityAction(Pawn pawn, string pawnKey, WorkTypeDef workTypeDef)
         {
             var msg = pawn.Name.ToStringShort + " " + workTypeDef.defName;
             if (pawn == null)
@@ -165,7 +222,7 @@ namespace Rimworld_FreeWillMod
             }
             if (pawn.IsSlaveOfColony)
             {
-                if (worldComp.HasFreeWill(pawn))
+                if (this.worldComp.HasFreeWill(pawn, pawnKey))
                 {
                     var ok = worldComp.TryRemoveFreeWill(pawn);
                     if (!ok)
@@ -175,28 +232,36 @@ namespace Rimworld_FreeWillMod
                     return msg;
                 }
             }
-            worldComp.EnsureFreeWillStatusIsCorrect(pawn);
+            this.worldComp.EnsureFreeWillStatusIsCorrect(pawn, pawnKey);
             try
             {
-                if (priorities == null)
+                if (this.priorities == null)
                 {
                     Log.ErrorOnce("Free Will: priorities is null", 2274889);
-                    priorities = new Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>>();
+                    this.priorities = new Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>>();
                 }
-                if (!priorities.ContainsKey(pawn))
+                if (!this.priorities.ContainsKey(pawn))
                 {
-                    priorities[pawn] = new Dictionary<WorkTypeDef, Priority>();
+                    this.priorities[pawn] = new Dictionary<WorkTypeDef, Priority>();
                 }
-                priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
-                if (worldComp.HasFreeWill(pawn))
+                if (!this.priorities[pawn].ContainsKey(workTypeDef))
                 {
-                    priorities[pawn][workTypeDef].ApplyPriorityToGame();
+                    this.priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
+                }
+                if (this.worldComp.HasFreeWill(pawn, pawnKey))
+                {
+                    this.priorities[pawn][workTypeDef].Compute();
+                    this.priorities[pawn][workTypeDef].ApplyPriorityToGame();
                 }
                 return msg;
             }
-            catch (System.Exception)
+            catch (System.Exception e)
             {
-                Log.ErrorOnce("Free Will: could not set priorities for pawn: " + pawn.Name + ": marking " + pawn.Name + " as not having free will", 752116445);
+                if (Prefs.DevMode)
+                {
+                    throw new Exception("could not set priorities for pawn: " + pawn.Name + ": " + e, e);
+                }
+                Log.ErrorOnce("Free Will: could not set priorities for pawn: " + pawn.Name + ": marking " + pawn.Name + " as not having free will: " + e, couldNotSetPrioritiesHash);
                 var ok = worldComp.TryRemoveFreeWill(pawn);
                 if (!ok)
                 {
@@ -256,13 +321,10 @@ namespace Rimworld_FreeWillMod
 
         private string checkPetsHealth()
         {
-            var pawnsInFaction = map?.mapPawns?.PawnsInFaction(Faction.OfPlayer);
-            this.NumPetsNeedingTreatment =
-                (pawnsInFaction == null)
-                    ? 0
-                    : (from p in pawnsInFaction
-                       where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
-                       select p).Count();
+            this.PawnsInFaction = this.map?.mapPawns?.PawnsInFaction(Faction.OfPlayer) ?? new List<Pawn>();
+            this.NumPetsNeedingTreatment = (from p in this.PawnsInFaction
+                                            where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
+                                            select p).Count();
             return "checkPetsHealth";
         }
 
@@ -291,14 +353,10 @@ namespace Rimworld_FreeWillMod
         {
             try
             {
-                List<Pawn> pawnsInFaction = this.map?.mapPawns?.PawnsInFaction(Faction.OfPlayer);
-                if (pawnsInFaction == null)
-                {
-                    return "checkPercentPawnsMechHaulers";
-                }
+                this.PawnsInFaction = this.map?.mapPawns?.PawnsInFaction(Faction.OfPlayer) ?? new List<Pawn>();
                 float numMechHaulers = 0;
                 float total = 0;
-                foreach (Pawn pawn in pawnsInFaction)
+                foreach (Pawn pawn in this.PawnsInFaction)
                 {
                     if (!pawn.IsColonistPlayerControlled && !pawn.IsColonyMechPlayerControlled)
                     {
@@ -487,6 +545,81 @@ namespace Rimworld_FreeWillMod
                 Log.ErrorOnce("Free Will: could not check active alerts", 58548754);
                 return "checkActiveAlerts";
             }
+        }
+
+        private bool checkIfAreaHasHaulables(Pawn pawn, List<IntVec3> area)
+        {
+            return area
+                .SelectMany(cell => cell.GetThingList(pawn.Map))
+                .Any((t) => this.isHaulable(pawn, t));
+        }
+
+        private bool isHaulable(Pawn pawn, Thing t)
+        {
+            if (!t.def.alwaysHaulable)
+            {
+                if (!t.def.EverHaulable)
+                {
+                    return false;
+                }
+                if (pawn.Map.designationManager.DesignationOn(t, DesignationDefOf.Haul) == null && !t.IsInAnyStorage())
+                {
+                    return false;
+                }
+            }
+            if (t.IsInValidBestStorage())
+            {
+                return false;
+            }
+            if (t.IsForbidden(pawn))
+            {
+                return false;
+            }
+            if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
+            {
+                return false;
+            }
+            if (pawn.carryTracker.MaxStackSpaceEver(t.def) <= 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private bool checkIfAreaHasFilth(Pawn pawn, List<IntVec3> area)
+        {
+            var areaHasCleaningJobToDo = false;
+            foreach (IntVec3 cell in area)
+            {
+                foreach (Thing thing in cell.GetThingList(pawn.Map))
+                {
+                    Filth filth = thing as Filth;
+                    if (filth == null)
+                    {
+                        continue;
+                    }
+                    if (!filth.Map.areaManager.Home[filth.Position])
+                    {
+                        continue;
+                    }
+                    if (!pawn.CanReserve(thing, 1, -1, null, false))
+                    {
+                        continue;
+                    }
+                    if (filth.TicksSinceThickened < 600)
+                    {
+                        continue;
+                    }
+                    areaHasCleaningJobToDo = true;
+                    break;
+                }
+                if (areaHasCleaningJobToDo)
+                {
+                    break;
+                }
+            }
+            return areaHasCleaningJobToDo;
+
         }
     }
 }

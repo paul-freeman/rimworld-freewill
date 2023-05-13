@@ -1,26 +1,27 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Collections.Generic;
-using RimWorld;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using Verse;
-using Verse.AI;
 
 
-namespace Rimworld_FreeWillMod
+namespace FreeWill
 {
     public class Priority : IComparable
     {
-        const int disabledCutoff = 100 / (Pawn_WorkSettings.LowestPriority + 1); // 20 if LowestPriority is 4
-        const int disabledCutoffActiveWorkArea = 100 - disabledCutoff; // 80 if LowestPriority is 4
-        const float onePriorityWidth = (float)disabledCutoffActiveWorkArea / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
-        private FreeWill_WorldComponent worldComp;
+        const int DISABLED_CUTOFF = 100 / (Pawn_WorkSettings.LowestPriority + 1); // 20 if LowestPriority is 4
+        const int DISABLED_CUTOFF_ACTIVE_WORK_AREA = 100 - DISABLED_CUTOFF; // 80 if LowestPriority is 4
+        const float ONE_PRIORITY_WIDTH = (float)DISABLED_CUTOFF_ACTIVE_WORK_AREA / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
 
         private Pawn pawn;
+        private FreeWill_WorldComponent worldComp;
         private FreeWill_MapComponent mapComp;
-        public WorkTypeDef WorkTypeDef { get; private set; }
+        public WorkTypeDef WorkTypeDef { get; }
         public float Value { get; private set; }
-        public List<string> AdjustmentStrings { get; private set; }
+        public List<Func<string>> AdjustmentStrings { get; private set; }
+
         public bool Enabled { get; private set; }
         public bool Disabled { get; private set; }
 
@@ -50,41 +51,39 @@ namespace Rimworld_FreeWillMod
         // supported modded work types
         const string HAULING_URGENT = "HaulingUrgent";
 
+        private static int couldNotConvertToGamePriority = ("FreeWill" + "could not convert to game priority").GetHashCode();
+
+
         public Priority(Pawn pawn, WorkTypeDef workTypeDef)
+        {
+            this.pawn = pawn;
+            this.WorkTypeDef = workTypeDef;
+        }
+
+        public void Compute()
         {
             try
             {
-                this.pawn = pawn;
-                this.WorkTypeDef = workTypeDef;
-                this.AdjustmentStrings = new List<string> { };
+                this.AdjustmentStrings = new List<Func<string>> { };
 
                 mapComp = this.pawn.Map.GetComponent<FreeWill_MapComponent>();
                 worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
 
-                // pawn has no free will, so use the player set priority
-                if (!worldComp.HasFreeWill(pawn))
-                {
-                    var p = pawn.workSettings.GetPriority(workTypeDef);
-                    if (p == 0)
-                    {
-                        this.set(0.0f, "FreeWillPriorityNoFreeWill".TranslateSimple());
-                        return;
-                    }
-                    this.set((100f - onePriorityWidth * (p - 1)) / 100f, "FreeWillPriorityNoFreeWill".TranslateSimple());
-                    return;
-                }
-
                 // start priority at the global default and compute the priority
                 // using the AI in this file
-                this.set(0.2f, "FreeWillPriorityGlobalDefault".TranslateSimple()).compute();
+                this.set(0.2f, "FreeWillPriorityGlobalDefault".TranslateSimple).compute();
                 return;
             }
-            catch (System.Exception err)
+            catch (System.Exception e)
             {
-                Log.ErrorOnce("could not set " + workTypeDef.defName + " priority for pawn: " + pawn.Name + ": " + err.Message, 15448413);
+                if (Prefs.DevMode)
+                {
+                    throw new System.Exception("could not compute " + this.WorkTypeDef.defName + " priority for pawn: " + pawn.Name + ": " + e.Message);
+                }
+                Log.ErrorOnce("could not compute " + this.WorkTypeDef.defName + " priority for pawn: " + pawn.Name + ": " + e.Message, 15448413);
                 this
-                    .alwaysDo("FreeWillPriorityError".TranslateSimple())
-                    .set(0.4f, "FreeWillPriorityError".TranslateSimple())
+                    .alwaysDo("FreeWillPriorityError".TranslateSimple)
+                    .set(0.4f, "FreeWillPriorityError".TranslateSimple)
                     ;
             }
         }
@@ -107,17 +106,17 @@ namespace Rimworld_FreeWillMod
         {
             this.Enabled = false;
             this.Disabled = false;
-            if (pawn.WorkTypeIsDisabled(WorkTypeDef))
+            if (mapComp.DisabledWorkTypes.Contains(WorkTypeDef))
             {
-                return this.neverDo("FreeWillPriorityPermanentlyDisabled".TranslateSimple());
+                return this.neverDo("FreeWillPriorityPermanentlyDisabled".TranslateSimple);
             }
             switch (this.WorkTypeDef.defName)
             {
                 case FIREFIGHTER:
                     return this
-                        .set(0.0f, "FreeWillPriorityFirefightingDefault".TranslateSimple())
-                        .alwaysDo("FreeWillPriorityFirefightingAlways".TranslateSimple())
-                        .neverDoIf(this.pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple())
+                        .set(0.0f, "FreeWillPriorityFirefightingDefault".TranslateSimple)
+                        .alwaysDo("FreeWillPriorityFirefightingAlways".TranslateSimple)
+                        .neverDoIf(this.pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple)
                         .considerFire()
                         .considerBuildingImmunity()
                         .considerCompletingTask()
@@ -128,8 +127,8 @@ namespace Rimworld_FreeWillMod
 
                 case PATIENT:
                     return this
-                        .set(0.0f, "FreeWillPriorityPatientDefault".TranslateSimple())
-                        .alwaysDo("FreeWillPriorityPatientAlways".TranslateSimple())
+                        .set(0.0f, "FreeWillPriorityPatientDefault".TranslateSimple)
+                        .alwaysDo("FreeWillPriorityPatientAlways".TranslateSimple)
                         .considerHealth()
                         .considerBuildingImmunity()
                         .considerCompletingTask()
@@ -164,8 +163,8 @@ namespace Rimworld_FreeWillMod
 
                 case PATIENT_BED_REST:
                     return this
-                        .set(0.0f, "FreeWillPriorityBedrestDefault".TranslateSimple())
-                        .alwaysDo("FreeWillPriorityBedrestAlways".TranslateSimple())
+                        .set(0.0f, "FreeWillPriorityBedrestDefault".TranslateSimple)
+                        .alwaysDo("FreeWillPriorityBedrestAlways".TranslateSimple)
                         .considerHealth()
                         .considerBuildingImmunity()
                         .considerLowFood(-0.2f)
@@ -179,7 +178,7 @@ namespace Rimworld_FreeWillMod
 
                 case CHILDCARE:
                     return this
-                        .set(0.5f, "FreeWillPriorityChildcareDefault".TranslateSimple())
+                        .set(0.5f, "FreeWillPriorityChildcareDefault".TranslateSimple)
                         .considerRelevantSkills(shouldAdd: true)
                         .considerPassion()
                         .considerThoughts()
@@ -197,12 +196,12 @@ namespace Rimworld_FreeWillMod
 
                 case BASIC_WORKER:
                     return this
-                        .set(0.5f, "FreeWillPriorityBasicWorkDefault".TranslateSimple())
+                        .set(0.5f, "FreeWillPriorityBasicWorkDefault".TranslateSimple)
                         .considerThoughts()
                         .considerHealth()
                         .considerLowFood(-0.3f)
                         .considerBored()
-                        .neverDoIf(this.pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple())
+                        .neverDoIf(this.pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple)
                         .considerBuildingImmunity()
                         .considerCompletingTask()
                         .considerColonistsNeedingTreatment()
@@ -489,7 +488,7 @@ namespace Rimworld_FreeWillMod
 
                 case HAULING:
                     return this
-                        .set(0.3f, "FreeWillPriorityHaulingDefault".TranslateSimple())
+                        .set(0.3f, "FreeWillPriorityHaulingDefault".TranslateSimple)
                         .considerBeautyExpectations()
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
@@ -515,7 +514,7 @@ namespace Rimworld_FreeWillMod
 
                 case CLEANING:
                     return this
-                        .set(0.5f, "FreeWillPriorityCleaningDefault".TranslateSimple())
+                        .set(0.5f, "FreeWillPriorityCleaningDefault".TranslateSimple)
                         .considerBeautyExpectations()
                         .considerIsAnyoneElseDoing()
                         .considerThoughts()
@@ -524,7 +523,7 @@ namespace Rimworld_FreeWillMod
                         .considerFoodPoisoning()
                         .considerHealth()
                         .considerBored()
-                        .neverDoIf(notInHomeArea(this.pawn), "FreeWillPriorityNotInHomeArea".TranslateSimple())
+                        .neverDoIf(notInHomeArea(this.pawn), "FreeWillPriorityNotInHomeArea".TranslateSimple)
                         .considerBuildingImmunity()
                         .considerCompletingTask()
                         .considerColonistsNeedingTreatment()
@@ -555,7 +554,7 @@ namespace Rimworld_FreeWillMod
 
                 case HAULING_URGENT:
                     return this
-                        .set(0.5f, "FreeWillPriorityUrgentHaulingDefault".TranslateSimple())
+                        .set(0.5f, "FreeWillPriorityUrgentHaulingDefault".TranslateSimple)
                         .considerBeautyExpectations()
                         .considerMovementSpeed()
                         .considerCarryingCapacity()
@@ -610,52 +609,74 @@ namespace Rimworld_FreeWillMod
             {
                 Current.Game.playSettings.useWorkPriorities = true;
             }
-            pawn.workSettings.SetPriority(WorkTypeDef, this.ToGamePriority());
+
+            int priority = this.ToGamePriority();
+            if (pawn.workSettings.GetPriority(WorkTypeDef) != priority)
+            {
+                pawn.workSettings.SetPriority(WorkTypeDef, priority);
+            }
         }
 
         public int ToGamePriority()
         {
-            int valueInt = UnityEngine.Mathf.Clamp(UnityEngine.Mathf.RoundToInt(this.Value * 100), 0, 100);
-            if (valueInt <= disabledCutoff)
+            try
             {
-                if (this.Enabled)
+                int valueInt = UnityEngine.Mathf.Clamp(UnityEngine.Mathf.RoundToInt(this.Value * 100), 0, 100);
+                if (valueInt <= DISABLED_CUTOFF)
                 {
-                    return Pawn_WorkSettings.LowestPriority;
+                    if (this.Enabled)
+                    {
+                        return Pawn_WorkSettings.LowestPriority;
+                    }
+                    return 0;
                 }
-                return 0;
-            }
-            if (this.Disabled)
-            {
-                return 0;
-            }
-            int invertedValueRange = disabledCutoffActiveWorkArea - (valueInt - disabledCutoff); // 0-80 if LowestPriority is 4
-            int gamePriorityValue = UnityEngine.Mathf.FloorToInt((float)invertedValueRange / onePriorityWidth) + 1;
-            if (gamePriorityValue > Pawn_WorkSettings.LowestPriority || gamePriorityValue < 1)
-            {
-                Log.Error("calculated an invalid game priority value of " + gamePriorityValue.ToString());
-                gamePriorityValue = UnityEngine.Mathf.Clamp(gamePriorityValue, 1, Pawn_WorkSettings.LowestPriority);
-            }
+                if (this.Disabled)
+                {
+                    return 0;
+                }
+                int invertedValueRange = DISABLED_CUTOFF_ACTIVE_WORK_AREA - (valueInt - DISABLED_CUTOFF); // 0-80 if LowestPriority is 4
+                int gamePriorityValue = UnityEngine.Mathf.FloorToInt((float)invertedValueRange / ONE_PRIORITY_WIDTH) + 1;
+                if (gamePriorityValue > Pawn_WorkSettings.LowestPriority || gamePriorityValue < 1)
+                {
+                    Log.Error("calculated an invalid game priority value of " + gamePriorityValue.ToString());
+                    gamePriorityValue = UnityEngine.Mathf.Clamp(gamePriorityValue, 1, Pawn_WorkSettings.LowestPriority);
+                }
 
-            return gamePriorityValue;
+                return gamePriorityValue;
+            }
+            catch (Exception e)
+            {
+                Log.ErrorOnce("could not convert to game priority: " + e.ToString(), couldNotConvertToGamePriority);
+                return 0;
+            }
         }
 
-        private Priority set(float x, string description)
+        private Priority set(float x, Func<string> description)
         {
             this.Value = UnityEngine.Mathf.Clamp01(x);
-            string adjustmentString = " - " + description.CapitalizeFirst() + ": " + this.Value.ToStringPercent();
+            Func<string> adjustmentString = () =>
+            {
+                // Create string builder
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.Append(" - ");
+                stringBuilder.Append(description().CapitalizeFirst());
+                stringBuilder.Append(": ");
+                stringBuilder.Append(this.Value.ToStringPercent());
+                return stringBuilder.ToString();
+            };
             if (Prefs.DevMode)
             {
-                this.AdjustmentStrings.Add("-- reset --");
+                this.AdjustmentStrings.Add(() => "-- reset --");
                 this.AdjustmentStrings.Add(adjustmentString);
             }
             else
             {
-                this.AdjustmentStrings = new List<string> { adjustmentString };
+                this.AdjustmentStrings = new List<Func<string>> { adjustmentString };
             }
             return this;
         }
 
-        private Priority add(float x, string description)
+        private Priority add(float x, Func<string> description)
         {
             if (Disabled)
             {
@@ -664,26 +685,53 @@ namespace Rimworld_FreeWillMod
             float newValue = UnityEngine.Mathf.Clamp01(Value + x);
             if (newValue > Value)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": +" + (newValue - this.Value).ToStringPercent();
+                Func<string> adjustmentString = () =>
+                {
+                    // Create string builder
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(" - ");
+                    stringBuilder.Append(description().CapitalizeFirst());
+                    stringBuilder.Append(": +");
+                    stringBuilder.Append((newValue - this.Value).ToStringPercent());
+                    return stringBuilder.ToString();
+                };
                 AdjustmentStrings.Add(adjustmentString);
                 Value = newValue;
             }
             else if (newValue < Value)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": " + (newValue - this.Value).ToStringPercent();
+                Func<string> adjustmentString = () =>
+                {
+                    // Create string builder
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(" - ");
+                    stringBuilder.Append(description().CapitalizeFirst());
+                    stringBuilder.Append(": -");
+                    stringBuilder.Append((this.Value - newValue).ToStringPercent());
+                    return stringBuilder.ToString();
+                };
                 AdjustmentStrings.Add(adjustmentString);
                 Value = newValue;
             }
             else if (newValue == Value && Prefs.DevMode)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": +" + (newValue - this.Value).ToStringPercent();
+                Func<string> adjustmentString = () =>
+                {
+                    // Create string builder
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(" - ");
+                    stringBuilder.Append(description().CapitalizeFirst());
+                    stringBuilder.Append(": +");
+                    stringBuilder.Append((newValue - this.Value).ToStringPercent());
+                    return stringBuilder.ToString();
+                };
                 AdjustmentStrings.Add(adjustmentString);
                 Value = newValue;
             }
             return this;
         }
 
-        private Priority multiply(float x, string description)
+        private Priority multiply(float x, Func<string> description)
         {
             if (Disabled || this.Value == 0.0f)
             {
@@ -692,13 +740,31 @@ namespace Rimworld_FreeWillMod
             float newClampedValue = UnityEngine.Mathf.Clamp01(this.Value * x);
             if (newClampedValue != this.Value)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": x" + (newClampedValue / this.Value).ToStringPercent();
+                Func<string> adjustmentString = () =>
+                {
+                    // Create string builder
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(" - ");
+                    stringBuilder.Append(description().CapitalizeFirst());
+                    stringBuilder.Append(": x");
+                    stringBuilder.Append((newClampedValue / this.Value).ToStringPercent());
+                    return stringBuilder.ToString();
+                };
                 AdjustmentStrings.Add(adjustmentString);
                 this.Value = newClampedValue;
             }
             else if (newClampedValue == this.Value && Prefs.DevMode)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": x" + (newClampedValue / this.Value).ToStringPercent();
+                Func<string> adjustmentString = () =>
+                {
+                    // Create string builder
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(" - ");
+                    stringBuilder.Append(description().CapitalizeFirst());
+                    stringBuilder.Append(": x");
+                    stringBuilder.Append((newClampedValue / this.Value).ToStringPercent());
+                    return stringBuilder.ToString();
+                };
                 AdjustmentStrings.Add(adjustmentString);
                 this.Value = newClampedValue;
             }
@@ -710,7 +776,7 @@ namespace Rimworld_FreeWillMod
             return this.Disabled;
         }
 
-        private Priority alwaysDoIf(bool cond, string description)
+        private Priority alwaysDoIf(bool cond, Func<string> description)
         {
             if (!cond || this.Enabled)
             {
@@ -718,7 +784,16 @@ namespace Rimworld_FreeWillMod
             }
             if (Prefs.DevMode || this.Disabled || this.ToGamePriority() == 0)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": " + "FreeWillPriorityEnabled".TranslateSimple().CapitalizeFirst();
+                Func<string> adjustmentString = () =>
+                {
+                    // Create string builder
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(" - ");
+                    stringBuilder.Append(description().CapitalizeFirst());
+                    stringBuilder.Append(": ");
+                    stringBuilder.Append("FreeWillPriorityEnabled".TranslateSimple().CapitalizeFirst());
+                    return stringBuilder.ToString();
+                };
                 this.AdjustmentStrings.Add(adjustmentString);
             }
             this.Enabled = true;
@@ -726,12 +801,12 @@ namespace Rimworld_FreeWillMod
             return this;
         }
 
-        private Priority alwaysDo(string description)
+        private Priority alwaysDo(Func<string> description)
         {
             return this.alwaysDoIf(true, description);
         }
 
-        private Priority neverDoIf(bool cond, string description)
+        private Priority neverDoIf(bool cond, Func<string> description)
         {
             if (!cond || this.Disabled)
             {
@@ -739,7 +814,16 @@ namespace Rimworld_FreeWillMod
             }
             if (Prefs.DevMode || this.Enabled || this.ToGamePriority() >= 0)
             {
-                string adjustmentString = " - " + description.CapitalizeFirst() + ": " + "FreeWillPriorityDisabled".TranslateSimple().CapitalizeFirst();
+                Func<string> adjustmentString = () =>
+                {
+                    // Create string builder
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append(" - ");
+                    stringBuilder.Append(description().CapitalizeFirst());
+                    stringBuilder.Append(": ");
+                    stringBuilder.Append("FreeWillPriorityDisabled".TranslateSimple().CapitalizeFirst());
+                    return stringBuilder.ToString();
+                };
                 this.AdjustmentStrings.Add(adjustmentString);
             }
             this.Disabled = true;
@@ -747,7 +831,7 @@ namespace Rimworld_FreeWillMod
             return this;
         }
 
-        private Priority neverDo(string description)
+        private Priority neverDo(Func<string> description)
         {
             return this.neverDoIf(true, description);
         }
@@ -761,20 +845,20 @@ namespace Rimworld_FreeWillMod
             Inspiration inspiration = this.pawn.mindState.inspirationHandler.CurState;
             if (this.WorkTypeDef.defName == HUNTING && inspiration.def.defName == "Frenzy_Shoot")
             {
-                return add(0.4f, "FreeWillPriorityInspired".TranslateSimple());
+                return add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
             }
             foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredNonDisabledWorkTypes ?? new List<WorkTypeDef>())
             {
                 if (this.WorkTypeDef.defName == workTypeDefB.defName)
                 {
-                    return add(0.4f, "FreeWillPriorityInspired".TranslateSimple());
+                    return add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
                 }
             }
             foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredAnyNonDisabledWorkType ?? new List<WorkTypeDef>())
             {
                 if (this.WorkTypeDef.defName == workTypeDefB.defName)
                 {
-                    return add(0.4f, "FreeWillPriorityInspired".TranslateSimple());
+                    return add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
                 }
             }
             return this;
@@ -782,21 +866,19 @@ namespace Rimworld_FreeWillMod
 
         private Priority considerThoughts()
         {
-            List<Thought> thoughts = new List<Thought>();
-            pawn.needs.mood.thoughts.GetAllMoodThoughts(thoughts);
-            foreach (Thought thought in thoughts)
+            foreach (Thought thought in this.mapComp.AllThoughts)
             {
                 if (thought.def.defName == "NeedFood")
                 {
                     if (WorkTypeDef.defName == COOKING)
                     {
-                        return add(-0.01f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple());
+                        return add(-0.01f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
                     }
                     if (WorkTypeDef.defName == HUNTING || WorkTypeDef.defName == PLANT_CUTTING)
                     {
-                        return add(-0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple());
+                        return add(-0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
                     }
-                    return add(0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple());
+                    return add(0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
                 }
             }
             return this;
@@ -806,7 +888,7 @@ namespace Rimworld_FreeWillMod
         {
             if (this.mapComp.NeedWarmClothes)
             {
-                return add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple());
+                return add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
             }
             return this;
         }
@@ -815,7 +897,7 @@ namespace Rimworld_FreeWillMod
         {
             if (this.mapComp.AlertAnimalRoaming)
             {
-                return add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple());
+                return add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple);
             }
             return this;
         }
@@ -824,7 +906,7 @@ namespace Rimworld_FreeWillMod
         {
             if (this.mapComp.SuppressionNeed != 0.0f)
             {
-                return add(this.mapComp.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple());
+                return add(this.mapComp.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple);
             }
             return this;
         }
@@ -833,7 +915,7 @@ namespace Rimworld_FreeWillMod
         {
             if (this.mapComp.AlertColonistLeftUnburied && (this.WorkTypeDef.defName == HAULING || this.WorkTypeDef.defName == HAULING_URGENT))
             {
-                return add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple());
+                return add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple);
             }
             return this;
         }
@@ -844,11 +926,11 @@ namespace Rimworld_FreeWillMod
             if (this.pawn.mindState.IsIdle)
             {
                 (this.mapComp as FreeWill_MapComponent)?.UpdateLastBored(this.pawn);
-                return this.alwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple());
+                return this.alwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple);
             }
             var lastBored = (this.mapComp as FreeWill_MapComponent)?.GetLastBored(this.pawn);
             var wasBored = lastBored != 0 && Find.TickManager.TicksGame - lastBored < boredomMemory;
-            return this.alwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple());
+            return this.alwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple);
         }
 
         private Priority considerHasHuntingWeapon()
@@ -859,7 +941,7 @@ namespace Rimworld_FreeWillMod
                 {
                     return this;
                 }
-                return neverDoIf(!WorkGiver_HunterHunt.HasHuntingWeapon(pawn), "FreeWillPriorityNoHuntingWeapon".TranslateSimple());
+                return neverDoIf(!WorkGiver_HunterHunt.HasHuntingWeapon(pawn), "FreeWillPriorityNoHuntingWeapon".TranslateSimple);
             }
             catch (System.Exception err)
             {
@@ -883,7 +965,7 @@ namespace Rimworld_FreeWillMod
                 {
                     return this;
                 }
-                return neverDoIf(this.pawn.story.traits.HasTrait(DefDatabase<TraitDef>.GetNamed("Brawler")), "FreeWillPriorityBrawler".TranslateSimple());
+                return neverDoIf(this.pawn.story.traits.HasTrait(DefDatabase<TraitDef>.GetNamed("Brawler")), "FreeWillPriorityBrawler".TranslateSimple);
             }
             catch (System.Exception err)
             {
@@ -903,10 +985,10 @@ namespace Rimworld_FreeWillMod
 
                     // pawns should not stop doing the work they are currently
                     // doing
-                    .alwaysDo("FreeWillPriorityCurrentlyDoing".TranslateSimple())
+                    .alwaysDo("FreeWillPriorityCurrentlyDoing".TranslateSimple)
 
                     // pawns prefer the work they are current doing
-                    .multiply(1.8f, "FreeWillPriorityCurrentlyDoing".TranslateSimple())
+                    .multiply(1.8f, "FreeWillPriorityCurrentlyDoing".TranslateSimple)
 
                     ;
             }
@@ -927,7 +1009,7 @@ namespace Rimworld_FreeWillMod
                             * 0.25f
                             * this.pawn.GetStatValue(StatDefOf.MoveSpeed, true)
                     ),
-                    "FreeWillPriorityMovementSpeed".TranslateSimple()
+                    "FreeWillPriorityMovementSpeed".TranslateSimple
                 );
             }
             catch (System.Exception err)
@@ -952,7 +1034,7 @@ namespace Rimworld_FreeWillMod
             {
                 return this;
             }
-            return this.multiply(_carryingCapacity / _baseCarryingCapacity, "FreeWillPriorityCarryingCapacity".TranslateSimple());
+            return this.multiply(_carryingCapacity / _baseCarryingCapacity, "FreeWillPriorityCarryingCapacity".TranslateSimple);
         }
 
         private Priority considerPassion()
@@ -967,6 +1049,7 @@ namespace Rimworld_FreeWillMod
                 float x;
                 for (int i = 0; i < relevantSkills.Count; i++)
                 {
+                    int index = i;
                     switch (pawn.skills.GetSkill(relevantSkills[i]).passion)
                     {
                         case Passion.None:
@@ -974,17 +1057,17 @@ namespace Rimworld_FreeWillMod
                         case Passion.Major:
                             x = worldComp.settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
                             this
-                                .alwaysDo("FreeWillPriorityMajorPassionFor".Translate(relevantSkills[i].skillLabel))
-                                .add(x, "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[i].skillLabel));
+                                .alwaysDo(() => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel))
+                                .add(x, () => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
                             continue;
                         case Passion.Minor:
                             x = worldComp.settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.25f / relevantSkills.Count;
                             this
-                                .alwaysDo("FreeWillPriorityMinorPassionFor".Translate(relevantSkills[i].skillLabel))
-                                .add(x, "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[i].skillLabel));
+                                .alwaysDo(() => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel))
+                                .add(x, () => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel));
                             continue;
                         default:
-                            considerInterest(pawn, relevantSkills[i], relevantSkills.Count, WorkTypeDef);
+                            // considerInterest(pawn, relevantSkills[i], relevantSkills.Count, WorkTypeDef);
                             continue;
                     }
                 }
@@ -1020,7 +1103,7 @@ namespace Rimworld_FreeWillMod
                 }
                 if (productionMech.BoundPawn == this.pawn)
                 {
-                    return this.add(0.4f, "FreeWillPriorityMechGestator".TranslateSimple());
+                    return this.add(0.4f, "FreeWillPriorityMechGestator".TranslateSimple);
                 }
             }
             return this;
@@ -1041,21 +1124,19 @@ namespace Rimworld_FreeWillMod
             }
             catch (System.Exception)
             {
-                Log.Message("could not find interest for index " + ((int)skillRecord.passion).ToString());
+                Log.Error("could not find interest for index " + ((int)skillRecord.passion).ToString());
                 return this;
             }
             switch (interest)
             {
                 case "DMinorAversion":
                     x = (1.0f - pawn.needs.mood.CurLevel) * -0.25f / skillCount;
-                    return add(x, "FreeWillPriorityMinorAversionTo".TranslateSimple() + " " + skillDef.skillLabel);
+                    return add(x, () => "FreeWillPriorityMinorAversionTo".TranslateSimple() + " " + skillDef.skillLabel);
                 case "DMajorAversion":
                     x = (1.0f - pawn.needs.mood.CurLevel) * -0.5f / skillCount;
-                    return add(x, "FreeWillPriorityMajorAversionTo".TranslateSimple() + " " + skillDef.skillLabel);
+                    return add(x, () => "FreeWillPriorityMajorAversionTo".TranslateSimple() + " " + skillDef.skillLabel);
                 case "DCompulsion":
-                    List<Thought> allThoughts = new List<Thought>();
-                    pawn.needs.mood.thoughts.GetAllMoodThoughts(allThoughts);
-                    foreach (var thought in allThoughts)
+                    foreach (var thought in this.mapComp.AllThoughts)
                     {
                         if (thought.def.defName == "CompulsionUnmet")
                         {
@@ -1063,13 +1144,13 @@ namespace Rimworld_FreeWillMod
                             {
                                 case "compulsive itch":
                                     x = 0.2f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveItch".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveItch".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "compulsive need":
                                     x = 0.4f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveNeed".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveNeed".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "compulsive obsession":
                                     x = 0.6f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveObsession".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveObsession".TranslateSimple() + " " + skillDef.skillLabel);
                                 default:
                                     Log.Message("could not read compulsion label");
                                     return this;
@@ -1081,13 +1162,13 @@ namespace Rimworld_FreeWillMod
                             {
                                 case "compulsive itch":
                                     x = 0.3f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveItch".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveItch".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "compulsive demand":
                                     x = 0.6f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveDemand".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveDemand".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "compulsive withdrawal":
                                     x = 0.9f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveWithdrawl".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveWithdrawl".TranslateSimple() + " " + skillDef.skillLabel);
                                 default:
                                     Log.Message("could not read compulsion label");
                                     return this;
@@ -1099,13 +1180,13 @@ namespace Rimworld_FreeWillMod
                             {
                                 case "compulsive yearning":
                                     x = 0.4f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveYearning".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveYearning".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "compulsive tantrum":
                                     x = 0.8f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveTantrum".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveTantrum".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "compulsive hysteria":
                                     x = 1.2f / skillCount;
-                                    return add(x, "FreeWillPriorityCompulsiveHysteria".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityCompulsiveHysteria".TranslateSimple() + " " + skillDef.skillLabel);
                                 default:
                                     Log.Message("could not read compulsion label");
                                     return this;
@@ -1115,7 +1196,7 @@ namespace Rimworld_FreeWillMod
                     return this;
                 case "DInvigorating":
                     x = 0.1f / skillCount;
-                    return add(x, "FreeWillPriorityInvigorating".TranslateSimple() + " " + skillDef.skillLabel);
+                    return add(x, () => "FreeWillPriorityInvigorating".TranslateSimple() + " " + skillDef.skillLabel);
                 case "DInspiring":
                     return this;
                 case "DStagnant":
@@ -1131,7 +1212,7 @@ namespace Rimworld_FreeWillMod
                     {
                         return this;
                     }
-                    return neverDo("FreeWillPriorityBoredBy".TranslateSimple() + " " + skillDef.skillLabel);
+                    return neverDo(() => "FreeWillPriorityBoredBy".TranslateSimple() + " " + skillDef.skillLabel);
                 case "DAllergic":
                     List<Hediff> resultHediffs = new List<Hediff>();
                     pawn.health.hediffSet.GetHediffs<Hediff>(ref resultHediffs);
@@ -1143,24 +1224,24 @@ namespace Rimworld_FreeWillMod
                             {
                                 case "initial":
                                     x = -0.2f / skillCount;
-                                    return add(x, "FreeWillPriorityReactionInitial".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityReactionInitial".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "itching":
                                     x = -0.5f / skillCount;
-                                    return add(x, "FreeWillPriorityReactionItching".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityReactionItching".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "sneezing":
                                     x = -0.8f / skillCount;
-                                    return add(x, "FreeWillPriorityReactionSneezing".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityReactionSneezing".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "swelling":
                                     x = -1.1f / skillCount;
-                                    return add(x, "FreeWillPriorityReactionSwelling".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return add(x, () => "FreeWillPriorityReactionSwelling".TranslateSimple() + " " + skillDef.skillLabel);
                                 case "anaphylaxis":
-                                    return neverDo("FreeWillPriorityReactionAnaphylaxis".TranslateSimple() + " " + skillDef.skillLabel);
+                                    return neverDo(() => "FreeWillPriorityReactionAnaphylaxis".TranslateSimple() + " " + skillDef.skillLabel);
                                 default:
                                     break;
                             }
                         }
                         x = 0.1f / skillCount;
-                        return add(x, "FreeWillPriorityNoReaction".TranslateSimple() + " " + skillDef.skillLabel);
+                        return add(x, () => "FreeWillPriorityNoReaction".TranslateSimple() + " " + skillDef.skillLabel);
                     }
                     return this;
                 default:
@@ -1175,9 +1256,9 @@ namespace Rimworld_FreeWillMod
             {
                 if (WorkTypeDef.defName == PATIENT || WorkTypeDef.defName == PATIENT_BED_REST)
                 {
-                    return alwaysDo("FreeWillPriorityPawnDowned".TranslateSimple()).set(1.0f, "FreeWillPriorityPawnDowned".TranslateSimple());
+                    return alwaysDo("FreeWillPriorityPawnDowned".TranslateSimple).set(1.0f, "FreeWillPriorityPawnDowned".TranslateSimple);
                 }
-                return neverDo("FreeWillPriorityPawnDowned".TranslateSimple());
+                return neverDo("FreeWillPriorityPawnDowned".TranslateSimple);
             }
             if (mapComp.PercentPawnsDowned <= 0.0f)
             {
@@ -1185,7 +1266,7 @@ namespace Rimworld_FreeWillMod
             }
             if (WorkTypeDef.defName == DOCTOR)
             {
-                return add(mapComp.PercentPawnsDowned, "FreeWillPriorityOtherPawnsDowned".TranslateSimple());
+                return add(mapComp.PercentPawnsDowned, "FreeWillPriorityOtherPawnsDowned".TranslateSimple);
             }
             if (WorkTypeDef.defName == SMITHING ||
                 WorkTypeDef.defName == TAILORING ||
@@ -1194,7 +1275,7 @@ namespace Rimworld_FreeWillMod
                 WorkTypeDef.defName == RESEARCHING
                 )
             {
-                return neverDo("FreeWillPriorityOtherPawnsDowned".TranslateSimple());
+                return neverDo("FreeWillPriorityOtherPawnsDowned".TranslateSimple);
             }
             return this;
         }
@@ -1203,7 +1284,7 @@ namespace Rimworld_FreeWillMod
         {
             try
             {
-                this.add(worldComp.settings.globalWorkAdjustments[this.WorkTypeDef.defName], "FreeWillPriorityColonyPolicy".TranslateSimple());
+                this.add(worldComp.settings.globalWorkAdjustments[this.WorkTypeDef.defName], "FreeWillPriorityColonyPolicy".TranslateSimple);
             }
             catch (System.Exception)
             {
@@ -1216,11 +1297,11 @@ namespace Rimworld_FreeWillMod
         {
             if (mapComp.RefuelNeededNow)
             {
-                return this.add(0.35f, "FreeWillPriorityRefueling".TranslateSimple());
+                return this.add(0.35f, "FreeWillPriorityRefueling".TranslateSimple);
             }
             if (mapComp.RefuelNeeded)
             {
-                return this.add(0.20f, "FreeWillPriorityRefueling".TranslateSimple());
+                return this.add(0.20f, "FreeWillPriorityRefueling".TranslateSimple);
             }
             return this;
         }
@@ -1231,13 +1312,13 @@ namespace Rimworld_FreeWillMod
             {
                 if (WorkTypeDef.defName != FIREFIGHTER)
                 {
-                    return add(-0.2f, "FreeWillPriorityFireInHomeArea".TranslateSimple());
+                    return add(-0.2f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
                 }
-                return set(1.0f, "FreeWillPriorityFireInHomeArea".TranslateSimple());
+                return set(1.0f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
             }
             if (mapComp.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
             {
-                return add(Mathf.Clamp01(mapComp.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple());
+                return add(Mathf.Clamp01(mapComp.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
             }
             return this;
         }
@@ -1246,7 +1327,7 @@ namespace Rimworld_FreeWillMod
         {
             if (HealthAIUtility.ShouldHaveSurgeryDoneNow(pawn))
             {
-                return set(1.0f, "FreeWillPriorityOperation".TranslateSimple());
+                return set(1.0f, "FreeWillPriorityOperation".TranslateSimple);
             }
             return this;
         }
@@ -1261,13 +1342,13 @@ namespace Rimworld_FreeWillMod
                 }
                 if (WorkTypeDef.defName == PATIENT_BED_REST)
                 {
-                    return add(0.4f, "FreeWillPriorityBuildingImmunity".TranslateSimple());
+                    return add(0.4f, "FreeWillPriorityBuildingImmunity".TranslateSimple);
                 }
                 if (WorkTypeDef.defName == PATIENT)
                 {
                     return this;
                 }
-                return add(-0.2f, "FreeWillPriorityBuildingImmunity".TranslateSimple());
+                return add(-0.2f, "FreeWillPriorityBuildingImmunity".TranslateSimple);
             }
             catch
             {
@@ -1302,8 +1383,8 @@ namespace Rimworld_FreeWillMod
             {
                 // patient and bed rest are activated and set to 100%
                 return this
-                    .alwaysDo("FreeWillPriorityNeedTreatment".TranslateSimple())
-                    .set(1.0f, "FreeWillPriorityNeedTreatment".TranslateSimple())
+                    .alwaysDo("FreeWillPriorityNeedTreatment".TranslateSimple)
+                    .set(1.0f, "FreeWillPriorityNeedTreatment".TranslateSimple)
                     ;
             }
             if (WorkTypeDef.defName == DOCTOR)
@@ -1313,15 +1394,15 @@ namespace Rimworld_FreeWillMod
                     // this pawn can self tend, so activate doctor skill and set
                     // to 100%
                     return this
-                        .alwaysDo("FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple())
-                        .set(1.0f, "FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple())
+                        .alwaysDo("FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple)
+                        .set(1.0f, "FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple)
                         ;
                 }
                 // doctoring stays the same
                 return this;
             }
             // don't do other work types
-            return neverDo("FreeWillPriorityNeedTreatment".TranslateSimple());
+            return neverDo("FreeWillPriorityNeedTreatment".TranslateSimple);
         }
 
         private Priority considerAnotherPawnNeedsTreatment()
@@ -1342,13 +1423,13 @@ namespace Rimworld_FreeWillMod
                 //
                 // so if 25% of the colony is injured, doctoring for all
                 // non-injured pawns will increase by 25%
-                return add(mapComp.PercentPawnsNeedingTreatment, "FreeWillPriorityOthersNeedTreatment".TranslateSimple());
+                return add(mapComp.PercentPawnsNeedingTreatment, "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
             }
 
             if (WorkTypeDef.defName == RESEARCHING)
             {
                 // don't research when someone is dying please... it's rude
-                return neverDo("FreeWillPriorityOthersNeedTreatment".TranslateSimple());
+                return neverDo("FreeWillPriorityOthersNeedTreatment".TranslateSimple);
             }
 
             if (WorkTypeDef.defName == SMITHING ||
@@ -1360,7 +1441,7 @@ namespace Rimworld_FreeWillMod
                 // crafting work types are low priority when someone is injured
                 if (this.Value > 0.3f)
                 {
-                    return add(-(this.Value - 0.3f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple());
+                    return add(-(this.Value - 0.3f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
                 }
                 return this;
             }
@@ -1368,7 +1449,7 @@ namespace Rimworld_FreeWillMod
             // any other work type is capped at 0.6
             if (this.Value > 0.6f)
             {
-                return add(-(this.Value - 0.6f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple());
+                return add(-(this.Value - 0.6f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
             }
             return this;
         }
@@ -1377,9 +1458,9 @@ namespace Rimworld_FreeWillMod
         {
             if (this.WorkTypeDef.defName == PATIENT || this.WorkTypeDef.defName == PATIENT_BED_REST)
             {
-                return add(1 - Mathf.Pow(this.pawn.health.summaryHealth.SummaryHealthPercent, 7.0f), "FreeWillPriorityHealth".TranslateSimple());
+                return add(1 - Mathf.Pow(this.pawn.health.summaryHealth.SummaryHealthPercent, 7.0f), "FreeWillPriorityHealth".TranslateSimple);
             }
-            return multiply(this.pawn.health.summaryHealth.SummaryHealthPercent, "FreeWillPriorityHealth".TranslateSimple());
+            return multiply(this.pawn.health.summaryHealth.SummaryHealthPercent, "FreeWillPriorityHealth".TranslateSimple);
         }
 
         private Priority considerFoodPoisoning()
@@ -1425,11 +1506,11 @@ namespace Rimworld_FreeWillMod
                             );
                         if (this.WorkTypeDef.defName == CLEANING)
                         {
-                            return add(adjustment, "FreeWillPriorityFilthyCookingArea".TranslateSimple());
+                            return add(adjustment, "FreeWillPriorityFilthyCookingArea".TranslateSimple);
                         }
                         if (this.WorkTypeDef.defName == COOKING)
                         {
-                            return add(-adjustment, "FreeWillPriorityFilthyCookingArea".TranslateSimple());
+                            return add(-adjustment, "FreeWillPriorityFilthyCookingArea".TranslateSimple);
                         }
                     }
                 }
@@ -1471,7 +1552,7 @@ namespace Rimworld_FreeWillMod
                 {
                     return this;
                 }
-                return multiply(worldComp.settings.ConsiderOwnRoom * 2.0f, "FreeWillPriorityOwnRoom".TranslateSimple());
+                return multiply(worldComp.settings.ConsiderOwnRoom * 2.0f, "FreeWillPriorityOwnRoom".TranslateSimple);
             }
             catch (System.Exception err)
             {
@@ -1493,14 +1574,14 @@ namespace Rimworld_FreeWillMod
             {
                 return this;
             }
-            return this.add(0.6f, "FreeWillPriorityMechanoidDamaged".TranslateSimple());
+            return this.add(0.6f, "FreeWillPriorityMechanoidDamaged".TranslateSimple);
         }
 
         private Priority considerIsAnyoneElseDoing()
         {
             try
             {
-                foreach (Pawn other in this.pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
+                foreach (Pawn other in this.mapComp.PawnsInFaction)
                 {
                     if (other == null || other == this.pawn)
                     {
@@ -1523,7 +1604,7 @@ namespace Rimworld_FreeWillMod
                         return this; // a mech is doing
                     }
                 }
-                return this.alwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple());
+                return this.alwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple);
             }
             catch (System.Exception err)
             {
@@ -1541,7 +1622,7 @@ namespace Rimworld_FreeWillMod
                 {
                     return this;
                 }
-                var allPawns = this.pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
+                var allPawns = this.mapComp.PawnsInFaction;
                 if (allPawns.Count() <= 1)
                 {
                     return this;
@@ -1584,45 +1665,45 @@ namespace Rimworld_FreeWillMod
                         {
                             if (isMuchMuchMuchBetter)
                             {
-                                this.add(1.5f * -impactPerPawn, "FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
+                                this.add(1.5f * -impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
                             }
                             else if (isMuchMuchBetter)
                             {
-                                this.add(1.5f * -impactPerPawn * 0.8f, "FreeWillPrioritySomeoneMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
+                                this.add(1.5f * -impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
                             }
                             else if (isMuchBetter)
                             {
-                                this.add(1.5f * -impactPerPawn * 0.6f, "FreeWillPrioritySomeoneMuchBetterIsDoing".Translate(other.LabelShortCap));
+                                this.add(1.5f * -impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterIsDoing".Translate(other.LabelShortCap));
                             }
                             else
                             {
-                                this.add(1.5f * -impactPerPawn * 0.4f, "FreeWillPrioritySomeoneBetterIsDoing".Translate(other.LabelShortCap));
+                                this.add(1.5f * -impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterIsDoing".Translate(other.LabelShortCap));
                             }
                         }
                         else
                         {
                             if (isMuchMuchMuchBetter)
                             {
-                                this.add(-impactPerPawn, "FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
+                                this.add(-impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
                             }
                             else if (isMuchMuchBetter)
                             {
-                                this.add(-impactPerPawn * 0.8f, "FreeWillPrioritySomeoneMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
+                                this.add(-impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
                             }
                             else if (isMuchBetter)
                             {
-                                this.add(-impactPerPawn * 0.6f, "FreeWillPrioritySomeoneMuchBetterAtDoing".Translate(other.LabelShortCap));
+                                this.add(-impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterAtDoing".Translate(other.LabelShortCap));
                             }
                             else
                             {
-                                this.add(-impactPerPawn * 0.4f, "FreeWillPrioritySomeoneBetterAtDoing".Translate(other.LabelShortCap));
+                                this.add(-impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterAtDoing".Translate(other.LabelShortCap));
                             }
                         }
                     }
                 }
                 if (isBest)
                 {
-                    return this.multiply(1.5f * worldComp.settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple());
+                    return this.multiply(1.5f * worldComp.settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple);
                 }
                 return this;
             }
@@ -1647,13 +1728,13 @@ namespace Rimworld_FreeWillMod
                 return this;
             }
             float numPetsNeedingTreatment = mapComp.NumPetsNeedingTreatment;
-            return add(UnityEngine.Mathf.Clamp01(numPetsNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple());
+            return add(UnityEngine.Mathf.Clamp01(numPetsNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple);
         }
 
         private Priority considerMechHaulers()
         {
             float percentPawnsMechHaulers = this.mapComp.PercentPawnsMechHaulers;
-            return add(-percentPawnsMechHaulers, "FreeWillPriorityMechHaulers".TranslateSimple());
+            return add(-percentPawnsMechHaulers, "FreeWillPriorityMechHaulers".TranslateSimple);
         }
 
         private Priority considerInjuredPrisoners()
@@ -1669,7 +1750,7 @@ namespace Rimworld_FreeWillMod
                 return this;
             }
             float numPrisonersNeedingTreatment = mapComp.NumPrisonersNeedingTreatment;
-            return add(UnityEngine.Mathf.Clamp01(numPrisonersNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPrisonersInjured".TranslateSimple());
+            return add(UnityEngine.Mathf.Clamp01(numPrisonersNeedingTreatment / ((float)n)) * 0.5f, "FreeWillPriorityPrisonersInjured".TranslateSimple);
         }
 
         private Priority considerLowFood(float adjustment)
@@ -1688,7 +1769,7 @@ namespace Rimworld_FreeWillMod
                     return this;
                 }
 
-                return this.add(adjustment * worldComp.settings.ConsiderLowFood, "FreeWillPriorityLowFood".TranslateSimple());
+                return this.add(adjustment * worldComp.settings.ConsiderLowFood, "FreeWillPriorityLowFood".TranslateSimple);
             }
             catch (System.Exception err)
             {
@@ -1711,7 +1792,7 @@ namespace Rimworld_FreeWillMod
             const float boltActionRifleRange = 37.0f;
             float range = this.pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.range;
             float relativeRange = range / boltActionRifleRange;
-            return this.multiply(relativeRange * this.worldComp.settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple());
+            return this.multiply(relativeRange * this.worldComp.settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple);
         }
 
         private Priority considerAteRawFood()
@@ -1721,17 +1802,11 @@ namespace Rimworld_FreeWillMod
                 return this;
             }
 
-            List<Thought> allThoughts = new List<Thought>();
-            this.pawn.needs.mood.thoughts.GetAllMoodThoughts(allThoughts);
-            for (int i = 0; i < allThoughts.Count; i++)
+            foreach (Thought thought in this.mapComp.AllThoughts)
             {
-                Thought thought = allThoughts[i];
-                if (thought.def.defName == "AteRawFood")
+                if (thought.def.defName == "AteRawFood" && 0.6f > Value)
                 {
-                    if (0.6f > Value)
-                    {
-                        return this.set(0.6f, "FreeWillPriorityAteRawFood".TranslateSimple());
-                    }
+                    return this.set(0.6f, "FreeWillPriorityAteRawFood".TranslateSimple);
                 }
             }
             return this;
@@ -1745,9 +1820,18 @@ namespace Rimworld_FreeWillMod
                 {
                     if (Prefs.DevMode)
                     {
-                        return this.multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple() + ": " + mapComp.ThingsDeteriorating.def.defName);
+                        Func<string> adjustmentString = () =>
+                        {
+                            // Create string builder
+                            StringBuilder stringBuilder = new StringBuilder();
+                            stringBuilder.Append("FreeWillPriorityThingsDeteriorating".TranslateSimple());
+                            stringBuilder.Append(": ");
+                            stringBuilder.Append(mapComp.ThingsDeteriorating.def.defName);
+                            return stringBuilder.ToString();
+                        };
+                        return this.multiply(2.0f, adjustmentString);
                     }
-                    return this.multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple());
+                    return this.multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple);
                 }
             }
             return this;
@@ -1764,7 +1848,7 @@ namespace Rimworld_FreeWillMod
                 }
                 if (this.mapComp.PlantsBlighted)
                 {
-                    return this.add(0.4f * worldComp.settings.ConsiderPlantsBlighted, "FreeWillPriorityBlight".TranslateSimple());
+                    return this.add(0.4f * worldComp.settings.ConsiderPlantsBlighted, "FreeWillPriorityBlight".TranslateSimple);
                 }
             }
             catch (System.Exception err)
@@ -1795,7 +1879,7 @@ namespace Rimworld_FreeWillMod
                             return this;
                         }
                         {
-                            return this.multiply(2.0f * worldComp.settings.ConsiderGauranlenPruning, "FreeWillPriorityPruneGauranlenTree".TranslateSimple());
+                            return this.multiply(2.0f * worldComp.settings.ConsiderGauranlenPruning, "FreeWillPriorityPruneGauranlenTree".TranslateSimple);
                         }
                     }
                 }
@@ -1816,38 +1900,37 @@ namespace Rimworld_FreeWillMod
                 {
                     return this;
                 }
-                BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
                 float expectations = worldComp.settings.ConsiderBeauty * expectationGrid[ExpectationsUtility.CurrentExpectationFor(this.pawn).defName][this.pawn.needs.beauty.CurCategory];
                 switch (WorkTypeDef.defName)
                 {
                     case HAULING:
                     case HAULING_URGENT:
                         // check for haulable
-                        if (!areaHasHaulables(BeautyUtility.beautyRelevantCells))
+                        if (!this.mapComp.AreaHasHaulables)
                         {
                             // no hauling job
                             return this;
                         }
                         if (expectations < 0.2f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple);
                         }
                         if (expectations < 0.4f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsMet".TranslateSimple);
                         }
                         if (expectations < 0.6f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple);
                         }
                         if (expectations < 0.8f)
                         {
-                            return this.add(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                            return this.add(expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple);
                         }
-                        return this.add(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                        return this.add(expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple);
                     case CLEANING:
                         // check for cleanable
-                        if (!areaHasFilth(BeautyUtility.beautyRelevantCells))
+                        if (!this.mapComp.AreaHasFilth)
                         {
                             // no cleaning job
                             return this;
@@ -1855,21 +1938,21 @@ namespace Rimworld_FreeWillMod
                         const float ADJUSTMENT = 0.2f; // made to match change in base default from 0.3 to 0.5
                         if (expectations < 0.2f)
                         {
-                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsExceeded".TranslateSimple);
                         }
                         if (expectations < 0.4f)
                         {
-                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsMet".TranslateSimple);
                         }
                         if (expectations < 0.6f)
                         {
-                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsUnmet".TranslateSimple);
                         }
                         if (expectations < 0.8f)
                         {
-                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                            return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsLetDown".TranslateSimple);
                         }
-                        return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                        return this.add(expectations - ADJUSTMENT, "FreeWillPriorityExpectionsIgnored".TranslateSimple);
                     default:
                         // any other work type is decreased if either job is present
                         if (WorkTypeDef.defName == SMITHING && MechanitorUtility.IsMechanitor(pawn))
@@ -1877,28 +1960,28 @@ namespace Rimworld_FreeWillMod
                             // mechanitor smithing is not affected by beauty
                             return this;
                         }
-                        if (!areaHasHaulables(BeautyUtility.beautyRelevantCells) && !areaHasFilth(BeautyUtility.beautyRelevantCells))
+                        if (!this.mapComp.AreaHasFilth && !this.mapComp.AreaHasHaulables)
                         {
                             // nothing to do
                             return this;
                         }
                         if (expectations < 0.2f)
                         {
-                            return this.add(-expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsExceeded".TranslateSimple);
                         }
                         if (expectations < 0.4f)
                         {
-                            return this.add(-expectations, "FreeWillPriorityExpectionsMet".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsMet".TranslateSimple);
                         }
                         if (expectations < 0.6f)
                         {
-                            return this.add(-expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsUnmet".TranslateSimple);
                         }
                         if (expectations < 0.8f)
                         {
-                            return this.add(-expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple());
+                            return this.add(-expectations, "FreeWillPriorityExpectionsLetDown".TranslateSimple);
                         }
-                        return this.add(-expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple());
+                        return this.add(-expectations, "FreeWillPriorityExpectionsIgnored".TranslateSimple);
                 } // switch
             }
             catch (System.Exception err)
@@ -1907,91 +1990,6 @@ namespace Rimworld_FreeWillMod
                 worldComp.settings.ConsiderBeauty = 0.0f;
                 return this;
             }
-        }
-
-        private bool areaHasHaulables(List<IntVec3> area)
-        {
-            var areaHasHaulingJobToDo = false;
-            foreach (IntVec3 cell in BeautyUtility.beautyRelevantCells)
-            {
-                foreach (Thing t in cell.GetThingList(pawn.Map))
-                {
-                    if (t.IsForbidden(Faction.OfPlayer))
-                    {
-                        continue;
-                    }
-                    if (!t.def.alwaysHaulable)
-                    {
-                        if (!t.def.EverHaulable)
-                        {
-                            continue;
-                        }
-                        if (pawn.Map.designationManager.DesignationOn(t, DesignationDefOf.Haul) == null && !t.IsInAnyStorage())
-                        {
-                            continue;
-                        }
-                    }
-                    if (t.IsInValidBestStorage())
-                    {
-                        continue;
-                    }
-                    if (t.IsForbidden(pawn))
-                    {
-                        continue;
-                    }
-                    if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
-                    {
-                        continue;
-                    }
-                    if (pawn.carryTracker.MaxStackSpaceEver(t.def) <= 0)
-                    {
-                        continue;
-                    }
-                    areaHasHaulingJobToDo = true;
-                    break;
-                }
-                if (areaHasHaulingJobToDo)
-                {
-                    break;
-                }
-            }
-            return areaHasHaulingJobToDo;
-        }
-
-        private bool areaHasFilth(List<IntVec3> area)
-        {
-            var areaHasCleaningJobToDo = false;
-            foreach (IntVec3 cell in area)
-            {
-                foreach (Thing thing in cell.GetThingList(pawn.Map))
-                {
-                    Filth filth = thing as Filth;
-                    if (filth == null)
-                    {
-                        continue;
-                    }
-                    if (!filth.Map.areaManager.Home[filth.Position])
-                    {
-                        continue;
-                    }
-                    if (!pawn.CanReserve(thing, 1, -1, null, false))
-                    {
-                        continue;
-                    }
-                    if (filth.TicksSinceThickened < 600)
-                    {
-                        continue;
-                    }
-                    areaHasCleaningJobToDo = true;
-                    break;
-                }
-                if (areaHasCleaningJobToDo)
-                {
-                    break;
-                }
-            }
-            return areaHasCleaningJobToDo;
-
         }
 
         private Priority considerRelevantSkills(bool shouldAdd = false)
@@ -2006,39 +2004,39 @@ namespace Rimworld_FreeWillMod
             {
                 if (shouldAdd)
                 {
-                    return this.add(0.9f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                    return this.add(0.9f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
                 }
-                return this.set(0.9f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                return this.set(0.9f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             if (_avg >= _greatSkillCutoff)
             {
                 if (shouldAdd)
                 {
-                    return this.add(0.7f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                    return this.add(0.7f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
                 }
-                return this.set(0.7f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                return this.set(0.7f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             if (_avg >= _goodSkillCutoff)
             {
                 if (shouldAdd)
                 {
-                    return this.add(0.5f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                    return this.add(0.5f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
                 }
-                return this.set(0.5f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                return this.set(0.5f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             if (_avg >= _badSkillCutoff)
             {
                 if (shouldAdd)
                 {
-                    return this.add(0.3f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                    return this.add(0.3f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
                 }
-                return this.set(0.3f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                return this.set(0.3f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
             if (shouldAdd)
             {
-                return this.add(0.1f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+                return this.add(0.1f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
             }
-            return this.set(0.1f, string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
+            return this.set(0.1f, () => string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), _avg));
         }
 
         private bool notInHomeArea(Pawn pawn)

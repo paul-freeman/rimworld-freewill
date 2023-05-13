@@ -5,7 +5,7 @@ using RimWorld;
 using RimWorld.Planet;
 using HarmonyLib;
 
-namespace Rimworld_FreeWillMod
+namespace FreeWill
 {
     public class FreeWill_WorldComponent : WorldComponent
     {
@@ -30,6 +30,8 @@ namespace Rimworld_FreeWillMod
         private bool checkedForInterestsMod;
         public List<string> interestsStrings;
 
+        private static int couldNotPerformFreeWillTick = "could not perform free will world tick".GetHashCode();
+
         public FreeWill_WorldComponent(World world) : base(world)
         {
             freePawns = new Dictionary<string, bool> { };
@@ -47,20 +49,27 @@ namespace Rimworld_FreeWillMod
 
         public override void WorldComponentTick()
         {
-            // add Free Will ideology if an ideo doesn't have it
-            foreach (Ideo ideo in Find.IdeoManager.IdeosListForReading)
+            try
             {
-                if (!ideo.HasPrecept(freeWillProhibited)
-                        && !ideo.HasPrecept(freeWillDisapproved)
-                        && !ideo.HasPrecept(freeWillFlexible)
-                        && !ideo.HasPrecept(freeWillPreferred)
-                        && !ideo.HasPrecept(freeWillMandatory))
+                // add Free Will ideology if an ideo doesn't have it
+                foreach (Ideo ideo in Find.IdeoManager.IdeosListForReading)
                 {
-                    Log.Message("Adding free will precept, \"flexible\", to " + ideo.name + " ideology.");
-                    ideo.AddPrecept(PreceptMaker.MakePrecept(freeWillFlexible), init: false);
+                    if (!ideo.HasPrecept(freeWillProhibited)
+                            && !ideo.HasPrecept(freeWillDisapproved)
+                            && !ideo.HasPrecept(freeWillFlexible)
+                            && !ideo.HasPrecept(freeWillPreferred)
+                            && !ideo.HasPrecept(freeWillMandatory))
+                    {
+                        Log.Message("Adding free will precept, \"flexible\", to " + ideo.name + " ideology.");
+                        ideo.AddPrecept(PreceptMaker.MakePrecept(freeWillFlexible), init: false);
+                    }
                 }
+                this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
             }
-            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
+            catch (System.Exception e)
+            {
+                Log.ErrorOnce("could not perform free will world tick: " + e.ToString(), couldNotPerformFreeWillTick);
+            }
             base.WorldComponentTick();
         }
 
@@ -70,7 +79,7 @@ namespace Rimworld_FreeWillMod
             FreeWillUtility.UpdateWorldComponent(this);
         }
 
-        public bool HasFreeWill(Pawn pawn)
+        public bool HasFreeWill(Pawn pawn, string pawnKey)
         {
             if (pawn?.Ideo == null ||
                 !pawn.IsColonistPlayerControlled ||
@@ -85,7 +94,6 @@ namespace Rimworld_FreeWillMod
                 return true;
             }
 
-            var pawnKey = pawn.GetUniqueLoadID();
             this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
             if (!this.freePawns.ContainsKey(pawnKey))
             {
@@ -103,7 +111,7 @@ namespace Rimworld_FreeWillMod
             return this.freePawns[pawnKey];
         }
 
-        public bool FreeWillCanChange(Pawn pawn)
+        public bool FreeWillCanChange(Pawn pawn, string pawnKey)
         {
             try
             {
@@ -122,7 +130,7 @@ namespace Rimworld_FreeWillMod
                 var canChange = !pawn.Ideo.HasPrecept(freeWillMandatory) && !pawn.Ideo.HasPrecept(freeWillProhibited);
                 if (!canChange)
                 {
-                    EnsureFreeWillStatusIsCorrect(pawn);
+                    EnsureFreeWillStatusIsCorrect(pawn, pawnKey);
                 }
                 return canChange;
             }
@@ -138,20 +146,16 @@ namespace Rimworld_FreeWillMod
             }
         }
 
-        public void EnsureFreeWillStatusIsCorrect(Pawn pawn)
+        public void EnsureFreeWillStatusIsCorrect(Pawn pawn, string pawnKey)
         {
             try
             {
-                if (pawn == null)
-                {
-                    return;
-                }
-                if (pawn.Ideo == null)
+                if (pawn?.Ideo == null)
                 {
                     return;
                 }
                 // ensure it is set correctly
-                if (pawn.Ideo.HasPrecept(freeWillMandatory) && !HasFreeWill(pawn))
+                if (pawn.Ideo.HasPrecept(freeWillMandatory) && !HasFreeWill(pawn, pawnKey))
                 {
                     var ok = TryGiveFreeWill(pawn);
                     if (!ok)
@@ -160,7 +164,7 @@ namespace Rimworld_FreeWillMod
                         return;
                     }
                 }
-                else if (pawn.Ideo.HasPrecept(freeWillProhibited) && HasFreeWill(pawn))
+                else if (pawn.Ideo.HasPrecept(freeWillProhibited) && HasFreeWill(pawn, pawnKey))
                 {
                     var ok = TryRemoveFreeWill(pawn);
                     if (!ok)

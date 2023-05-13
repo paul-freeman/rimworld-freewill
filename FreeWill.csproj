@@ -10,6 +10,7 @@
     <FileAlignment>512</FileAlignment>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
+    <RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

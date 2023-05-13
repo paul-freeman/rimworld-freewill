@@ -1,6 +1,6 @@
 using RimWorld;
 using Verse;
-using Rimworld_FreeWillMod;
+using FreeWill;
 
 public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
 {
@@ -23,7 +23,7 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
         {
             return ThoughtState.Inactive;
         }
-        if (!worldComp.HasFreeWill(pawn))
+        if (!worldComp.HasFreeWill(pawn, pawn.GetUniqueLoadID()))
         {
             worldComp.FreeWillOverride(pawn);
             return ThoughtState.Inactive;

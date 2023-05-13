@@ -1,18 +1,18 @@
-using System.Collections.Generic;
-using Verse;
+using RimWorld;
+using System;
 using System.Text;
 using UnityEngine;
-using System.Linq;
-using RimWorld;
-using RimWorld.Planet;
-using HarmonyLib;
+using Verse;
 
-namespace Rimworld_FreeWillMod
+namespace FreeWill
 {
     public static class FreeWillUtility
     {
         private static FreeWill_WorldComponent worldComp;
         private static FreeWill_MapComponent mapComp;
+
+        private static int couldNotGetAdjustmentString = "FreewillCouldNotGetAdjustmentString".GetHashCode();
+        private static int couldNotGetTip = "FreewillCouldNotGetTip".GetHashCode();
 
         public static FreeWill_WorldComponent GetWorldComponent()
         {
@@ -90,26 +90,49 @@ namespace Rimworld_FreeWillMod
 
         public static string GetTip(Priority priority)
         {
-            StringBuilder stringBuilder = new StringBuilder();
-            TaggedString workTypeTitle = priority.WorkTypeDef.pawnLabel.CapitalizeFirst().AsTipTitle();
-            stringBuilder.AppendLineTagged(workTypeTitle);
-            stringBuilder.AppendLineTagged(priority.WorkTypeDef.description.Colorize(ColoredText.SubtleGrayColor)).AppendLine();
-            stringBuilder.AppendLineTagged(("FreeWillWorkPreference".Translate().CapitalizeFirst() + ": ").AsTipTitle() + priority.Value.ToStringPercent());
-            foreach (string adj in priority.AdjustmentStrings)
+            try
             {
-                stringBuilder.AppendLine(adj);
+                StringBuilder stringBuilder = new StringBuilder();
+                TaggedString workTypeTitle = priority.WorkTypeDef.pawnLabel.CapitalizeFirst().AsTipTitle();
+                stringBuilder.AppendLineTagged(workTypeTitle);
+                stringBuilder.AppendLineTagged(priority.WorkTypeDef.description.Colorize(ColoredText.SubtleGrayColor)).AppendLine();
+                stringBuilder.AppendLineTagged(("FreeWillWorkPreference".Translate().CapitalizeFirst() + ": ").AsTipTitle() + priority.Value.ToStringPercent());
+                foreach (Func<string> adj in priority.AdjustmentStrings)
+                {
+                    try
+                    {
+                        stringBuilder.AppendLine(adj());
+                    }
+                    catch (Exception e)
+                    {
+                        Log.ErrorOnce("could not get adjustment string: " + e.Message, couldNotGetAdjustmentString);
+                        if (Prefs.DevMode)
+                        {
+                            stringBuilder.AppendLine("error: " + e.Message);
+                        }
+                        else
+                        {
+                            stringBuilder.AppendLine("error");
+                        }
+                    }
+                }
+                stringBuilder.AppendLine();
+                if (!priority.Disabled)
+                {
+                    int p = priority.ToGamePriority();
+                    string priorityDescriptionStr = string.Format("Priority{0}", p).TranslateSimple();
+                    string priorityLevelStr = p + " - " + priorityDescriptionStr;
+                    TaggedString colorizedPriorityLevelStr = priorityLevelStr.Colorize(WidgetsWork.ColorOfPriority(p));
+                    TaggedString priorityTitle = ("Priority".Translate().CapitalizeFirst() + ": ").AsTipTitle();
+                    stringBuilder.AppendLineTagged(priorityTitle + colorizedPriorityLevelStr);
+                }
+                return stringBuilder.ToString();
             }
-            stringBuilder.AppendLine();
-            if (!priority.Disabled)
+            catch (Exception e)
             {
-                int p = priority.ToGamePriority();
-                string priorityDescriptionStr = string.Format("Priority{0}", p).TranslateSimple();
-                string priorityLevelStr = p + " - " + priorityDescriptionStr;
-                TaggedString colorizedPriorityLevelStr = priorityLevelStr.Colorize(WidgetsWork.ColorOfPriority(p));
-                TaggedString priorityTitle = ("Priority".Translate().CapitalizeFirst() + ": ").AsTipTitle();
-                stringBuilder.AppendLineTagged(priorityTitle + colorizedPriorityLevelStr);
+                Log.ErrorOnce("could not get tip: " + e.Message, couldNotGetTip);
+                return "could not get tip";
             }
-            return stringBuilder.ToString();
         }
     }
 }

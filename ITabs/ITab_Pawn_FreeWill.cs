@@ -5,7 +5,7 @@ using System.Linq;
 using Verse;
 using RimWorld;
 
-namespace Rimworld_FreeWillMod
+namespace FreeWill
 {
 
     public class ITab_Pawn_FreeWill : ITab
@@ -19,13 +19,15 @@ namespace Rimworld_FreeWillMod
         private Color highlightColor;
         private FreeWill_WorldComponent worldComp;
 
+        private static int couldNotDrawPawnWorkPriority = ("FreeWill" + "could not draw pawn work priority").GetHashCode();
+
         public ITab_Pawn_FreeWill()
         {
-            size = new Vector2(width, height);
-            labelKey = "FreeWillITab";
-            scrollPosition = Vector2.zero;
-            highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-            worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
+            this.size = new Vector2(width, height);
+            this.labelKey = "FreeWillITab";
+            this.scrollPosition = Vector2.zero;
+            this.highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+            this.worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
         }
 
         public override bool IsVisible
@@ -136,7 +138,7 @@ namespace Rimworld_FreeWillMod
                 Text.Anchor = TextAnchor.UpperLeft;
                 GUI.color = new Color(0.9f, 0.9f, 0.9f);
                 Rect rect2 = new Rect(0f, curY, width, 25f);
-                if (worldComp.HasFreeWill(pawn))
+                if (worldComp.HasFreeWill(pawn, pawn.GetUniqueLoadID()))
                 {
                     Widgets.Label(rect2, "FreeWillWorkPreference".TranslateSimple());
                 }
@@ -187,13 +189,14 @@ namespace Rimworld_FreeWillMod
                 {
                     return;
                 }
-                bool isFree = worldComp.HasFreeWill(pawn);
+                var pawnKey = pawn.GetUniqueLoadID();
+                bool isFree = worldComp.HasFreeWill(pawn, pawnKey);
                 bool flag = isFree;
                 Rect rect = new Rect(0f, curY, width, 24f);
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;
 
-                var canChange = worldComp.FreeWillCanChange(pawn);
+                var canChange = worldComp.FreeWillCanChange(pawn, pawnKey);
                 Widgets.CheckboxLabeled(rect, "FreeWillITabCheckbox".TranslateSimple(), ref isFree, !canChange, null, null, false);
                 if (Mouse.IsOver(rect))
                 {
@@ -252,16 +255,12 @@ namespace Rimworld_FreeWillMod
                 GUI.color = Color.white;
                 Text.Font = GameFont.Small;
                 string t = FreeWillUtility.GetTip(priority);
-                Func<string> textGetter = delegate ()
-                {
-                    return t;
-                };
                 Rect rect = new Rect(10f, curY, width - 10f, 20f);
                 if (Mouse.IsOver(rect))
                 {
                     GUI.color = highlightColor;
                     GUI.DrawTexture(rect, TexUI.HighlightTex);
-                    TooltipHandler.TipRegion(rect, new TipSignal(textGetter, pawn.thingIDNumber ^ (int)workTypeDef.index));
+                    TooltipHandler.TipRegion(rect, new TipSignal(() => { return t; }, pawn.thingIDNumber ^ (int)workTypeDef.index));
                 }
                 GUI.color = WidgetsWork.ColorOfPriority(p);
                 Text.Anchor = TextAnchor.MiddleLeft;
@@ -273,9 +272,9 @@ namespace Rimworld_FreeWillMod
                     Widgets.DrawLineHorizontal(0f, rect.center.y, rect.width);
                 }
             }
-            catch
+            catch (Exception e)
             {
-                Log.Message("could not draw pawn work priority");
+                Log.ErrorOnce("could not draw pawn work priority: " + e.ToString(), couldNotDrawPawnWorkPriority);
             }
             curY += 20f;
         }

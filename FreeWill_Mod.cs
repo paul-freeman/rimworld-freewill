@@ -5,7 +5,7 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 
-namespace Rimworld_FreeWillMod
+namespace FreeWill
 {
     public class FreeWill_Mod : Mod
     {
@@ -42,10 +42,10 @@ namespace Rimworld_FreeWillMod
         /// <returns>True if the original DoCell method should be executed, otherwise false.</returns>
         static bool Prefix(Rect rect, Pawn pawn, PawnTable table, PawnColumnWorker_WorkPriority __instance)
         {
-            if (!FreeWillUtility.GetWorldComponent().HasFreeWill(pawn)
-                || pawn.Dead
+            if (pawn.Dead
                 || pawn.workSettings == null
-                || !pawn.workSettings.EverWork)
+                || !pawn.workSettings.EverWork
+                || !FreeWillUtility.GetWorldComponent().HasFreeWill(pawn, pawn.GetUniqueLoadID()))
             {
                 return true;
             }
@@ -68,7 +68,7 @@ namespace Rimworld_FreeWillMod
                 return;
             }
             var worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
-            if (!worldComp.HasFreeWill(___pawn))
+            if (!worldComp.HasFreeWill(___pawn, ___pawn.GetUniqueLoadID()))
             {
                 return;
             }

@@ -1,6 +1,6 @@
 using RimWorld;
 using Verse;
-using Rimworld_FreeWillMod;
+using FreeWill;
 
 public class ThoughtWorker_Precept_EnforcedWorkSchedule : ThoughtWorker_Precept
 {
@@ -10,7 +10,7 @@ public class ThoughtWorker_Precept_EnforcedWorkSchedule : ThoughtWorker_Precept
         {
             var worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
             // free pawns should not have this thought
-            if (worldComp.HasFreeWill(pawn))
+            if (worldComp.HasFreeWill(pawn, pawn.GetUniqueLoadID()))
             {
                 return ThoughtState.Inactive;
             }
