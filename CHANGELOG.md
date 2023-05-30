@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.6.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.5.0...v1.6.0) (2023-05-13)
+
+
+### Features
+
+* add initial childcare logic ([#13](https://github.com/paul-freeman/rimworld-freewill/issues/13)) ([8fa7436](https://github.com/paul-freeman/rimworld-freewill/commit/8fa7436a02fcc90f68cba01618a29e376c5a9128))
+* consider mech skill level ([#15](https://github.com/paul-freeman/rimworld-freewill/issues/15)) ([4bbfe50](https://github.com/paul-freeman/rimworld-freewill/commit/4bbfe50d90f1fcec65c60dbf2afcb5315a3ba895))
+* consider slave suppression need ([#16](https://github.com/paul-freeman/rimworld-freewill/issues/16)) ([fb23874](https://github.com/paul-freeman/rimworld-freewill/commit/fb238744c82d73b2ab82b3c7cfd6be1ee5f59e6c))
+* improve free will tool tip ([#17](https://github.com/paul-freeman/rimworld-freewill/issues/17)) ([94796f1](https://github.com/paul-freeman/rimworld-freewill/commit/94796f1657c7664fc599d041a3f35820c5c3a741))
+* increase childcare default ([30fee47](https://github.com/paul-freeman/rimworld-freewill/commit/30fee475736e9803b674d9f8894658c443ee7650))
+* show freewill priority on work tab ([ae0d195](https://github.com/paul-freeman/rimworld-freewill/commit/ae0d195c79789668488047b439e49a7206d05c43))
+* suppress calculations while sleeping ([#18](https://github.com/paul-freeman/rimworld-freewill/issues/18)) ([f02818d](https://github.com/paul-freeman/rimworld-freewill/commit/f02818d4735401ae5f0affb641bdac119613f216))
+
+
+### Bug Fixes
+
+* setPriorityAction must return string ([#20](https://github.com/paul-freeman/rimworld-freewill/issues/20)) ([633b938](https://github.com/paul-freeman/rimworld-freewill/commit/633b938acab53e2415c72f3384d0829d9d92e4cf))
+
+
+### Performance Improvements
+
+* improve mod perfomance ([2599edb](https://github.com/paul-freeman/rimworld-freewill/commit/2599edb4b8d616ea620782ac012b3fe70d32e7fd))
+
 ## [1.5.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.4.0...v1.5.0) (2022-10-24)
 
 
