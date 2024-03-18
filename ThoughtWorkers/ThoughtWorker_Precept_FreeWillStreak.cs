@@ -28,10 +28,10 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
             worldComp.FreeWillOverride(pawn);
             return ThoughtState.Inactive;
         }
-        var queue = pawn.jobs.jobQueue;
+        Verse.AI.JobQueue queue = pawn.jobs.jobQueue;
         for (int i = 0; i < queue.Count; i++)
         {
-            var job = queue[i].job;
+            Verse.AI.Job job = queue[i].job;
             if (!job.playerForced)
             {
                 continue;
@@ -44,7 +44,7 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
             worldComp.FreeWillOverride(pawn);
             return ThoughtState.Inactive;
         }
-        var ticks = worldComp.FreeWillTicks(pawn);
+        int ticks = worldComp.FreeWillTicks(pawn);
         if (ticks > 3600000)
         {
             return ThoughtState.ActiveAtStage(3);
@@ -57,10 +57,6 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
         {
             return ThoughtState.ActiveAtStage(1);
         }
-        if (ticks > 60000)
-        {
-            return ThoughtState.ActiveAtStage(0);
-        }
-        return ThoughtState.Inactive;
+        return ticks > 60000 ? ThoughtState.ActiveAtStage(0) : ThoughtState.Inactive;
     }
 }

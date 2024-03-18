@@ -9,28 +9,22 @@ namespace FreeWill
 {
     public class FreeWill_WorldComponent : WorldComponent
     {
-        private FreeWill_Mod mod = LoadedModManager.GetMod<FreeWill_Mod>();
-        public FreeWill_ModSettings settings
-        {
-            get
-            {
-                return mod.GetSettings<FreeWill_ModSettings>();
-            }
-        }
+        private readonly FreeWill_Mod mod = LoadedModManager.GetMod<FreeWill_Mod>();
+        public FreeWill_ModSettings Settings => mod.GetSettings<FreeWill_ModSettings>();
 
         private Dictionary<string, bool> freePawns;
         private Dictionary<string, int> freeWillOverride;
 
-        private PreceptDef freeWillProhibited;
-        private PreceptDef freeWillDisapproved;
-        private PreceptDef freeWillFlexible;
-        private PreceptDef freeWillPreferred;
-        private PreceptDef freeWillMandatory;
+        private readonly PreceptDef freeWillProhibited;
+        private readonly PreceptDef freeWillDisapproved;
+        private readonly PreceptDef freeWillFlexible;
+        private readonly PreceptDef freeWillPreferred;
+        private readonly PreceptDef freeWillMandatory;
 
         private bool checkedForInterestsMod;
         public List<string> interestsStrings;
 
-        private static int couldNotPerformFreeWillTick = "could not perform free will world tick".GetHashCode();
+        private static readonly int couldNotPerformFreeWillTick = "could not perform free will world tick".GetHashCode();
 
         public FreeWill_WorldComponent(World world) : base(world)
         {
@@ -64,7 +58,7 @@ namespace FreeWill
                         ideo.AddPrecept(PreceptMaker.MakePrecept(freeWillFlexible), init: false);
                     }
                 }
-                this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
+                freePawns = freePawns ?? new Dictionary<string, bool> { };
             }
             catch (System.Exception e)
             {
@@ -94,21 +88,21 @@ namespace FreeWill
                 return true;
             }
 
-            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
-            if (!this.freePawns.ContainsKey(pawnKey))
+            freePawns = freePawns ?? new Dictionary<string, bool> { };
+            if (!freePawns.ContainsKey(pawnKey))
             {
                 if (pawn.Ideo.HasPrecept(freeWillDisapproved) || pawn.Ideo.HasPrecept(freeWillProhibited))
                 {
-                    this.freePawns[pawnKey] = false;
+                    freePawns[pawnKey] = false;
                     return false;
                 }
                 else
                 {
-                    this.freePawns[pawnKey] = true;
+                    freePawns[pawnKey] = true;
                     return true;
                 }
             }
-            return this.freePawns[pawnKey];
+            return freePawns[pawnKey];
         }
 
         public bool FreeWillCanChange(Pawn pawn, string pawnKey)
@@ -127,7 +121,7 @@ namespace FreeWill
                 {
                     return false;
                 }
-                var canChange = !pawn.Ideo.HasPrecept(freeWillMandatory) && !pawn.Ideo.HasPrecept(freeWillProhibited);
+                bool canChange = !pawn.Ideo.HasPrecept(freeWillMandatory) && !pawn.Ideo.HasPrecept(freeWillProhibited);
                 if (!canChange)
                 {
                     EnsureFreeWillStatusIsCorrect(pawn, pawnKey);
@@ -157,7 +151,7 @@ namespace FreeWill
                 // ensure it is set correctly
                 if (pawn.Ideo.HasPrecept(freeWillMandatory) && !HasFreeWill(pawn, pawnKey))
                 {
-                    var ok = TryGiveFreeWill(pawn);
+                    bool ok = TryGiveFreeWill(pawn);
                     if (!ok)
                     {
                         Log.ErrorOnce("Free Will: could not give free will to mandatory ideology", 48887931);
@@ -166,7 +160,7 @@ namespace FreeWill
                 }
                 else if (pawn.Ideo.HasPrecept(freeWillProhibited) && HasFreeWill(pawn, pawnKey))
                 {
-                    var ok = TryRemoveFreeWill(pawn);
+                    bool ok = TryRemoveFreeWill(pawn);
                     if (!ok)
                     {
                         Log.ErrorOnce("Free Will: could not remove free will from prohibited ideology", 48887932);
@@ -193,8 +187,8 @@ namespace FreeWill
             {
                 return false;
             }
-            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
-            this.freePawns[pawn.GetUniqueLoadID()] = true;
+            freePawns = freePawns ?? new Dictionary<string, bool> { };
+            freePawns[pawn.GetUniqueLoadID()] = true;
             return true;
         }
 
@@ -208,7 +202,7 @@ namespace FreeWill
             {
                 return false;
             }
-            this.freePawns = this.freePawns ?? new Dictionary<string, bool> { };
+            freePawns = freePawns ?? new Dictionary<string, bool> { };
             freePawns[pawn.GetUniqueLoadID()] = false;
             return true;
         }
@@ -221,7 +215,7 @@ namespace FreeWill
                 {
                     return;
                 }
-                var pawnKey = pawn.GetUniqueLoadID();
+                string pawnKey = pawn.GetUniqueLoadID();
                 if (freeWillOverride == null)
                 {
                     freeWillOverride = new Dictionary<string, int> { };
@@ -242,7 +236,7 @@ namespace FreeWill
                 {
                     return 0;
                 }
-                var pawnKey = pawn.GetUniqueLoadID();
+                string pawnKey = pawn.GetUniqueLoadID();
                 if (freeWillOverride == null)
                 {
                     freeWillOverride = new Dictionary<string, int> { };
@@ -265,62 +259,62 @@ namespace FreeWill
         {
             if (checkedForInterestsMod)
             {
-                return (interestsStrings != null);
+                return interestsStrings != null;
             }
 
             checkedForInterestsMod = true;
             if (LoadedModManager.RunningModsListForReading.Any(x => x.Name == "[D] Interests Framework"))
             {
-                var interestsBaseT = AccessTools.TypeByName("DInterests.InterestBase");
+                System.Type interestsBaseT = AccessTools.TypeByName("DInterests.InterestBase");
                 if (interestsBaseT == null)
                 {
                     Log.ErrorOnce("Free Will: did not find interestsBase", 118574562);
                     return false;
                 }
 
-                var interestList = AccessTools.Field(interestsBaseT, "interestList").GetValue(interestsBaseT);
+                object interestList = AccessTools.Field(interestsBaseT, "interestList").GetValue(interestsBaseT);
                 if (interestList == null)
                 {
                     Log.ErrorOnce("Free Will: did not find interest list", 118574563);
                     return false;
                 }
 
-                var interestListT = AccessTools.TypeByName("DInterests.InterestList");
+                System.Type interestListT = AccessTools.TypeByName("DInterests.InterestList");
                 if (interestListT == null)
                 {
                     Log.ErrorOnce("Free Will: could not find interest list type", 118574564);
                     return false;
                 }
 
-                var countMethod = AccessTools.Method(interestListT.BaseType, "get_Count", null);
+                System.Reflection.MethodInfo countMethod = AccessTools.Method(interestListT.BaseType, "get_Count", null);
                 if (countMethod == null)
                 {
                     Log.ErrorOnce("Free Will: could not find count method", 118574565);
                     return false;
                 }
 
-                var count = countMethod.Invoke(interestList, null);
+                object count = countMethod.Invoke(interestList, null);
                 if (count == null)
                 {
                     Log.ErrorOnce("Free Will: could not get count", 118574566);
                     return false;
                 }
 
-                var interestDefT = AccessTools.TypeByName("DInterests.InterestDef");
+                System.Type interestDefT = AccessTools.TypeByName("DInterests.InterestDef");
                 if (interestDefT == null)
                 {
                     Log.ErrorOnce("could not find interest def type", 118574567);
                     return false;
                 }
 
-                var getItem = AccessTools.Method(interestListT.BaseType, "get_Item");
+                System.Reflection.MethodInfo getItem = AccessTools.Method(interestListT.BaseType, "get_Item");
                 if (getItem == null)
                 {
                     Log.ErrorOnce("Free Will: coud not find get item method", 118574568);
                     return false;
                 }
 
-                var defNameField = AccessTools.Field(interestDefT, "defName");
+                System.Reflection.FieldInfo defNameField = AccessTools.Field(interestDefT, "defName");
                 if (defNameField == null)
                 {
                     Log.ErrorOnce("Free Will: could not get defName field", 118574569);
@@ -330,13 +324,13 @@ namespace FreeWill
                 interestsStrings = new List<string> { };
                 for (int i = 0; i < (int)count; i++)
                 {
-                    var interestDef = getItem.Invoke(interestList, new object[] { i });
+                    object interestDef = getItem.Invoke(interestList, new object[] { i });
                     if (interestDef == null)
                     {
                         Log.ErrorOnce("Free Will: could not find interest def", 118574570);
                         return false;
                     }
-                    var defName = defNameField.GetValue(interestDef);
+                    object defName = defNameField.GetValue(interestDef);
                     if (defName == null)
                     {
                         Log.ErrorOnce("Free Will: could not get defname", 118574571);
@@ -352,8 +346,8 @@ namespace FreeWill
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Collections.Look(ref this.freePawns, "FreeWillFreePawns", LookMode.Value, LookMode.Value);
-            Scribe_Collections.Look(ref this.freeWillOverride, "FreeWillFreeWillOverride", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref freePawns, "FreeWillFreePawns", LookMode.Value, LookMode.Value);
+            Scribe_Collections.Look(ref freeWillOverride, "FreeWillFreeWillOverride", LookMode.Value, LookMode.Value);
         }
     }
 }
