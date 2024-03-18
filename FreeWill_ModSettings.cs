@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Verse;
@@ -8,18 +7,18 @@ namespace FreeWill
     public class FreeWill_ModSettings : ModSettings
     {
         // mod default settings
-        const bool ConsiderBrawlersNotHuntingDefault = true;
-        const bool ConsiderHasHuntingWeaponDefault = true;
-        const float ConsiderMovementSpeedDefault = 1.0f;
-        const float ConsiderPassionsDefault = 1.0f;
-        const float ConsiderBeautyDefault = 1.0f;
-        const float ConsiderBestAtDoingDefault = 0.0f;
-        const float ConsiderFoodPoisoningDefault = 1.0f;
-        const float ConsiderLowFoodDefault = 1.0f;
-        const float ConsiderWeaponRangeDefault = 1.0f;
-        const float ConsiderOwnRoomDefault = 1.0f;
-        const float ConsiderPlantsBlightedDefault = 1.0f;
-        const float ConsiderGauranlenPruningDefault = 1.0f;
+        private const bool ConsiderBrawlersNotHuntingDefault = true;
+        private const bool ConsiderHasHuntingWeaponDefault = true;
+        private const float ConsiderMovementSpeedDefault = 1.0f;
+        private const float ConsiderPassionsDefault = 1.0f;
+        private const float ConsiderBeautyDefault = 1.0f;
+        private const float ConsiderBestAtDoingDefault = 0.0f;
+        private const float ConsiderFoodPoisoningDefault = 1.0f;
+        private const float ConsiderLowFoodDefault = 1.0f;
+        private const float ConsiderWeaponRangeDefault = 1.0f;
+        private const float ConsiderOwnRoomDefault = 1.0f;
+        private const float ConsiderPlantsBlightedDefault = 1.0f;
+        private const float ConsiderGauranlenPruningDefault = 1.0f;
 
         public bool ConsiderBrawlersNotHunting = ConsiderBrawlersNotHuntingDefault;
         public bool ConsiderHasHuntingWeapon = ConsiderHasHuntingWeaponDefault;
@@ -56,24 +55,18 @@ namespace FreeWill
             {
                 pos = Vector2.zero;
             }
-            var view = new Rect(15.0f, 0, inRect.width - 30.0f, inRect.height);
-            var ls = new Listing_Standard();
-            var workTypes = DefDatabase<WorkTypeDef>.AllDefsListForReading;
-            var v = 0.0f;
-            var s1 = "";
-            var s2 = "";
-            var s3 = "";
-
+            Rect view = new Rect(15.0f, 0, inRect.width - 30.0f, inRect.height);
+            Listing_Standard ls = new Listing_Standard();
+            List<WorkTypeDef> workTypes = DefDatabase<WorkTypeDef>.AllDefsListForReading;
             view.height = height;
             Widgets.BeginScrollView(inRect, ref pos, view);
             GUI.BeginGroup(view);
             view.height = 9999.0f;
             ls.Begin(new Rect(10, 10, view.width - 40, view.height - 10));
             ls.Gap(30.0f);
-
-            s1 = "FreeWillConsiderMovementSpeed".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderMovementSpeed);
-            s3 = "FreeWillConsiderMovementSpeedLong".TranslateSimple();
+            string s1 = "FreeWillConsiderMovementSpeed".TranslateSimple();
+            string s2 = string.Format("{0}x", ConsiderMovementSpeed);
+            string s3 = "FreeWillConsiderMovementSpeedLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderMovementSpeed = Mathf.RoundToInt(ls.Slider(ConsiderMovementSpeed, 0.0f, 10.0f) * 10.0f) / 10.0f;
             if (ls.ButtonText("FreeWillDefaultSliderButtonLabel".TranslateSimple()))
@@ -83,7 +76,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderPassions".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderPassions);
+            s2 = string.Format("{0}x", ConsiderPassions);
             s3 = "FreeWillConsiderPassionsLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderPassions = Mathf.RoundToInt(ls.Slider(ConsiderPassions, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -94,7 +87,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderBeauty".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderBeauty);
+            s2 = string.Format("{0}x", ConsiderBeauty);
             s3 = "FreeWillConsiderBeautyLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderBeauty = Mathf.RoundToInt(ls.Slider(ConsiderBeauty, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -105,7 +98,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderBestAtDoing".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderBestAtDoing);
+            s2 = string.Format("{0}x", ConsiderBestAtDoing);
             s3 = "FreeWillConsiderBestAtDoingLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderBestAtDoing = Mathf.RoundToInt(ls.Slider(ConsiderBestAtDoing, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -116,7 +109,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderLowFood".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderLowFood);
+            s2 = string.Format("{0}x", ConsiderLowFood);
             s3 = "FreeWillConsiderLowFoodLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderLowFood = Mathf.RoundToInt(ls.Slider(ConsiderLowFood, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -127,7 +120,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderWeaponRange".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderWeaponRange);
+            s2 = string.Format("{0}x", ConsiderWeaponRange);
             s3 = "FreeWillConsiderWeaponRangeLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderWeaponRange = Mathf.RoundToInt(ls.Slider(ConsiderWeaponRange, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -138,7 +131,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderFoodPoisoning".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderFoodPoisoning);
+            s2 = string.Format("{0}x", ConsiderFoodPoisoning);
             s3 = "FreeWillConsiderFoodPoisoningLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderFoodPoisoning = Mathf.RoundToInt(ls.Slider(ConsiderFoodPoisoning, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -149,7 +142,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderOwnRoom".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderOwnRoom);
+            s2 = string.Format("{0}x", ConsiderOwnRoom);
             s3 = "FreeWillConsiderOwnRoomLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderOwnRoom = Mathf.RoundToInt(ls.Slider(ConsiderOwnRoom, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -160,7 +153,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderPlantsBlighted".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderPlantsBlighted);
+            s2 = string.Format("{0}x", ConsiderPlantsBlighted);
             s3 = "FreeWillConsiderPlantsBlightedLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderPlantsBlighted = Mathf.RoundToInt(ls.Slider(ConsiderPlantsBlighted, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -171,7 +164,7 @@ namespace FreeWill
             ls.GapLine(30.0f);
 
             s1 = "FreeWillConsiderGauranlenPruning".TranslateSimple();
-            s2 = String.Format("{0}x", ConsiderGauranlenPruning);
+            s2 = string.Format("{0}x", ConsiderGauranlenPruning);
             s3 = "FreeWillConsiderGauranlenPruningLong".TranslateSimple();
             ls.LabelDouble(s1, s2, tip: s3);
             ConsiderGauranlenPruning = Mathf.RoundToInt(ls.Slider(ConsiderGauranlenPruning, 0.0f, 10.0f) * 10.0f) / 10.0f;
@@ -189,9 +182,9 @@ namespace FreeWill
             ls.GapLine(60.0f);
             foreach (WorkTypeDef workTypeDef in workTypes)
             {
-                globalWorkAdjustments.TryGetValue(workTypeDef.defName, out v);
-                s1 = String.Format("{0} {1}", "FreeWillWorkTypeAdjustment".TranslateSimple(), workTypeDef.labelShort);
-                s2 = String.Format("{0}%", Mathf.RoundToInt(v * 100.0f));
+                _ = globalWorkAdjustments.TryGetValue(workTypeDef.defName, out float v);
+                s1 = string.Format("{0} {1}", "FreeWillWorkTypeAdjustment".TranslateSimple(), workTypeDef.labelShort);
+                s2 = string.Format("{0}%", Mathf.RoundToInt(v * 100.0f));
                 ls.LabelDouble(s1, s2, tip: workTypeDef.description);
                 globalWorkAdjustments.SetOrAdd(
                     workTypeDef.defName,

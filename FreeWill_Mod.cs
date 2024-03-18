@@ -11,7 +11,7 @@ namespace FreeWill
     {
         public FreeWill_Mod(ModContentPack content) : base(content)
         {
-            var harmonyInstance = new Harmony("freemapa.freewill");
+            Harmony harmonyInstance = new Harmony("freemapa.freewill");
             Assembly assembly = Assembly.GetExecutingAssembly();
             harmonyInstance.PatchAll(assembly);
         }
@@ -24,7 +24,7 @@ namespace FreeWill
         public override void DoSettingsWindowContents(Rect inRect)
         {
             base.DoSettingsWindowContents(inRect);
-            this.GetSettings<FreeWill_ModSettings>().DoSettingsWindowContents(inRect);
+            GetSettings<FreeWill_ModSettings>().DoSettingsWindowContents(inRect);
         }
     }
 
@@ -67,7 +67,7 @@ namespace FreeWill
             {
                 return;
             }
-            var worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+            FreeWill_WorldComponent worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
             if (!worldComp.HasFreeWill(___pawn, ___pawn.GetUniqueLoadID()))
             {
                 return;

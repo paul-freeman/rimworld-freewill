@@ -23,29 +23,25 @@ namespace FreeWill
 
         public ITab_Pawn_FreeWill()
         {
-            this.size = new Vector2(width, height);
-            this.labelKey = "FreeWillITab";
-            this.scrollPosition = Vector2.zero;
-            this.highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
-            this.worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
+            size = new Vector2(width, height);
+            labelKey = "FreeWillITab";
+            scrollPosition = Vector2.zero;
+            highlightColor = new Color(0.5f, 0.5f, 0.5f, 1f);
+            worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
         }
 
         public override bool IsVisible
         {
             get
             {
-                var pawn = getCurrentPawn();
-                if (pawn == null)
-                {
-                    return false;
-                }
-                return pawn.IsColonistPlayerControlled;
+                Pawn pawn = GetCurrentPawn();
+                return pawn == null ? false : pawn.IsColonistPlayerControlled;
             }
         }
 
         protected override void FillTab()
         {
-            Pawn pawn = getCurrentPawn();
+            Pawn pawn = GetCurrentPawn();
             if (pawn == null)
             {
                 Log.Error("Free will tab found; no selected pawn to display.");
@@ -57,7 +53,7 @@ namespace FreeWill
                 return;
             }
             Text.Font = GameFont.Small;
-            Rect rect = new Rect(0f, topPadding, this.size.x, this.size.y - topPadding).ContractedBy(20f);
+            Rect rect = new Rect(0f, topPadding, size.x, size.y - topPadding).ContractedBy(20f);
             Rect position = new Rect(rect.x, rect.y, rect.width, rect.height);
 
             try
@@ -66,10 +62,10 @@ namespace FreeWill
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;
                 Rect outRect = new Rect(0f, 0f, position.width, position.height);
-                Rect viewRect = new Rect(0f, 0f, position.width - 16f, this.scrollViewHeight);
+                Rect viewRect = new Rect(0f, 0f, position.width - 16f, scrollViewHeight);
                 try
                 {
-                    Widgets.BeginScrollView(outRect, ref this.scrollPosition, viewRect, true);
+                    Widgets.BeginScrollView(outRect, ref scrollPosition, viewRect, true);
                     float num = 0f;
 
                     DrawPawnProfession(pawn, ref num, viewRect.width);
@@ -79,15 +75,8 @@ namespace FreeWill
 
                     if (Event.current.type == EventType.Layout)
                     {
-                        if (num + 70f > 450f)
-                        {
-                            this.size.y = Mathf.Min(num + 70f, (float)(UI.screenHeight - 35) - 165f - 30f);
-                        }
-                        else
-                        {
-                            this.size.y = 450f;
-                        }
-                        this.scrollViewHeight = num + 20f;
+                        size.y = num + 70f > 450f ? Mathf.Min(num + 70f, UI.screenHeight - 35 - 165f - 30f) : 450f;
+                        scrollViewHeight = num + 20f;
                     }
                 }
                 catch
@@ -160,11 +149,11 @@ namespace FreeWill
             {
                 if (!pawn.Dead)
                 {
-                    foreach (KeyValuePair<WorkTypeDef, Priority> pair in (
+                    foreach (KeyValuePair<WorkTypeDef, Priority> pair in 
                             from x in pawn.Map.GetComponent<FreeWill_MapComponent>().GetPriorities(pawn)
                             orderby x.Key.naturalPriority descending
                             select x
-                            ))
+                            )
                     {
                         DrawPawnWorkPriority(pawn, ref curY, width, pair.Key, pair.Value);
                     }
@@ -189,14 +178,14 @@ namespace FreeWill
                 {
                     return;
                 }
-                var pawnKey = pawn.GetUniqueLoadID();
+                string pawnKey = pawn.GetUniqueLoadID();
                 bool isFree = worldComp.HasFreeWill(pawn, pawnKey);
                 bool flag = isFree;
                 Rect rect = new Rect(0f, curY, width, 24f);
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;
 
-                var canChange = worldComp.FreeWillCanChange(pawn, pawnKey);
+                bool canChange = worldComp.FreeWillCanChange(pawn, pawnKey);
                 Widgets.CheckboxLabeled(rect, "FreeWillITabCheckbox".TranslateSimple(), ref isFree, !canChange, null, null, false);
                 if (Mouse.IsOver(rect))
                 {
@@ -228,7 +217,7 @@ namespace FreeWill
                 }
                 if (flag != isFree)
                 {
-                    bool ok = (isFree) ? worldComp.TryGiveFreeWill(pawn) : worldComp.TryRemoveFreeWill(pawn);
+                    bool ok = isFree ? worldComp.TryGiveFreeWill(pawn) : worldComp.TryRemoveFreeWill(pawn);
                     if (!ok)
                     {
                         Log.Error($"could not change free will for {pawn.Name.ToStringShort}");
@@ -280,18 +269,9 @@ namespace FreeWill
         }
 
 
-        private Pawn getCurrentPawn()
+        private Pawn GetCurrentPawn()
         {
-            if (base.SelPawn != null)
-            {
-                return base.SelPawn;
-            }
-            Corpse corpse = base.SelThing as Corpse;
-            if (corpse != null)
-            {
-                return corpse.InnerPawn;
-            }
-            return null;
+            return SelPawn ?? (SelThing as Corpse)?.InnerPawn;
         }
     }
 }
