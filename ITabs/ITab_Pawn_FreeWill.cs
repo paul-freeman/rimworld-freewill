@@ -19,7 +19,7 @@ namespace FreeWill
         private Color highlightColor;
         private FreeWill_WorldComponent worldComp;
 
-        private static int couldNotDrawPawnWorkPriority = ("FreeWill" + "could not draw pawn work priority").GetHashCode();
+        private static readonly int couldNotDrawPawnWorkPriority = ("FreeWill" + "could not draw pawn work priority").GetHashCode();
 
         public ITab_Pawn_FreeWill()
         {
@@ -35,7 +35,7 @@ namespace FreeWill
             get
             {
                 Pawn pawn = GetCurrentPawn();
-                return pawn == null ? false : pawn.IsColonistPlayerControlled;
+                return pawn != null && pawn.IsColonistPlayerControlled;
             }
         }
 
@@ -149,7 +149,7 @@ namespace FreeWill
             {
                 if (!pawn.Dead)
                 {
-                    foreach (KeyValuePair<WorkTypeDef, Priority> pair in 
+                    foreach (KeyValuePair<WorkTypeDef, Priority> pair in
                             from x in pawn.Map.GetComponent<FreeWill_MapComponent>().GetPriorities(pawn)
                             orderby x.Key.naturalPriority descending
                             select x
@@ -249,7 +249,7 @@ namespace FreeWill
                 {
                     GUI.color = highlightColor;
                     GUI.DrawTexture(rect, TexUI.HighlightTex);
-                    TooltipHandler.TipRegion(rect, new TipSignal(() => { return t; }, pawn.thingIDNumber ^ (int)workTypeDef.index));
+                    TooltipHandler.TipRegion(rect, new TipSignal(() => { return t; }, pawn.thingIDNumber ^ workTypeDef.index));
                 }
                 GUI.color = WidgetsWork.ColorOfPriority(p);
                 Text.Anchor = TextAnchor.MiddleLeft;

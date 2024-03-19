@@ -4,7 +4,7 @@ using FreeWill;
 
 public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
 {
-    FreeWill_WorldComponent worldComp = null;
+    private FreeWill_WorldComponent worldComp = null;
     protected override ThoughtState ShouldHaveThought(Pawn pawn)
     {
         if (pawn == null)
@@ -36,7 +36,7 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
             {
                 continue;
             }
-            if (job.def == RimWorld.JobDefOf.TradeWithPawn)
+            if (job.def == JobDefOf.TradeWithPawn)
             {
                 // trading with pawns is okay
                 continue;
@@ -45,18 +45,14 @@ public class ThoughtWorker_Precept_FreeWillStreak : ThoughtWorker_Precept
             return ThoughtState.Inactive;
         }
         int ticks = worldComp.FreeWillTicks(pawn);
-        if (ticks > 3600000)
-        {
-            return ThoughtState.ActiveAtStage(3);
-        }
-        if (ticks > 900000)
-        {
-            return ThoughtState.ActiveAtStage(2);
-        }
-        if (ticks > 300000)
-        {
-            return ThoughtState.ActiveAtStage(1);
-        }
-        return ticks > 60000 ? ThoughtState.ActiveAtStage(0) : ThoughtState.Inactive;
+        return ticks > 3600000
+            ? ThoughtState.ActiveAtStage(3)
+            : ticks > 900000
+            ? ThoughtState.ActiveAtStage(2)
+            : ticks > 300000
+            ? ThoughtState.ActiveAtStage(1)
+            : ticks > 60000
+            ? ThoughtState.ActiveAtStage(0)
+            : ThoughtState.Inactive;
     }
 }

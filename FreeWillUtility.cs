@@ -34,10 +34,10 @@ namespace FreeWill
             mapComp = newMapComp ?? Find.CurrentMap.GetComponent<FreeWill_MapComponent>();
         }
 
-        public static void DoCell(Rect rect, Pawn pawn, PawnTable table, PawnColumnWorker_WorkPriority __instance)
+        public static void DoCell(Rect rect, Pawn pawn, PawnTable _, PawnColumnWorker_WorkPriority __instance)
         {
             Text.Font = GameFont.Medium;
-            float x = rect.x + (rect.width - 25f) / 2f;
+            float x = rect.x + ((rect.width - 25f) / 2f);
             float y = rect.y + 2.5f;
             bool incapable = IsIncapableOfWholeWorkType(pawn, __instance.def.workType);
             Priority priority = GetMapComponent()?.GetPriority(pawn, __instance.def.workType);
@@ -57,11 +57,10 @@ namespace FreeWill
             Text.Font = GameFont.Small;
         }
 
-        public static void DrawWorkBoxFor(float x, float y, Pawn p, Priority priority, bool incapableBecauseOfCapacities)
+        public static void DrawWorkBoxFor(float x, float y, Pawn _, Priority priority, bool __)
         {
             Rect rect = new Rect(x, y, 25f, 25f);
             GUI.color = Color.white;
-            float num = p.skills.AverageOfRelevantSkillsFor(priority.WorkTypeDef);
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, priority.Value);
             GUI.DrawTexture(rect, Resources.FreeWillOverlay);
         }
@@ -106,14 +105,7 @@ namespace FreeWill
                     catch (Exception e)
                     {
                         Log.ErrorOnce("could not get adjustment string: " + e.Message, couldNotGetAdjustmentString);
-                        if (Prefs.DevMode)
-                        {
-                            stringBuilder = stringBuilder.AppendLine("error: " + e.Message);
-                        }
-                        else
-                        {
-                            stringBuilder = stringBuilder.AppendLine("error");
-                        }
+                        stringBuilder = Prefs.DevMode ? stringBuilder.AppendLine("error: " + e.Message) : stringBuilder.AppendLine("error");
                     }
                 }
                 stringBuilder = stringBuilder.AppendLine();

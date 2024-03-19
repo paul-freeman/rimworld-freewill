@@ -29,7 +29,9 @@ namespace FreeWill
     }
 
     [HarmonyPatch(typeof(PawnColumnWorker_WorkPriority), "DoCell")]
+#pragma warning disable IDE0040 // Add accessibility modifiers
     class PawnColumnWorker_WorkPriority_Patch
+#pragma warning restore IDE0040 // Add accessibility modifiers
     {
         /// <summary>
         /// Harmony prefix patch for the PawnColumnWorker_WorkPriority.DoCell method.
@@ -40,7 +42,11 @@ namespace FreeWill
         /// <param name="table">The PawnTable object containing the Pawn and associated work priority column.</param>
         /// <param name="__instance">The instance of the PawnColumnWorker_WorkPriority class being patched.</param>
         /// <returns>True if the original DoCell method should be executed, otherwise false.</returns>
+#pragma warning disable IDE0040 // Add accessibility modifiers
+#pragma warning disable IDE0051 // Remove unused private members
         static bool Prefix(Rect rect, Pawn pawn, PawnTable table, PawnColumnWorker_WorkPriority __instance)
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0040 // Add accessibility modifiers
         {
             if (pawn.Dead
                 || pawn.workSettings == null
@@ -57,7 +63,11 @@ namespace FreeWill
     [HarmonyPatch(typeof(Pawn_JobTracker), "StartJob")]
     public class FreeWillOverride
     {
+#pragma warning disable IDE0040 // Add accessibility modifiers
+#pragma warning disable IDE0051 // Remove unused private members
         static void Postfix(Pawn ___pawn, Job __0)
+#pragma warning restore IDE0051 // Remove unused private members
+#pragma warning restore IDE0040 // Add accessibility modifiers
         {
             if (___pawn == null)
             {
