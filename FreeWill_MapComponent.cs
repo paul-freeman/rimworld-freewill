@@ -86,7 +86,7 @@ namespace FreeWill
                 GetMapComponentTickAction();
                 actionCounter++;
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {actionCounter}: {e}", 14147584);
             }
@@ -101,34 +101,34 @@ namespace FreeWill
                     switch (mapComponentCheckActions[actionCounter])
                     {
                         case "checkPrisonerHealth":
-                            _ = checkPrisonerHealth();
+                            _ = CheckPrisonerHealth();
                             break;
                         case "checkPetsHealth":
-                            _ = checkPetsHealth();
+                            _ = CheckPetsHealth();
                             break;
                         case "checkColonyHealth":
-                            _ = checkColonyHealth();
+                            _ = CheckColonyHealth();
                             break;
                         case "checkPercentPawnsMechHaulers":
-                            _ = checkPercentPawnsMechHaulers();
+                            _ = CheckPercentPawnsMechHaulers();
                             break;
                         case "checkThingsDeteriorating":
-                            _ = checkThingsDeteriorating();
+                            _ = CheckThingsDeteriorating();
                             break;
                         case "checkBlight":
-                            _ = checkBlight();
+                            _ = CheckBlight();
                             break;
                         case "checkMapFire":
-                            _ = checkMapFire();
+                            _ = CheckMapFire();
                             break;
                         case "checkRefuelNeeded":
-                            _ = checkRefuelNeeded();
+                            _ = CheckRefuelNeeded();
                             break;
                         case "checkActiveAlerts":
-                            _ = checkActiveAlerts();
+                            _ = CheckActiveAlerts();
                             break;
                         case "checkSuppressionNeed":
-                            _ = checkSuppressionNeed();
+                            _ = CheckSuppressionNeed();
                             break;
                         default:
                             Log.ErrorOnce($"Free Will: unknown map component tick action: {mapComponentCheckActions[actionCounter]}", 14147585);
@@ -142,7 +142,7 @@ namespace FreeWill
                 if (i >= workTypeDefs.Count * pawns.Count)
                 {
                     actionCounter = 0;
-                    checkPrisonerHealth();
+                    _ = CheckPrisonerHealth();
                     return;
                 }
                 int pawnIndex = i / workTypeDefs.Count;
@@ -152,8 +152,8 @@ namespace FreeWill
                 {
                     // new pawn, so check their area
                     BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
-                    AreaHasHaulables = checkIfAreaHasHaulables(pawn, BeautyUtility.beautyRelevantCells);
-                    AreaHasFilth = checkIfAreaHasFilth(pawn, BeautyUtility.beautyRelevantCells);
+                    AreaHasHaulables = CheckIfAreaHasHaulables(pawn, BeautyUtility.beautyRelevantCells);
+                    AreaHasFilth = CheckIfAreaHasFilth(pawn, BeautyUtility.beautyRelevantCells);
                     pawnIndexCache = pawn.GetUniqueLoadID();
                     // update their thoughts
                     pawn.needs.mood.thoughts.GetAllMoodThoughts(AllThoughts);
@@ -163,7 +163,7 @@ namespace FreeWill
                 }
                 string pawnKey = pawn.GetUniqueLoadID();
                 WorkTypeDef workTypeDef = workTypeDefs[worktypeIndex];
-                _ = setPriorityAction(pawn, pawnKey, workTypeDef);
+                _ = SetPriorityAction(pawn, pawnKey, workTypeDef);
             }
             catch (Exception e)
             {
@@ -204,7 +204,7 @@ namespace FreeWill
             return priorities[pawn][workTypeDef];
         }
 
-        private string setPriorityAction(Pawn pawn, string pawnKey, WorkTypeDef workTypeDef)
+        private string SetPriorityAction(Pawn pawn, string pawnKey, WorkTypeDef workTypeDef)
         {
             string msg = pawn.Name.ToStringShort + " " + workTypeDef.defName;
             if (pawn == null)
@@ -251,7 +251,7 @@ namespace FreeWill
                 }
                 return msg;
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 if (Prefs.DevMode)
                 {
@@ -267,7 +267,7 @@ namespace FreeWill
             }
         }
 
-        private string checkSuppressionNeed()
+        private string CheckSuppressionNeed()
         {
             try
             {
@@ -297,13 +297,13 @@ namespace FreeWill
                 }
                 return "checkSuppressionNeed";
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 throw new Exception("could not check suppression need", e);
             }
         }
 
-        private string checkPrisonerHealth()
+        private string CheckPrisonerHealth()
         {
             List<Pawn> prisonersInColony = map?.mapPawns?.PrisonersOfColony;
             NumPrisonersNeedingTreatment =
@@ -315,16 +315,16 @@ namespace FreeWill
             return "checkPrisonerHealth";
         }
 
-        private string checkPetsHealth()
+        private string CheckPetsHealth()
         {
             PawnsInFaction = map?.mapPawns?.PawnsInFaction(Faction.OfPlayer) ?? new List<Pawn>();
             NumPetsNeedingTreatment = (from p in PawnsInFaction
-                                            where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
-                                            select p).Count();
+                                       where p.RaceProps.Animal && p.health.HasHediffsNeedingTend()
+                                       select p).Count();
             return "checkPetsHealth";
         }
 
-        private string checkColonyHealth()
+        private string CheckColonyHealth()
         {
             PercentPawnsDowned = 0;
             PercentPawnsNeedingTreatment = 0;
@@ -345,7 +345,7 @@ namespace FreeWill
             return "checkColonyHealth";
         }
 
-        private string checkPercentPawnsMechHaulers()
+        private string CheckPercentPawnsMechHaulers()
         {
             try
             {
@@ -371,13 +371,13 @@ namespace FreeWill
                 PercentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
                 return "checkPercentPawnsMechHaulers";
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 throw new Exception("could not check percent of mech haulers", e);
             }
         }
 
-        private string checkThingsDeteriorating()
+        private string CheckThingsDeteriorating()
         {
             ThingsDeteriorating = null;
             List<Thing> thingsPotentiallyNeedingHauling = map?.listerHaulables?.ThingsPotentiallyNeedingHauling();
@@ -401,14 +401,14 @@ namespace FreeWill
             return "checkThingsDeteriorating";
         }
 
-        private string checkBlight()
+        private string CheckBlight()
         {
             try
             {
                 PlantsBlighted = GridsUtility.GetFirstBlight(map.Center, map) != null;
                 return "checkBlight";
             }
-            catch (System.Exception err)
+            catch (Exception err)
             {
                 Log.Message("could not check blight levels on map");
                 Log.Message(err.ToString());
@@ -419,7 +419,7 @@ namespace FreeWill
             }
         }
 
-        private string checkMapFire()
+        private string CheckMapFire()
         {
             List<Thing> fires = map?.listerThings?.ThingsOfDef(ThingDefOf.Fire);
             MapFires = fires?.Count ?? 0;
@@ -440,7 +440,7 @@ namespace FreeWill
             return "checkMapFire";
         }
 
-        private string checkRefuelNeeded()
+        private string CheckRefuelNeeded()
         {
             RefuelNeeded = false;
             RefuelNeededNow = false;
@@ -475,12 +475,11 @@ namespace FreeWill
             return "checkRefuelNeeded";
         }
 
-        public string checkActiveAlerts()
+        public string CheckActiveAlerts()
         {
             try
             {
-                UIRoot_Play ui = Find.UIRoot as UIRoot_Play;
-                if (ui == null)
+                if (!(Find.UIRoot is UIRoot_Play ui))
                 {
                     return "checkActiveAlerts";
                 }
@@ -543,14 +542,14 @@ namespace FreeWill
             }
         }
 
-        private bool checkIfAreaHasHaulables(Pawn pawn, List<IntVec3> area)
+        private bool CheckIfAreaHasHaulables(Pawn pawn, List<IntVec3> area)
         {
             return area
                 .SelectMany(cell => cell.GetThingList(pawn.Map))
-                .Any((t) => isHaulable(pawn, t));
+                .Any((t) => IsHaulable(pawn, t));
         }
 
-        private bool isHaulable(Pawn pawn, Thing t)
+        private bool IsHaulable(Pawn pawn, Thing t)
         {
             if (!t.def.alwaysHaulable)
             {
@@ -563,30 +562,20 @@ namespace FreeWill
                     return false;
                 }
             }
-            if (t.IsInValidBestStorage())
-            {
-                return false;
-            }
-            if (t.IsForbidden(pawn))
-            {
-                return false;
-            }
-            if (!HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false))
-            {
-                return false;
-            }
-            return pawn.carryTracker.MaxStackSpaceEver(t.def) > 0;
+            return !t.IsInValidBestStorage()
+                && !t.IsForbidden(pawn)
+                && HaulAIUtility.PawnCanAutomaticallyHaulFast(pawn, t, forced: false)
+                && pawn.carryTracker.MaxStackSpaceEver(t.def) > 0;
         }
 
-        private bool checkIfAreaHasFilth(Pawn pawn, List<IntVec3> area)
+        private bool CheckIfAreaHasFilth(Pawn pawn, List<IntVec3> area)
         {
             bool areaHasCleaningJobToDo = false;
             foreach (IntVec3 cell in area)
             {
                 foreach (Thing thing in cell.GetThingList(pawn.Map))
                 {
-                    Filth filth = thing as Filth;
-                    if (filth == null)
+                    if (!(thing is Filth filth))
                     {
                         continue;
                     }
