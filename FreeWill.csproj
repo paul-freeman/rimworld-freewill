@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
 
   <PropertyGroup>
+    <SteamBasePath>C:\Program Files (x86)\Steam</SteamBasePath>
+
+    <RimWorldBasePath>$(SteamBasePath)\steamapps\common\RimWorld</RimWorldBasePath>
+    <RimWorldManaged>$(RimWorldBasePath)\RimWorldWin64_Data\Managed</RimWorldManaged>
+    <ModOutputPath>$(RimWorldBasePath)\Mods\FreeWill</ModOutputPath>
+
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AssemblyName>FreeWill</AssemblyName>
     <OutputType>Library</OutputType>
-    <OutputPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\FreeWill\</OutputPath>
+    <OutputPath>$(ModOutputPath)\</OutputPath>
     <FileAlignment>512</FileAlignment>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
@@ -31,80 +38,76 @@
     <Folder Include="Languages\" />
     <Folder Include="Patches\" />
     <Folder Include="Textures\" />
+    <Reference Include="System">
+      <HintPath>$(RimWorldManaged)\System.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldManaged)\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(SteamBasePath)\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(RimWorldManaged)\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RimWorldManaged)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(RimWorldManaged)\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(RimWorldManaged)\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition=" '$(Configuration)' == 'Stable' ">
     <PostBuildEvent>
-md "$(ProjectDir)\Assemblies"
-move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
-rd /s /q "$(TargetDir)"
-md "$(TargetDir)"
-md "$(TargetDir)About"
-md "$(TargetDir)Assemblies"
-md "$(TargetDir)Defs"
-md "$(TargetDir)Languages"
-md "$(TargetDir)Patches"
-md "$(TargetDir)Textures"
-xcopy /y /s "$(ProjectDir)About" "$(TargetDir)About"
-xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
-xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
-xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
-xcopy /y /s "$(ProjectDir)Patches" "$(TargetDir)Patches"
-xcopy /y /s "$(ProjectDir)Textures" "$(TargetDir)Textures"
-</PostBuildEvent>
+      md "$(ProjectDir)\Assemblies"
+      move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
+      rd /s /q "$(TargetDir)"
+      md "$(TargetDir)"
+      md "$(TargetDir)About"
+      md "$(TargetDir)Assemblies"
+      md "$(TargetDir)Defs"
+      md "$(TargetDir)Languages"
+      md "$(TargetDir)Patches"
+      md "$(TargetDir)Textures"
+      xcopy /y /s "$(ProjectDir)About" "$(TargetDir)About"
+      xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
+      xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
+      xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
+      xcopy /y /s "$(ProjectDir)Patches" "$(TargetDir)Patches"
+      xcopy /y /s "$(ProjectDir)Textures" "$(TargetDir)Textures"
+    </PostBuildEvent>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Unstable' ">
     <PostBuildEvent>
-md "$(ProjectDir)\Assemblies"
-move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
-rd /s /q "$(TargetDir)"
-md "$(TargetDir)"
-md "$(TargetDir)About"
-md "$(TargetDir)Assemblies"
-md "$(TargetDir)Defs"
-md "$(TargetDir)Languages"
-md "$(TargetDir)Patches"
-md "$(TargetDir)Textures"
-xcopy /y /s "$(ProjectDir)AboutUnstable" "$(TargetDir)About"
-xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
-xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
-xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
-xcopy /y /s "$(ProjectDir)Patches" "$(TargetDir)Patches"
-xcopy /y /s "$(ProjectDir)Textures" "$(TargetDir)Textures"
-</PostBuildEvent>
+      md "$(ProjectDir)\Assemblies"
+      move /y "$(TargetDir)$(TargetFileName)" "$(ProjectDir)Assemblies\$(TargetFileName)"
+      rd /s /q "$(TargetDir)"
+      md "$(TargetDir)"
+      md "$(TargetDir)About"
+      md "$(TargetDir)Assemblies"
+      md "$(TargetDir)Defs"
+      md "$(TargetDir)Languages"
+      md "$(TargetDir)Patches"
+      md "$(TargetDir)Textures"
+      xcopy /y /s "$(ProjectDir)AboutUnstable" "$(TargetDir)About"
+      xcopy /y /s "$(ProjectDir)Assemblies" "$(TargetDir)Assemblies"
+      xcopy /y /s "$(ProjectDir)Defs" "$(TargetDir)Defs"
+      xcopy /y /s "$(ProjectDir)Languages" "$(TargetDir)Languages"
+      xcopy /y /s "$(ProjectDir)Patches" "$(TargetDir)Patches"
+      xcopy /y /s "$(ProjectDir)Textures" "$(TargetDir)Textures"
+    </PostBuildEvent>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\System.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="0Harmony">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-
 </Project>
