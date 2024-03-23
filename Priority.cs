@@ -51,8 +51,6 @@ namespace FreeWill
         // supported modded work types
         private const string HAULING_URGENT = "HaulingUrgent";
 
-        private static readonly int couldNotConvertToGamePriority = ("FreeWill" + "could not convert to game priority").GetHashCode();
-
 
         public Priority(Pawn pawn, WorkTypeDef workTypeDef)
         {
@@ -95,516 +93,530 @@ namespace FreeWill
 
         private Priority InnerCompute()
         {
-            Enabled = false;
-            Disabled = false;
-            if (mapComp.DisabledWorkTypes.Contains(WorkTypeDef))
+            try
             {
-                return NeverDo("FreeWillPriorityPermanentlyDisabled".TranslateSimple);
+                Enabled = false;
+                Disabled = false;
+                if (mapComp.DisabledWorkTypes.Contains(WorkTypeDef))
+                {
+                    return NeverDo("FreeWillPriorityPermanentlyDisabled".TranslateSimple);
+                }
+                switch (WorkTypeDef.defName)
+                {
+                    case FIREFIGHTER:
+                        Set(0.0f, "FreeWillPriorityFirefightingDefault".TranslateSimple);
+                        return
+                            AlwaysDo("FreeWillPriorityFirefightingAlways".TranslateSimple)
+                            .NeverDoIf(pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple)
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case PATIENT:
+                        Set(0.0f, "FreeWillPriorityPatientDefault".TranslateSimple);
+                        return
+                            AlwaysDo("FreeWillPriorityPatientAlways".TranslateSimple)
+                            .ConsiderHealth()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderOperation()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case DOCTOR:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderInjuredPets()
+                            .ConsiderInjuredPrisoners()
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case PATIENT_BED_REST:
+                        Set(0.0f, "FreeWillPriorityBedrestDefault".TranslateSimple);
+                        return
+                            AlwaysDo("FreeWillPriorityBedrestAlways".TranslateSimple)
+                            .ConsiderHealth()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderLowFood(-0.2f)
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderBored()
+                            .ConsiderDownedColonists()
+                            .ConsiderOperation()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case CHILDCARE:
+                        Set(0.5f, "FreeWillPriorityChildcareDefault".TranslateSimple);
+                        return
+                            ConsiderRelevantSkills(shouldAdd: true)
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case BASIC_WORKER:
+                        Set(0.5f, "FreeWillPriorityBasicWorkDefault".TranslateSimple);
+                        return
+                            ConsiderThoughts()
+                            .ConsiderHealth()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderBored()
+                            .NeverDoIf(pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple)
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case WARDEN:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderSuppressionNeed()
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case HANDLING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderMovementSpeed()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderAnimalsRoaming()
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case COOKING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(0.2f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderFoodPoisoning()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case HUNTING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderMovementSpeed()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(0.3f)
+                            .ConsiderWeaponRange()
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderHasHuntingWeapon()
+                            .ConsiderBrawlersNotHunting()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case CONSTRUCTION:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case GROWING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case MINING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case PLANT_CUTTING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderGauranlenPruning()
+                            .ConsiderLowFood(0.3f)
+                            .ConsiderHealth()
+                            .ConsiderPlantsBlighted()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case SMITHING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderFinishedMechGestators()
+                            .ConsiderRepairingMech()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderBeautyExpectations()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case TAILORING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderBeautyExpectations()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderNeedingWarmClothes()
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case ART:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderBeautyExpectations()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case CRAFTING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderBeautyExpectations()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case HAULING:
+                        Set(0.3f, "FreeWillPriorityHaulingDefault".TranslateSimple);
+                        return
+                            ConsiderBeautyExpectations()
+                            .ConsiderMovementSpeed()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderRefueling()
+                            .ConsiderLowFood(0.2f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderThingsDeteriorating()
+                            .ConsiderMechHaulers()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case CLEANING:
+                        Set(0.5f, "FreeWillPriorityCleaningDefault".TranslateSimple);
+                        return
+                            ConsiderBeautyExpectations()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderThoughts()
+                            .ConsiderOwnRoom()
+                            .ConsiderLowFood(-0.2f)
+                            .ConsiderFoodPoisoning()
+                            .ConsiderHealth()
+                            .ConsiderBored()
+                            .NeverDoIf(NotInHomeArea(pawn), "FreeWillPriorityNotInHomeArea".TranslateSimple)
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case RESEARCHING:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderBeautyExpectations()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.4f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    case HAULING_URGENT:
+                        Set(0.5f, "FreeWillPriorityUrgentHaulingDefault".TranslateSimple);
+                        return
+                            ConsiderBeautyExpectations()
+                            .ConsiderMovementSpeed()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderRefueling()
+                            .ConsiderLowFood(0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderThingsDeteriorating()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+
+                    default:
+                        return
+                            ConsiderRelevantSkills()
+                            .ConsiderMovementSpeed()
+                            .ConsiderCarryingCapacity()
+                            .ConsiderBeautyExpectations()
+                            .ConsiderIsAnyoneElseDoing()
+                            .ConsiderBestAtDoing()
+                            .ConsiderPassion()
+                            .ConsiderThoughts()
+                            .ConsiderInspiration()
+                            .ConsiderLowFood(-0.3f)
+                            .ConsiderColonistLeftUnburied()
+                            .ConsiderHealth()
+                            .ConsiderAteRawFood()
+                            .ConsiderBored()
+                            .ConsiderFire()
+                            .ConsiderBuildingImmunity()
+                            .ConsiderCompletingTask()
+                            .ConsiderColonistsNeedingTreatment()
+                            .ConsiderDownedColonists()
+                            .ConsiderColonyPolicy()
+                            ;
+                }
             }
-            switch (WorkTypeDef.defName)
+            catch (Exception e)
             {
-                case FIREFIGHTER:
-                    Set(0.0f, "FreeWillPriorityFirefightingDefault".TranslateSimple);
-                    return
-                        AlwaysDo("FreeWillPriorityFirefightingAlways".TranslateSimple)
-                        .NeverDoIf(pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple)
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case PATIENT:
-                    Set(0.0f, "FreeWillPriorityPatientDefault".TranslateSimple);
-                    return
-                        AlwaysDo("FreeWillPriorityPatientAlways".TranslateSimple)
-                        .ConsiderHealth()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderOperation()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case DOCTOR:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderInjuredPets()
-                        .ConsiderInjuredPrisoners()
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case PATIENT_BED_REST:
-                    Set(0.0f, "FreeWillPriorityBedrestDefault".TranslateSimple);
-                    return
-                        AlwaysDo("FreeWillPriorityBedrestAlways".TranslateSimple)
-                        .ConsiderHealth()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderLowFood(-0.2f)
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderBored()
-                        .ConsiderDownedColonists()
-                        .ConsiderOperation()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case CHILDCARE:
-                    Set(0.5f, "FreeWillPriorityChildcareDefault".TranslateSimple);
-                    return
-                        ConsiderRelevantSkills(shouldAdd: true)
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case BASIC_WORKER:
-                    Set(0.5f, "FreeWillPriorityBasicWorkDefault".TranslateSimple);
-                    return
-                        ConsiderThoughts()
-                        .ConsiderHealth()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderBored()
-                        .NeverDoIf(pawn.Downed, "FreeWillPriorityPawnDowned".TranslateSimple)
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case WARDEN:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderSuppressionNeed()
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case HANDLING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderMovementSpeed()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderAnimalsRoaming()
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case COOKING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(0.2f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderFoodPoisoning()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case HUNTING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderMovementSpeed()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(0.3f)
-                        .ConsiderWeaponRange()
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderHasHuntingWeapon()
-                        .ConsiderBrawlersNotHunting()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case CONSTRUCTION:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case GROWING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case MINING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case PLANT_CUTTING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderGauranlenPruning()
-                        .ConsiderLowFood(0.3f)
-                        .ConsiderHealth()
-                        .ConsiderPlantsBlighted()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case SMITHING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderFinishedMechGestators()
-                        .ConsiderRepairingMech()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderBeautyExpectations()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case TAILORING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderBeautyExpectations()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderNeedingWarmClothes()
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case ART:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderBeautyExpectations()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case CRAFTING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderBeautyExpectations()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case HAULING:
-                    Set(0.3f, "FreeWillPriorityHaulingDefault".TranslateSimple);
-                    return
-                        ConsiderBeautyExpectations()
-                        .ConsiderMovementSpeed()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderRefueling()
-                        .ConsiderLowFood(0.2f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderThingsDeteriorating()
-                        .ConsiderMechHaulers()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case CLEANING:
-                    Set(0.5f, "FreeWillPriorityCleaningDefault".TranslateSimple);
-                    return
-                        ConsiderBeautyExpectations()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderThoughts()
-                        .ConsiderOwnRoom()
-                        .ConsiderLowFood(-0.2f)
-                        .ConsiderFoodPoisoning()
-                        .ConsiderHealth()
-                        .ConsiderBored()
-                        .NeverDoIf(NotInHomeArea(pawn), "FreeWillPriorityNotInHomeArea".TranslateSimple)
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case RESEARCHING:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderBeautyExpectations()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.4f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                case HAULING_URGENT:
-                    Set(0.5f, "FreeWillPriorityUrgentHaulingDefault".TranslateSimple);
-                    return
-                        ConsiderBeautyExpectations()
-                        .ConsiderMovementSpeed()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderRefueling()
-                        .ConsiderLowFood(0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderThingsDeteriorating()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
-
-                default:
-                    return
-                        ConsiderRelevantSkills()
-                        .ConsiderMovementSpeed()
-                        .ConsiderCarryingCapacity()
-                        .ConsiderBeautyExpectations()
-                        .ConsiderIsAnyoneElseDoing()
-                        .ConsiderBestAtDoing()
-                        .ConsiderPassion()
-                        .ConsiderThoughts()
-                        .ConsiderInspiration()
-                        .ConsiderLowFood(-0.3f)
-                        .ConsiderColonistLeftUnburied()
-                        .ConsiderHealth()
-                        .ConsiderAteRawFood()
-                        .ConsiderBored()
-                        .ConsiderFire()
-                        .ConsiderBuildingImmunity()
-                        .ConsiderCompletingTask()
-                        .ConsiderColonistsNeedingTreatment()
-                        .ConsiderDownedColonists()
-                        .ConsiderColonyPolicy()
-                        ;
+                throw new Exception("could not run inner compute: " + e.Message);
             }
         }
 
         public void ApplyPriorityToGame()
         {
-            if (!Current.Game.playSettings.useWorkPriorities)
+            try
             {
-                Current.Game.playSettings.useWorkPriorities = true;
-            }
+                if (!Current.Game.playSettings.useWorkPriorities)
+                {
+                    Current.Game.playSettings.useWorkPriorities = true;
+                }
 
-            int priority = ToGamePriority();
-            if (pawn.workSettings.GetPriority(WorkTypeDef) != priority)
+                int priority = ToGamePriority();
+                if (pawn.workSettings.GetPriority(WorkTypeDef) != priority)
+                {
+                    pawn.workSettings.SetPriority(WorkTypeDef, priority);
+                }
+            }
+            catch (Exception e)
             {
-                pawn.workSettings.SetPriority(WorkTypeDef, priority);
+                throw new Exception("could not apply priority to game: " + e.Message);
             }
         }
 
@@ -633,287 +645,384 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                Log.ErrorOnce("could not convert to game priority: " + e.ToString(), couldNotConvertToGamePriority);
-                return 0;
+                throw new Exception("could not convert to game priority: " + e.Message);
             }
         }
 
         private void Set(float x, Func<string> description)
         {
-            Value = Mathf.Clamp01(x);
-            string adjustmentString()
+            try
             {
-                return new StringBuilder()
-                    .Append(" - ")
-                    .Append(description().CapitalizeFirst())
-                    .Append(": ")
-                    .Append(Value.ToStringPercent())
-                    .ToString();
+                Value = Mathf.Clamp01(x);
+                string adjustmentString()
+                {
+                    return new StringBuilder()
+                        .Append(" - ")
+                        .Append(description().CapitalizeFirst())
+                        .Append(": ")
+                        .Append(Value.ToStringPercent())
+                        .ToString();
+                }
+                if (Prefs.DevMode)
+                {
+                    AdjustmentStrings.Add(() => "-- reset --");
+                    AdjustmentStrings.Add(adjustmentString);
+                }
+                else
+                {
+                    AdjustmentStrings = new List<Func<string>> { adjustmentString };
+                }
             }
-            if (Prefs.DevMode)
+            catch (Exception e)
             {
-                AdjustmentStrings.Add(() => "-- reset --");
-                AdjustmentStrings.Add(adjustmentString);
-            }
-            else
-            {
-                AdjustmentStrings = new List<Func<string>> { adjustmentString };
+                throw new Exception("could not set priority: " + e.Message);
             }
         }
 
         private void Add(float x, Func<string> description)
         {
-            if (Disabled)
+            try
             {
+                if (Disabled)
+                {
+                    return;
+                }
+                float newValue = Mathf.Clamp01(Value + x);
+                if (newValue > Value)
+                {
+                    string adjustmentString()
+                    {
+                        return new StringBuilder()
+                            .Append(" - ")
+                            .Append(description().CapitalizeFirst())
+                            .Append(": +")
+                            .Append((newValue - Value).ToStringPercent())
+                            .ToString();
+                    }
+                    AdjustmentStrings.Add(adjustmentString);
+                    Value = newValue;
+                }
+                else if (newValue < Value)
+                {
+                    string adjustmentString()
+                    {
+                        return new StringBuilder()
+                            .Append(" - ")
+                            .Append(description().CapitalizeFirst())
+                            .Append(": -")
+                            .Append((Value - newValue).ToStringPercent())
+                            .ToString();
+                    }
+                    AdjustmentStrings.Add(adjustmentString);
+                    Value = newValue;
+                }
+                else if (newValue == Value && Prefs.DevMode)
+                {
+                    string adjustmentString()
+                    {
+                        return new StringBuilder()
+                            .Append(" - ")
+                            .Append(description().CapitalizeFirst())
+                            .Append(": +")
+                            .Append((newValue - Value).ToStringPercent())
+                            .ToString();
+                    }
+                    AdjustmentStrings.Add(adjustmentString);
+                    Value = newValue;
+                }
                 return;
             }
-            float newValue = Mathf.Clamp01(Value + x);
-            if (newValue > Value)
+            catch (Exception e)
             {
-                string adjustmentString()
-                {
-                    return new StringBuilder()
-                        .Append(" - ")
-                        .Append(description().CapitalizeFirst())
-                        .Append(": +")
-                        .Append((newValue - Value).ToStringPercent())
-                        .ToString();
-                }
-                AdjustmentStrings.Add(adjustmentString);
-                Value = newValue;
+                throw new Exception("could not add to priority: " + e.Message);
             }
-            else if (newValue < Value)
-            {
-                string adjustmentString()
-                {
-                    return new StringBuilder()
-                        .Append(" - ")
-                        .Append(description().CapitalizeFirst())
-                        .Append(": -")
-                        .Append((Value - newValue).ToStringPercent())
-                        .ToString();
-                }
-                AdjustmentStrings.Add(adjustmentString);
-                Value = newValue;
-            }
-            else if (newValue == Value && Prefs.DevMode)
-            {
-                string adjustmentString()
-                {
-                    return new StringBuilder()
-                        .Append(" - ")
-                        .Append(description().CapitalizeFirst())
-                        .Append(": +")
-                        .Append((newValue - Value).ToStringPercent())
-                        .ToString();
-                }
-                AdjustmentStrings.Add(adjustmentString);
-                Value = newValue;
-            }
-            return;
         }
 
         private Priority Multiply(float x, Func<string> description)
         {
-            if (Disabled || Value == 0.0f)
+            try
             {
+                if (Disabled || Value == 0.0f)
+                {
+                    return this;
+                }
+                float newClampedValue = Mathf.Clamp01(Value * x);
+                if (newClampedValue != Value)
+                {
+                    string adjustmentString()
+                    {
+                        return new StringBuilder()
+                            .Append(" - ")
+                            .Append(description().CapitalizeFirst())
+                            .Append(": x")
+                            .Append((newClampedValue / Value).ToStringPercent())
+                            .ToString();
+                    }
+                    AdjustmentStrings.Add(adjustmentString);
+                    Value = newClampedValue;
+                }
+                else if (newClampedValue == Value && Prefs.DevMode)
+                {
+                    string adjustmentString()
+                    {
+                        return new StringBuilder()
+                            .Append(" - ")
+                            .Append(description().CapitalizeFirst())
+                            .Append(": x")
+                            .Append((newClampedValue / Value).ToStringPercent())
+                            .ToString();
+                    }
+                    AdjustmentStrings.Add(adjustmentString);
+                    Value = newClampedValue;
+                }
                 return this;
             }
-            float newClampedValue = Mathf.Clamp01(Value * x);
-            if (newClampedValue != Value)
+            catch (Exception e)
             {
-                string adjustmentString()
-                {
-                    return new StringBuilder()
-                        .Append(" - ")
-                        .Append(description().CapitalizeFirst())
-                        .Append(": x")
-                        .Append((newClampedValue / Value).ToStringPercent())
-                        .ToString();
-                }
-                AdjustmentStrings.Add(adjustmentString);
-                Value = newClampedValue;
+                throw new Exception("could not multiply priority: " + e.Message);
             }
-            else if (newClampedValue == Value && Prefs.DevMode)
-            {
-                string adjustmentString()
-                {
-                    return new StringBuilder()
-                        .Append(" - ")
-                        .Append(description().CapitalizeFirst())
-                        .Append(": x")
-                        .Append((newClampedValue / Value).ToStringPercent())
-                        .ToString();
-                }
-                AdjustmentStrings.Add(adjustmentString);
-                Value = newClampedValue;
-            }
-            return this;
         }
 
         private Priority AlwaysDoIf(bool cond, Func<string> description)
         {
-            if (!cond || Enabled)
+            try
             {
+                if (!cond || Enabled)
+                {
+                    return this;
+                }
+                if (Prefs.DevMode || Disabled || ToGamePriority() == 0)
+                {
+                    string adjustmentString()
+                    {
+                        return new StringBuilder()
+                            .Append(" - ")
+                            .Append(description().CapitalizeFirst())
+                            .Append(": ")
+                            .Append("FreeWillPriorityEnabled".TranslateSimple().CapitalizeFirst())
+                            .ToString();
+                    }
+                    AdjustmentStrings.Add(adjustmentString);
+                }
+                Enabled = true;
+                Disabled = false;
                 return this;
             }
-            if (Prefs.DevMode || Disabled || ToGamePriority() == 0)
+            catch (Exception e)
             {
-                string adjustmentString()
-                {
-                    return new StringBuilder()
-                        .Append(" - ")
-                        .Append(description().CapitalizeFirst())
-                        .Append(": ")
-                        .Append("FreeWillPriorityEnabled".TranslateSimple().CapitalizeFirst())
-                        .ToString();
-                }
-                AdjustmentStrings.Add(adjustmentString);
+                throw new Exception("could not always do if: " + e.Message);
             }
-            Enabled = true;
-            Disabled = false;
-            return this;
         }
 
         private Priority AlwaysDo(Func<string> description)
         {
-            return AlwaysDoIf(true, description);
+            try
+            {
+                return AlwaysDoIf(true, description);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("could not always do: " + e.Message);
+            }
         }
 
         private Priority NeverDoIf(bool cond, Func<string> description)
         {
-            if (!cond || Disabled)
+            try
             {
+                if (!cond || Disabled)
+                {
+                    return this;
+                }
+                if (Prefs.DevMode || Enabled || ToGamePriority() >= 0)
+                {
+                    string adjustmentString()
+                    {
+                        return new StringBuilder()
+                            .Append(" - ")
+                            .Append(description().CapitalizeFirst())
+                            .Append(": ")
+                            .Append("FreeWillPriorityDisabled".TranslateSimple().CapitalizeFirst())
+                            .ToString();
+                    }
+                    AdjustmentStrings.Add(adjustmentString);
+                }
+                Disabled = true;
+                Enabled = false;
                 return this;
             }
-            if (Prefs.DevMode || Enabled || ToGamePriority() >= 0)
+            catch (Exception e)
             {
-                string adjustmentString()
-                {
-                    return new StringBuilder()
-                        .Append(" - ")
-                        .Append(description().CapitalizeFirst())
-                        .Append(": ")
-                        .Append("FreeWillPriorityDisabled".TranslateSimple().CapitalizeFirst())
-                        .ToString();
-                }
-                AdjustmentStrings.Add(adjustmentString);
+                throw new Exception("could not never do if: " + e.Message);
             }
-            Disabled = true;
-            Enabled = false;
-            return this;
         }
 
         private Priority NeverDo(Func<string> description)
         {
-            return NeverDoIf(true, description);
+            try
+            {
+                return NeverDoIf(true, description);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("could not never do: " + e.Message);
+            }
         }
 
         private Priority ConsiderInspiration()
         {
-            if (!pawn.mindState.inspirationHandler.Inspired)
+            try
             {
-                return this;
-            }
-            Inspiration inspiration = pawn.mindState.inspirationHandler.CurState;
-            if (WorkTypeDef.defName == HUNTING && inspiration.def.defName == "Frenzy_Shoot")
-            {
-                Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
-                return this;
-            }
-            foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredNonDisabledWorkTypes ?? new List<WorkTypeDef>())
-            {
-                if (WorkTypeDef.defName == workTypeDefB.defName)
+                if (!pawn.mindState.inspirationHandler.Inspired)
+                {
+                    return this;
+                }
+                Inspiration inspiration = pawn.mindState.inspirationHandler.CurState;
+                if (WorkTypeDef.defName == HUNTING && inspiration.def.defName == "Frenzy_Shoot")
                 {
                     Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
                     return this;
                 }
-            }
-            foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredAnyNonDisabledWorkType ?? new List<WorkTypeDef>())
-            {
-                if (WorkTypeDef.defName == workTypeDefB.defName)
+                foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredNonDisabledWorkTypes ?? new List<WorkTypeDef>())
                 {
-                    Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
-                    return this;
+                    if (WorkTypeDef.defName == workTypeDefB.defName)
+                    {
+                        Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
+                        return this;
+                    }
                 }
+                foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredAnyNonDisabledWorkType ?? new List<WorkTypeDef>())
+                {
+                    if (WorkTypeDef.defName == workTypeDefB.defName)
+                    {
+                        Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
+                        return this;
+                    }
+                }
+                return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider inspiration: " + e.Message);
+            }
         }
 
         private Priority ConsiderThoughts()
         {
-            foreach (Thought thought in mapComp.AllThoughts)
+            try
             {
-                if (thought.def.defName == "NeedFood")
+                foreach (Thought thought in mapComp.AllThoughts)
                 {
-                    if (WorkTypeDef.defName == COOKING)
+                    if (thought.def.defName == "NeedFood")
                     {
-                        Add(-0.01f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
+                        if (WorkTypeDef.defName == COOKING)
+                        {
+                            Add(-0.01f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
+                            return this;
+                        }
+                        if (WorkTypeDef.defName == HUNTING || WorkTypeDef.defName == PLANT_CUTTING)
+                        {
+                            Add(-0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
+                            return this;
+                        }
+                        Add(0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
                         return this;
                     }
-                    if (WorkTypeDef.defName == HUNTING || WorkTypeDef.defName == PLANT_CUTTING)
-                    {
-                        Add(-0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
-                        return this;
-                    }
-                    Add(0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
-                    return this;
                 }
+                return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider thoughts: " + e.Message);
+            }
         }
 
         private Priority ConsiderNeedingWarmClothes()
         {
-            if (mapComp.NeedWarmClothes)
+            try
             {
-                Add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
+                if (mapComp.NeedWarmClothes)
+                {
+                    Add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
+                    return this;
+                }
                 return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider needing warm clothes: " + e.Message);
+            }
         }
 
         private Priority ConsiderAnimalsRoaming()
         {
-            if (mapComp.AlertAnimalRoaming)
+            try
             {
-                Add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple);
+                if (mapComp.AlertAnimalRoaming)
+                {
+                    Add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple);
+                    return this;
+                }
                 return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider animals roaming: " + e.Message);
+            }
         }
 
         private Priority ConsiderSuppressionNeed()
         {
-            if (mapComp.SuppressionNeed != 0.0f)
+            try
             {
-                Add(mapComp.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple);
+                if (mapComp.SuppressionNeed != 0.0f)
+                {
+                    Add(mapComp.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple);
+                    return this;
+                }
                 return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider suppression need: " + e.Message);
+            }
         }
 
         private Priority ConsiderColonistLeftUnburied()
         {
-            if (mapComp.AlertColonistLeftUnburied && (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT))
+            try
             {
-                Add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple);
+                if (mapComp.AlertColonistLeftUnburied && (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT))
+                {
+                    Add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple);
+                    return this;
+                }
                 return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider colonist left unburied: " + e.Message);
+            }
         }
 
         private Priority ConsiderBored()
         {
-            const int boredomMemory = 2500; // 1 hour in game
-            if (pawn.mindState.IsIdle)
+            try
             {
-                mapComp?.UpdateLastBored(pawn);
-                return AlwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple);
+                const int boredomMemory = 2500; // 1 hour in game
+                if (pawn.mindState.IsIdle)
+                {
+                    mapComp?.UpdateLastBored(pawn);
+                    return AlwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple);
+                }
+                int? lastBored = mapComp?.GetLastBored(pawn);
+                bool wasBored = lastBored != 0 && Find.TickManager.TicksGame - lastBored < boredomMemory;
+                return AlwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple);
             }
-            int? lastBored = mapComp?.GetLastBored(pawn);
-            bool wasBored = lastBored != 0 && Find.TickManager.TicksGame - lastBored < boredomMemory;
-            return AlwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple);
+            catch (Exception e)
+            {
+                throw new Exception("could not consider bored: " + e.Message);
+            }
         }
 
         private Priority ConsiderHasHuntingWeapon()
@@ -924,13 +1033,9 @@ namespace FreeWill
                     ? NeverDoIf(!WorkGiver_HunterHunt.HasHuntingWeapon(pawn), "FreeWillPriorityNoHuntingWeapon".TranslateSimple)
                     : this;
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.Error(pawn.Name + " could not consider has hunting weapon to adjust " + WorkTypeDef.defName);
-                Log.Message(err.ToString());
-                Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.Settings.ConsiderHasHuntingWeapon = false;
-                return this;
+                throw new Exception("could not consider has hunting weapon: " + e.Message);
             }
         }
 
@@ -942,23 +1047,26 @@ namespace FreeWill
                     ? NeverDoIf(pawn.story.traits.HasTrait(DefDatabase<TraitDef>.GetNamed("Brawler")), "FreeWillPriorityBrawler".TranslateSimple)
                     : this;
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.Error(pawn.Name + " could not consider brawlers can hunt to adjust " + WorkTypeDef.defName);
-                Log.Message(err.ToString());
-                Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.Settings.ConsiderBrawlersNotHunting = false;
-                return this;
+                throw new Exception("could not consider brawlers not hunting: " + e.Message);
             }
         }
 
         private Priority ConsiderCompletingTask()
         {
-            // pawns prefer the work they are current doing
-            return pawn.CurJob?.workGiverDef?.workType == WorkTypeDef
-                ? AlwaysDo("FreeWillPriorityCurrentlyDoing".TranslateSimple)
-                    .Multiply(1.8f, "FreeWillPriorityCurrentlyDoing".TranslateSimple)
-                : this;
+            try
+            {
+                // pawns prefer the work they are current doing
+                return pawn.CurJob?.workGiverDef?.workType == WorkTypeDef
+                    ? AlwaysDo("FreeWillPriorityCurrentlyDoing".TranslateSimple)
+                        .Multiply(1.8f, "FreeWillPriorityCurrentlyDoing".TranslateSimple)
+                    : this;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("could not consider completing task: " + e.Message);
+            }
         }
 
         private Priority ConsiderMovementSpeed()
@@ -969,27 +1077,30 @@ namespace FreeWill
                     ? Multiply(worldComp.Settings.ConsiderMovementSpeed * 0.25f * pawn.GetStatValue(StatDefOf.MoveSpeed, true), "FreeWillPriorityMovementSpeed".TranslateSimple)
                     : this;
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.Message(pawn.Name + " could not consider movement speed to adjust " + WorkTypeDef.defName);
-                Log.Message(err.ToString());
-                Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.Settings.ConsiderMovementSpeed = 0.0f;
-                return this;
+                throw new Exception("could not consider movement speed: " + e.Message);
             }
         }
 
         private Priority ConsiderCarryingCapacity()
         {
-            float _baseCarryingCapacity = 75.0f;
-            if (WorkTypeDef.defName != HAULING && WorkTypeDef.defName != HAULING_URGENT)
+            try
             {
-                return this;
+                float _baseCarryingCapacity = 75.0f;
+                if (WorkTypeDef.defName != HAULING && WorkTypeDef.defName != HAULING_URGENT)
+                {
+                    return this;
+                }
+                float _carryingCapacity = pawn.GetStatValue(StatDefOf.CarryingCapacity, true);
+                return _carryingCapacity >= _baseCarryingCapacity
+                    ? this
+                    : Multiply(_carryingCapacity / _baseCarryingCapacity, "FreeWillPriorityCarryingCapacity".TranslateSimple);
             }
-            float _carryingCapacity = pawn.GetStatValue(StatDefOf.CarryingCapacity, true);
-            return _carryingCapacity >= _baseCarryingCapacity
-                ? this
-                : Multiply(_carryingCapacity / _baseCarryingCapacity, "FreeWillPriorityCarryingCapacity".TranslateSimple);
+            catch (Exception e)
+            {
+                throw new Exception("could not consider carrying capacity: " + e.Message);
+            }
         }
 
         private Priority ConsiderPassion()
@@ -1025,119 +1136,157 @@ namespace FreeWill
                             continue;
                     }
                 }
+                return this;
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.ErrorOnce("could not consider passions: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 228486541);
-                worldComp.Settings.ConsiderPassions = 0.0f;
+                throw new Exception("could not consider passion: " + e.Message);
             }
-            return this;
         }
 
         private Priority ConsiderFinishedMechGestators()
         {
-            List<Thing> mechGestators = pawn?.Map?.listerThings?.ThingsInGroup(ThingRequestGroup.MechGestator);
-            if (mechGestators == null)
+            try
             {
-                return this;
-            }
-            foreach (Thing thing in mechGestators)
-            {
-                if (!(thing is Building_MechGestator mechGestator))
+                List<Thing> mechGestators = pawn?.Map?.listerThings?.ThingsInGroup(ThingRequestGroup.MechGestator);
+                if (mechGestators == null)
                 {
-                    continue;
-                }
-                if (!(mechGestator.ActiveBill is Bill_ProductionMech productionMech))
-                {
-                    continue;
-                }
-                if (productionMech.State != FormingState.Formed)
-                {
-                    continue;
-                }
-                if (productionMech.BoundPawn == pawn)
-                {
-                    Add(0.4f, "FreeWillPriorityMechGestator".TranslateSimple);
                     return this;
                 }
+                foreach (Thing thing in mechGestators)
+                {
+                    if (!(thing is Building_MechGestator mechGestator))
+                    {
+                        continue;
+                    }
+                    if (!(mechGestator.ActiveBill is Bill_ProductionMech productionMech))
+                    {
+                        continue;
+                    }
+                    if (productionMech.State != FormingState.Formed)
+                    {
+                        continue;
+                    }
+                    if (productionMech.BoundPawn == pawn)
+                    {
+                        Add(0.4f, "FreeWillPriorityMechGestator".TranslateSimple);
+                        return this;
+                    }
+                }
+                return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider finished mech gestators: " + e.Message);
+            }
         }
 
         private Priority ConsiderDownedColonists()
         {
-            if (pawn.Downed)
+            try
             {
-                if (WorkTypeDef.defName != PATIENT && WorkTypeDef.defName != PATIENT_BED_REST)
+                if (pawn.Downed)
                 {
-                    _ = NeverDo("FreeWillPriorityPawnDowned".TranslateSimple);
+                    if (WorkTypeDef.defName != PATIENT && WorkTypeDef.defName != PATIENT_BED_REST)
+                    {
+                        _ = NeverDo("FreeWillPriorityPawnDowned".TranslateSimple);
+                        return this;
+                    }
+                    else
+                    {
+                        _ = AlwaysDo("FreeWillPriorityPawnDowned".TranslateSimple);
+                        Set(1.0f, "FreeWillPriorityPawnDowned".TranslateSimple);
+                        return this;
+                    }
+                }
+                if (mapComp.PercentPawnsDowned <= 0.0f)
+                {
                     return this;
                 }
-                else
+                if (WorkTypeDef.defName == DOCTOR)
                 {
-                    _ = AlwaysDo("FreeWillPriorityPawnDowned".TranslateSimple);
-                    Set(1.0f, "FreeWillPriorityPawnDowned".TranslateSimple);
+                    Add(mapComp.PercentPawnsDowned, "FreeWillPriorityOtherPawnsDowned".TranslateSimple);
                     return this;
                 }
-            }
-            if (mapComp.PercentPawnsDowned <= 0.0f)
-            {
+                if (WorkTypeDef.defName == SMITHING ||
+                    WorkTypeDef.defName == TAILORING ||
+                    WorkTypeDef.defName == ART ||
+                    WorkTypeDef.defName == CRAFTING ||
+                    WorkTypeDef.defName == RESEARCHING
+                    )
+                {
+                    _ = NeverDo("FreeWillPriorityOtherPawnsDowned".TranslateSimple);
+                    return this;
+                }
                 return this;
             }
-            if (WorkTypeDef.defName == DOCTOR)
+            catch (Exception e)
             {
-                Add(mapComp.PercentPawnsDowned, "FreeWillPriorityOtherPawnsDowned".TranslateSimple);
-                return this;
+                throw new Exception("could not consider downed colonists: " + e.Message);
             }
-            if (WorkTypeDef.defName == SMITHING ||
-                WorkTypeDef.defName == TAILORING ||
-                WorkTypeDef.defName == ART ||
-                WorkTypeDef.defName == CRAFTING ||
-                WorkTypeDef.defName == RESEARCHING
-                )
-            {
-                _ = NeverDo("FreeWillPriorityOtherPawnsDowned".TranslateSimple);
-                return this;
-            }
-            return this;
         }
 
         private Priority ConsiderColonyPolicy()
         {
             try
             {
-                Add(worldComp.Settings.globalWorkAdjustments[WorkTypeDef.defName], "FreeWillPriorityColonyPolicy".TranslateSimple);
+                if (!worldComp.Settings.globalWorkAdjustments.ContainsKey(WorkTypeDef.defName))
+                {
+                    worldComp.Settings.globalWorkAdjustments.Add(WorkTypeDef.defName, 0.0f);
+                }
+                float adj = worldComp.Settings.globalWorkAdjustments[WorkTypeDef.defName];
+                Add(adj, "FreeWillPriorityColonyPolicy".TranslateSimple);
                 return this;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                worldComp.Settings.globalWorkAdjustments[WorkTypeDef.defName] = 0.0f;
+                throw new Exception("could not consider colony policy: " + e.Message);
             }
-            return this;
         }
 
         private Priority ConsiderRefueling()
         {
-            if (mapComp.RefuelNeededNow)
+            try
             {
-                Add(0.35f, "FreeWillPriorityRefueling".TranslateSimple);
+                if (mapComp.RefuelNeededNow)
+                {
+                    Add(0.35f, "FreeWillPriorityRefueling".TranslateSimple);
+                    return this;
+                }
+                if (mapComp.RefuelNeeded)
+                {
+                    Add(0.20f, "FreeWillPriorityRefueling".TranslateSimple);
+                    return this;
+                }
                 return this;
             }
-            if (mapComp.RefuelNeeded)
+            catch (Exception e)
             {
-                Add(0.20f, "FreeWillPriorityRefueling".TranslateSimple);
-                return this;
+                throw new Exception("could not consider refueling: " + e.Message);
             }
-            return this;
         }
 
         private Priority ConsiderFire()
         {
-            if (WorkTypeDef.defName != FIREFIGHTER)
+            try
             {
+                if (WorkTypeDef.defName != FIREFIGHTER)
+                {
+                    if (mapComp.HomeFire)
+                    {
+                        Add(-0.2f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
+                        return this;
+                    }
+                    if (mapComp.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
+                    {
+                        Add(Mathf.Clamp01(mapComp.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
+                        return this;
+                    }
+                    return this;
+                }
                 if (mapComp.HomeFire)
                 {
-                    Add(-0.2f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
+                    Set(1.0f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
                     return this;
                 }
                 if (mapComp.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
@@ -1147,29 +1296,29 @@ namespace FreeWill
                 }
                 return this;
             }
-            if (mapComp.HomeFire)
+            catch (Exception e)
             {
-                Set(1.0f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
-                return this;
+                throw new Exception("could not consider fire: " + e.Message);
             }
-            if (mapComp.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
-            {
-                Add(Mathf.Clamp01(mapComp.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
-                return this;
-            }
-            return this;
         }
 
         private Priority ConsiderOperation()
         {
-            if (HealthAIUtility.ShouldHaveSurgeryDoneNow(pawn))
+            try
             {
-                Set(1.0f, "FreeWillPriorityOperation".TranslateSimple);
-                return this;
+                if (HealthAIUtility.ShouldHaveSurgeryDoneNow(pawn))
+                {
+                    Set(1.0f, "FreeWillPriorityOperation".TranslateSimple);
+                    return this;
+                }
+                else
+                {
+                    return this;
+                }
             }
-            else
+            catch (Exception e)
             {
-                return this;
+                throw new Exception("could not consider operation: " + e.Message);
             }
         }
 
@@ -1193,131 +1342,157 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception e)
             {
-                Log.Message("could not consider pawn building immunity");
-                return this;
+                throw new Exception("could not consider building immunity: " + e.Message);
             }
         }
 
         private Priority ConsiderColonistsNeedingTreatment()
         {
-            if (mapComp.PercentPawnsNeedingTreatment <= 0.0f)
+            try
             {
-                return this;
+                if (mapComp.PercentPawnsNeedingTreatment <= 0.0f)
+                {
+                    return this;
+                }
+                if (pawn.health.HasHediffsNeedingTend())
+                {
+                    // this pawn needs treatment
+                    return ConsiderThisPawnNeedsTreatment();
+                }
+                else
+                {
+                    // another pawn needs treatment
+                    return ConsiderAnotherPawnNeedsTreatment();
+                }
             }
-
-            if (pawn.health.HasHediffsNeedingTend())
+            catch (Exception e)
             {
-                // this pawn needs treatment
-                return ConsiderThisPawnNeedsTreatment();
-            }
-            else
-            {
-                // another pawn needs treatment
-                return ConsiderAnotherPawnNeedsTreatment();
+                throw new Exception("could not consider colonists needing treatment: " + e.Message);
             }
         }
 
         private Priority ConsiderThisPawnNeedsTreatment()
         {
 
-            if (WorkTypeDef.defName == PATIENT || WorkTypeDef.defName == PATIENT_BED_REST)
+            try
             {
-                // patient and bed rest are activated and set to 100%
-                _ = AlwaysDo("FreeWillPriorityNeedTreatment".TranslateSimple);
-                Set(1.0f, "FreeWillPriorityNeedTreatment".TranslateSimple);
-                return this;
-            }
-            if (WorkTypeDef.defName == DOCTOR)
-            {
-                if (pawn.playerSettings.selfTend)
+                if (WorkTypeDef.defName == PATIENT || WorkTypeDef.defName == PATIENT_BED_REST)
                 {
-                    // this pawn can self tend, so activate doctor skill and set
-                    // to 100%
-                    _ = AlwaysDo("FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple);
-                    Set(1.0f, "FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple);
+                    // patient and bed rest are activated and set to 100%
+                    _ = AlwaysDo("FreeWillPriorityNeedTreatment".TranslateSimple);
+                    Set(1.0f, "FreeWillPriorityNeedTreatment".TranslateSimple);
                     return this;
                 }
-                // doctoring stays the same
-                return this;
+                if (WorkTypeDef.defName == DOCTOR)
+                {
+                    if (pawn.playerSettings.selfTend)
+                    {
+                        // this pawn can self tend, so activate doctor skill and set
+                        // to 100%
+                        _ = AlwaysDo("FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple);
+                        Set(1.0f, "FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple);
+                        return this;
+                    }
+                    // doctoring stays the same
+                    return this;
+                }
+                // don't do other work types
+                return NeverDo("FreeWillPriorityNeedTreatment".TranslateSimple);
             }
-            // don't do other work types
-            return NeverDo("FreeWillPriorityNeedTreatment".TranslateSimple);
+            catch (Exception e)
+            {
+                throw new Exception("could not consider this pawn needs treatment: " + e.Message);
+            }
         }
 
         private Priority ConsiderAnotherPawnNeedsTreatment()
         {
-            if (WorkTypeDef.defName == FIREFIGHTER ||
-                WorkTypeDef.defName == PATIENT_BED_REST
-                )
+            try
             {
-                // don't adjust these work types
-                return this;
-            }
-
-            // increase doctor priority for all pawns
-            if (WorkTypeDef.defName == DOCTOR)
-            {
-                // increase the doctor priority by the percentage of pawns
-                // needing treatment
-                //
-                // so if 25% of the colony is injured, doctoring for all
-                // non-injured pawns will increase by 25%
-                Add(mapComp.PercentPawnsNeedingTreatment, "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
-                return this;
-            }
-
-            if (WorkTypeDef.defName == RESEARCHING)
-            {
-                // don't research when someone is dying please... it's rude
-                return NeverDo("FreeWillPriorityOthersNeedTreatment".TranslateSimple);
-            }
-
-            if (WorkTypeDef.defName == SMITHING ||
-                WorkTypeDef.defName == TAILORING ||
-                WorkTypeDef.defName == ART ||
-                WorkTypeDef.defName == CRAFTING
-                )
-            {
-                // crafting work types are low priority when someone is injured
-                if (Value > 0.3f)
+                if (WorkTypeDef.defName == FIREFIGHTER ||
+                    WorkTypeDef.defName == PATIENT_BED_REST
+                    )
                 {
-                    // crafting work types are low priority when someone is injured
-                    Add(-(Value - 0.3f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                    // don't adjust these work types
                     return this;
                 }
-                // crafting work types are low priority when someone is injured
-                return this;
-            }
 
-            // any other work type is capped at 0.6
-            if (Value > 0.6f)
-            {
-                Add(-(Value - 0.6f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                // increase doctor priority for all pawns
+                if (WorkTypeDef.defName == DOCTOR)
+                {
+                    // increase the doctor priority by the percentage of pawns
+                    // needing treatment
+                    //
+                    // so if 25% of the colony is injured, doctoring for all
+                    // non-injured pawns will increase by 25%
+                    Add(mapComp.PercentPawnsNeedingTreatment, "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                    return this;
+                }
+
+                if (WorkTypeDef.defName == RESEARCHING)
+                {
+                    // don't research when someone is dying please... it's rude
+                    return NeverDo("FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                }
+
+                if (WorkTypeDef.defName == SMITHING ||
+                    WorkTypeDef.defName == TAILORING ||
+                    WorkTypeDef.defName == ART ||
+                    WorkTypeDef.defName == CRAFTING
+                    )
+                {
+                    // crafting work types are low priority when someone is injured
+                    if (Value > 0.3f)
+                    {
+                        // crafting work types are low priority when someone is injured
+                        Add(-(Value - 0.3f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                        return this;
+                    }
+                    // crafting work types are low priority when someone is injured
+                    return this;
+                }
+
+                // any other work type is capped at 0.6
+                if (Value > 0.6f)
+                {
+                    Add(-(Value - 0.6f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                    return this;
+                }
                 return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider another pawn needs treatment: " + e.Message);
+            }
         }
 
         private Priority ConsiderHealth()
         {
-            if (WorkTypeDef.defName == PATIENT || WorkTypeDef.defName == PATIENT_BED_REST)
+            try
             {
-                Add(1 - Mathf.Pow(pawn.health.summaryHealth.SummaryHealthPercent, 7.0f), "FreeWillPriorityHealth".TranslateSimple);
-                return this;
+                if (WorkTypeDef.defName == PATIENT || WorkTypeDef.defName == PATIENT_BED_REST)
+                {
+                    Add(1 - Mathf.Pow(pawn.health.summaryHealth.SummaryHealthPercent, 7.0f), "FreeWillPriorityHealth".TranslateSimple);
+                    return this;
+                }
+                return Multiply(pawn.health.summaryHealth.SummaryHealthPercent, "FreeWillPriorityHealth".TranslateSimple);
             }
-            return Multiply(pawn.health.summaryHealth.SummaryHealthPercent, "FreeWillPriorityHealth".TranslateSimple);
+            catch (Exception e)
+            {
+                throw new Exception("could not consider health: " + e.Message);
+            }
         }
 
         private Priority ConsiderFoodPoisoning()
         {
-            if (worldComp.Settings.ConsiderFoodPoisoning == 0.0f)
-            {
-                return this;
-            }
             try
             {
+                if (worldComp.Settings.ConsiderFoodPoisoning == 0.0f)
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName != CLEANING && WorkTypeDef.defName != COOKING)
                 {
                     return this;
@@ -1360,24 +1535,20 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.Error(pawn.Name + " could not consider food poisoning to adjust " + WorkTypeDef.defName);
-                Log.Message(err.ToString());
-                Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.Settings.ConsiderFoodPoisoning = 0.0f;
-                return this;
+                throw new Exception("could not consider food poisoning: " + e.Message);
             }
         }
 
         private Priority ConsiderOwnRoom()
         {
-            if (worldComp.Settings.ConsiderOwnRoom == 0.0f)
-            {
-                return this;
-            }
             try
             {
+                if (worldComp.Settings.ConsiderOwnRoom == 0.0f)
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName != CLEANING)
                 {
                     return this;
@@ -1394,28 +1565,31 @@ namespace FreeWill
                 }
                 return !isPawnsRoom ? this : Multiply(worldComp.Settings.ConsiderOwnRoom * 2.0f, "FreeWillPriorityOwnRoom".TranslateSimple);
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.Message(pawn.Name + " could not consider being in own room to adjust " + WorkTypeDef.defName);
-                Log.Message(err.ToString());
-                Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.Settings.ConsiderOwnRoom = 0.0f;
-                return this;
+                throw new Exception("could not consider own room: " + e.Message);
             }
         }
 
         private Priority ConsiderRepairingMech()
         {
-            if (mapComp.AlertMechDamaged)
+            try
             {
-                if (MechanitorUtility.IsMechanitor(pawn))
+                if (mapComp.AlertMechDamaged)
                 {
-                    Add(0.6f, "FreeWillPriorityMechanoidDamaged".TranslateSimple);
+                    if (MechanitorUtility.IsMechanitor(pawn))
+                    {
+                        Add(0.6f, "FreeWillPriorityMechanoidDamaged".TranslateSimple);
+                        return this;
+                    }
                     return this;
                 }
                 return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider repairing mech: " + e.Message);
+            }
         }
 
         private Priority ConsiderIsAnyoneElseDoing()
@@ -1447,10 +1621,9 @@ namespace FreeWill
                 }
                 return AlwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple);
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.ErrorOnce(pawn.Name + " could not consider if anyone else is doing " + WorkTypeDef.defName + ": " + err.ToString(), 59947211);
-                return this;
+                throw new Exception("could not consider if anyone else is doing: " + e.Message);
             }
 
         }
@@ -1541,53 +1714,71 @@ namespace FreeWill
                 }
                 return isBest ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple) : this;
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.ErrorOnce("could not consider being the best at something: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 76898214);
-                worldComp.Settings.ConsiderBestAtDoing = 0.0f;
+                throw new Exception("could not consider best at doing: " + e.Message);
             }
             return this;
         }
 
         private Priority ConsiderInjuredPets()
         {
-            if (WorkTypeDef.defName != DOCTOR)
+            try
             {
+                if (WorkTypeDef.defName != DOCTOR)
+                {
+                    return this;
+                }
+                int n = mapComp.NumPawns;
+                if (n == 0)
+                {
+                    return this;
+                }
+                float numPetsNeedingTreatment = mapComp.NumPetsNeedingTreatment;
+                Add(Mathf.Clamp01(numPetsNeedingTreatment / n) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple);
                 return this;
             }
-
-            int n = mapComp.NumPawns;
-            if (n == 0)
+            catch (Exception e)
             {
-                return this;
+                throw new Exception("could not consider injured pets: " + e.Message);
             }
-            float numPetsNeedingTreatment = mapComp.NumPetsNeedingTreatment;
-            Add(Mathf.Clamp01(numPetsNeedingTreatment / n) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple);
-            return this;
         }
 
         private Priority ConsiderMechHaulers()
         {
-            float percentPawnsMechHaulers = mapComp.PercentPawnsMechHaulers;
-            Add(-percentPawnsMechHaulers, "FreeWillPriorityMechHaulers".TranslateSimple);
-            return this;
+            try
+            {
+                float percentPawnsMechHaulers = mapComp.PercentPawnsMechHaulers;
+                Add(-percentPawnsMechHaulers, "FreeWillPriorityMechHaulers".TranslateSimple);
+                return this;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("could not consider mech haulers: " + e.Message);
+            }
         }
 
         private Priority ConsiderInjuredPrisoners()
         {
-            if (WorkTypeDef.defName != DOCTOR)
+            try
             {
+                if (WorkTypeDef.defName != DOCTOR)
+                {
+                    return this;
+                }
+                int n = mapComp.NumPawns;
+                if (n == 0)
+                {
+                    return this;
+                }
+                float numPrisonersNeedingTreatment = mapComp.NumPrisonersNeedingTreatment;
+                Add(Mathf.Clamp01(numPrisonersNeedingTreatment / n) * 0.5f, "FreeWillPriorityPrisonersInjured".TranslateSimple);
                 return this;
             }
-
-            int n = mapComp.NumPawns;
-            if (n == 0)
+            catch (Exception e)
             {
-                return this;
+                throw new Exception("could not consider injured prisoners: " + e.Message);
             }
-            float numPrisonersNeedingTreatment = mapComp.NumPrisonersNeedingTreatment;
-            Add(Mathf.Clamp01(numPrisonersNeedingTreatment / n) * 0.5f, "FreeWillPriorityPrisonersInjured".TranslateSimple);
-            return this;
         }
 
         private Priority ConsiderLowFood(float adjustment)
@@ -1607,71 +1798,90 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.ErrorOnce("could not consider low food: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 10979710);
-                worldComp.Settings.ConsiderLowFood = 0.0f;
+                throw new Exception("could not consider low food: " + e.Message);
             }
-            return this;
         }
 
         private Priority ConsiderWeaponRange()
         {
-            if ((worldComp?.Settings?.ConsiderWeaponRange ?? 0.0f) == 0.0f)
+            try
             {
-                return this;
+                if ((worldComp?.Settings?.ConsiderWeaponRange ?? 0.0f) == 0.0f)
+                {
+                    return this;
+                }
+                if (!WorkGiver_HunterHunt.HasHuntingWeapon(pawn))
+                {
+                    return this;
+                }
+                const float boltActionRifleRange = 37.0f;
+                float range = pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.range;
+                float relativeRange = range / boltActionRifleRange;
+                return Multiply(relativeRange * worldComp.Settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple);
             }
-            if (!WorkGiver_HunterHunt.HasHuntingWeapon(pawn))
+            catch (Exception e)
             {
-                return this;
+                throw new Exception("could not consider weapon range: " + e.Message);
             }
-            const float boltActionRifleRange = 37.0f;
-            float range = pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.range;
-            float relativeRange = range / boltActionRifleRange;
-            return Multiply(relativeRange * worldComp.Settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple);
         }
 
         private Priority ConsiderAteRawFood()
         {
-            if (WorkTypeDef.defName != COOKING)
+            try
             {
-                return this;
-            }
-
-            foreach (Thought thought in mapComp.AllThoughts)
-            {
-                if (thought.def.defName == "AteRawFood" && 0.6f > Value)
+                if (WorkTypeDef.defName != COOKING)
                 {
-                    Set(0.6f, "FreeWillPriorityAteRawFood".TranslateSimple);
                     return this;
                 }
+
+                foreach (Thought thought in mapComp.AllThoughts)
+                {
+                    if (thought.def.defName == "AteRawFood" && 0.6f > Value)
+                    {
+                        Set(0.6f, "FreeWillPriorityAteRawFood".TranslateSimple);
+                        return this;
+                    }
+                }
+                return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider ate raw food: " + e.Message);
+            }
         }
 
         private Priority ConsiderThingsDeteriorating()
         {
-            if (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT)
+            try
             {
-                if (mapComp.ThingsDeteriorating != null)
+                if (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT)
                 {
-                    if (Prefs.DevMode)
+                    if (mapComp.ThingsDeteriorating != null)
                     {
-                        string adjustmentString()
+                        if (Prefs.DevMode)
                         {
-                            // Create string builder
-                            StringBuilder stringBuilder = new StringBuilder()
-                                .Append("FreeWillPriorityThingsDeteriorating".TranslateSimple())
-                                .Append(": ")
-                                .Append(mapComp.ThingsDeteriorating.def.defName);
-                            return stringBuilder.ToString();
+                            string adjustmentString()
+                            {
+                                // Create string builder
+                                StringBuilder stringBuilder = new StringBuilder()
+                                    .Append("FreeWillPriorityThingsDeteriorating".TranslateSimple())
+                                    .Append(": ")
+                                    .Append(mapComp.ThingsDeteriorating.def.defName);
+                                return stringBuilder.ToString();
+                            }
+                            return Multiply(2.0f, adjustmentString);
                         }
-                        return Multiply(2.0f, adjustmentString);
+                        return Multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple);
                     }
-                    return Multiply(2.0f, "FreeWillPriorityThingsDeteriorating".TranslateSimple);
                 }
+                return this;
             }
-            return this;
+            catch (Exception e)
+            {
+                throw new Exception("could not consider things deteriorating: " + e.Message);
+            }
         }
 
         private Priority ConsiderPlantsBlighted()
@@ -1689,12 +1899,9 @@ namespace FreeWill
                     return this;
                 }
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.Message("could not consider blight levels");
-                Log.Message(err.ToString());
-                Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.Settings.ConsiderPlantsBlighted = 0.0f;
+                throw new Exception("could not consider plants blighted: " + e.Message);
             }
             return this;
         }
@@ -1720,10 +1927,9 @@ namespace FreeWill
                     }
                 }
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.ErrorOnce("could not consider pruning gauranlen tree: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 45846314);
-                worldComp.Settings.ConsiderGauranlenPruning = 0.0f;
+                throw new Exception("could not consider gauranlen pruning: " + e.Message);
             }
             return this;
         }
@@ -1835,81 +2041,93 @@ namespace FreeWill
                         return this;
                 } // switch
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.ErrorOnce("could not consider beauty: " + "this consideration will be disabled in the mod settings to avoid future errors: " + err.ToString(), 228652891);
-                worldComp.Settings.ConsiderBeauty = 0.0f;
-                return this;
+                throw new Exception("could not consider beauty expectations: " + e.Message);
             }
         }
 
         private Priority ConsiderRelevantSkills(bool shouldAdd = false)
         {
-            float badSkillCutoff = Mathf.Min(3f, mapComp.NumPawns);
-            float goodSkillCutoff = badSkillCutoff + ((20f - badSkillCutoff) / 2f);
-            float greatSkillCutoff = goodSkillCutoff + ((20f - goodSkillCutoff) / 2f);
-            float excellentSkillCutoff = greatSkillCutoff + ((20f - greatSkillCutoff) / 2f);
-
-            float averageSkill = pawn.skills.AverageOfRelevantSkillsFor(WorkTypeDef);
-            string description()
+            try
             {
-                return string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), averageSkill);
-            }
+                float badSkillCutoff = Mathf.Min(3f, mapComp.NumPawns);
+                float goodSkillCutoff = badSkillCutoff + ((20f - badSkillCutoff) / 2f);
+                float greatSkillCutoff = goodSkillCutoff + ((20f - goodSkillCutoff) / 2f);
+                float excellentSkillCutoff = greatSkillCutoff + ((20f - greatSkillCutoff) / 2f);
 
-            if (shouldAdd)
-            {
+                float averageSkill = pawn.skills.AverageOfRelevantSkillsFor(WorkTypeDef);
+                string description()
+                {
+                    return string.Format("{0} {1:f0}", "FreeWillPrioritySkillLevel".TranslateSimple(), averageSkill);
+                }
+
+                if (shouldAdd)
+                {
+                    if (averageSkill >= excellentSkillCutoff)
+                    {
+                        Add(0.9f, description);
+                        return this;
+                    }
+                    if (averageSkill >= greatSkillCutoff)
+                    {
+                        Add(0.7f, description);
+                        return this;
+                    }
+                    if (averageSkill >= goodSkillCutoff)
+                    {
+                        Add(0.5f, description);
+                        return this;
+                    }
+                    if (averageSkill >= badSkillCutoff)
+                    {
+                        Add(0.3f, description);
+                        return this;
+                    }
+                    Add(0.1f, description);
+                    return this;
+                }
+
+                // if not adding, just set the priority
                 if (averageSkill >= excellentSkillCutoff)
                 {
-                    Add(0.9f, description);
+                    Set(0.9f, description);
                     return this;
                 }
                 if (averageSkill >= greatSkillCutoff)
                 {
-                    Add(0.7f, description);
+                    Set(0.7f, description);
                     return this;
                 }
                 if (averageSkill >= goodSkillCutoff)
                 {
-                    Add(0.5f, description);
+                    Set(0.5f, description);
                     return this;
                 }
                 if (averageSkill >= badSkillCutoff)
                 {
-                    Add(0.3f, description);
+                    Set(0.3f, description);
                     return this;
                 }
-                Add(0.1f, description);
+                Set(0.1f, description);
                 return this;
             }
-
-            // if not adding, just set the priority
-            if (averageSkill >= excellentSkillCutoff)
+            catch (Exception e)
             {
-                Set(0.9f, description);
-                return this;
+                throw new Exception("could not consider relevant skills: " + e.Message);
             }
-            if (averageSkill >= greatSkillCutoff)
-            {
-                Set(0.7f, description);
-                return this;
-            }
-            if (averageSkill >= goodSkillCutoff)
-            {
-                Set(0.5f, description);
-                return this;
-            }
-            if (averageSkill >= badSkillCutoff)
-            {
-                Set(0.3f, description);
-                return this;
-            }
-            Set(0.1f, description);
-            return this;
         }
 
         private bool NotInHomeArea(Pawn pawn)
         {
-            return !this.pawn.Map.areaManager.Home[pawn.Position];
+            try
+            {
+                return !this.pawn.Map.areaManager.Home[pawn.Position];
+            }
+            catch (Exception e)
+            {
+                throw new Exception("could not determine if pawn is not in home area: " + e.Message);
+            }
         }
 
         private static readonly Dictionary<string, Dictionary<BeautyCategory, float>> expectationGrid =

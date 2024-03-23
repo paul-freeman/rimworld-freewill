@@ -96,11 +96,12 @@ namespace FreeWill
                 stringBuilder = stringBuilder.AppendLineTagged(workTypeTitle)
                     .AppendLineTagged(priority.WorkTypeDef.description.Colorize(ColoredText.SubtleGrayColor)).AppendLine()
                     .AppendLineTagged(("FreeWillWorkPreference".Translate().CapitalizeFirst() + ": ").AsTipTitle() + priority.Value.ToStringPercent());
-                foreach (Func<string> adj in priority.AdjustmentStrings)
+                foreach (Func<string> ProduceAdjustmentString in priority.AdjustmentStrings)
                 {
                     try
                     {
-                        stringBuilder = stringBuilder.AppendLine(adj());
+                        string adjustmentString = ProduceAdjustmentString();
+                        stringBuilder = stringBuilder.AppendLine(adjustmentString);
                     }
                     catch (Exception e)
                     {
