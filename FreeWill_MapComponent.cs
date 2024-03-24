@@ -181,15 +181,6 @@ namespace FreeWill
             return lastBored.ContainsKey(pawn) ? lastBored[pawn] : 0;
         }
 
-        public Dictionary<WorkTypeDef, Priority> GetPriorities(Pawn pawn)
-        {
-            if (!priorities.ContainsKey(pawn))
-            {
-                priorities[pawn] = new Dictionary<WorkTypeDef, Priority>();
-            }
-            return priorities[pawn];
-        }
-
         public Priority GetPriority(Pawn pawn, WorkTypeDef workTypeDef)
         {
             if (!priorities.ContainsKey(pawn))
