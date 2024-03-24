@@ -917,7 +917,9 @@ namespace FreeWill
         {
             try
             {
-                foreach (Thought thought in mapComp.AllThoughts)
+                mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
+                List<Thought> thoughts = new List<Thought>(mapComp.AllThoughts);
+                foreach (Thought thought in thoughts)
                 {
                     if (thought.def.defName == "NeedFood")
                     {
