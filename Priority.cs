@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -77,7 +78,7 @@ namespace FreeWill
             {
                 if (Prefs.DevMode)
                 {
-                    throw new Exception("could not compute " + WorkTypeDef.defName + " priority for pawn: " + pawn.Name + ": " + e.Message);
+                    throw new Exception("could not compute " + WorkTypeDef.defName + " priority for pawn: " + e.Message);
                 }
                 Log.ErrorOnce("could not compute " + WorkTypeDef.defName + " priority for pawn: " + pawn.Name + ": " + e.Message, 15448413);
 
@@ -918,22 +919,21 @@ namespace FreeWill
             try
             {
                 mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
-                List<Thought> thoughts = new List<Thought>(mapComp.AllThoughts);
-                foreach (Thought thought in thoughts)
+                foreach (Thought thought in mapComp.AllThoughts)
                 {
                     if (thought.def.defName == "NeedFood")
                     {
                         if (WorkTypeDef.defName == COOKING)
                         {
-                            Add(-0.01f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
+                            Add(-0.01f * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
                             return this;
                         }
                         if (WorkTypeDef.defName == HUNTING || WorkTypeDef.defName == PLANT_CUTTING)
                         {
-                            Add(-0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
+                            Add(-0.005f * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
                             return this;
                         }
-                        Add(0.005f * thought.CurStage.baseMoodEffect, "FreeWillPriorityHungerLevel".TranslateSimple);
+                        Add(0.005f * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
                         return this;
                     }
                 }
@@ -941,8 +941,27 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                throw new Exception("could not consider thoughts: " + e.Message);
+                throw new Exception("could not consider thoughts: " + e);
             }
+        }
+
+        private static float GetMoodEffect(Thought thought)
+        {
+            float moodEffect;
+
+            // This can produce an ArgumentOutOfRangeException if the thought is
+            // modified during access. So, in case of an exception, we return
+            // 0.0f.
+            try
+            {
+                ThoughtStage curStage = thought.CurStage;
+                moodEffect = curStage.baseMoodEffect;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                moodEffect = 0.0f;
+            }
+            return moodEffect;
         }
 
         private Priority ConsiderNeedingWarmClothes()
@@ -1653,12 +1672,8 @@ namespace FreeWill
                 RaceProperties raceProps = other.RaceProps ?? throw new Exception("could not get race props");
                 List<WorkTypeDef> mechEnabledWorkTypes = raceProps.mechEnabledWorkTypes ?? throw new Exception("could not get mech enabled work types");
                 bool isMechDoing = mechEnabledWorkTypes.Contains(WorkTypeDef);
-                if (isMechDoing)
-                {
-                    return true;
-                }
 
-                return false;
+                return isMechDoing;
             }
             catch (Exception e)
             {
