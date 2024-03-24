@@ -167,7 +167,7 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                throw new Exception("could not get map component tick action:" + e.Message);
+                throw new Exception("could not get map component tick action: " + e.Message);
             }
         }
 
