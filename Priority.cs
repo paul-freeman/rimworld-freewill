@@ -654,13 +654,14 @@ namespace FreeWill
             try
             {
                 Value = Mathf.Clamp01(x);
+                float adjustmentValue = Value;
                 string adjustmentString()
                 {
                     return new StringBuilder()
                         .Append(" - ")
                         .Append(description().CapitalizeFirst())
                         .Append(": ")
-                        .Append(Value.ToStringPercent())
+                        .Append(adjustmentValue.ToStringPercent())
                         .ToString();
                 }
                 if (Prefs.DevMode)
@@ -690,13 +691,14 @@ namespace FreeWill
                 float newValue = Mathf.Clamp01(Value + x);
                 if (newValue > Value)
                 {
+                    float adjustmentValue = newValue - Value;
                     string adjustmentString()
                     {
                         return new StringBuilder()
                             .Append(" - ")
                             .Append(description().CapitalizeFirst())
                             .Append(": +")
-                            .Append((newValue - Value).ToStringPercent())
+                            .Append(adjustmentValue.ToStringPercent())
                             .ToString();
                     }
                     AdjustmentStrings.Add(adjustmentString);
@@ -704,13 +706,14 @@ namespace FreeWill
                 }
                 else if (newValue < Value)
                 {
+                    float adjustmentValue = Value - newValue;
                     string adjustmentString()
                     {
                         return new StringBuilder()
                             .Append(" - ")
                             .Append(description().CapitalizeFirst())
                             .Append(": -")
-                            .Append((Value - newValue).ToStringPercent())
+                            .Append(adjustmentValue.ToStringPercent())
                             .ToString();
                     }
                     AdjustmentStrings.Add(adjustmentString);
@@ -718,13 +721,14 @@ namespace FreeWill
                 }
                 else if (newValue == Value && Prefs.DevMode)
                 {
+                    float adjustmentValue = newValue - Value;
                     string adjustmentString()
                     {
                         return new StringBuilder()
                             .Append(" - ")
                             .Append(description().CapitalizeFirst())
                             .Append(": +")
-                            .Append((newValue - Value).ToStringPercent())
+                            .Append(adjustmentValue.ToStringPercent())
                             .ToString();
                     }
                     AdjustmentStrings.Add(adjustmentString);
@@ -749,13 +753,14 @@ namespace FreeWill
                 float newClampedValue = Mathf.Clamp01(Value * x);
                 if (newClampedValue != Value)
                 {
+                    float adjustmentValue = newClampedValue / Value;
                     string adjustmentString()
                     {
                         return new StringBuilder()
                             .Append(" - ")
                             .Append(description().CapitalizeFirst())
                             .Append(": x")
-                            .Append((newClampedValue / Value).ToStringPercent())
+                            .Append(adjustmentValue.ToStringPercent())
                             .ToString();
                     }
                     AdjustmentStrings.Add(adjustmentString);
@@ -763,13 +768,14 @@ namespace FreeWill
                 }
                 else if (newClampedValue == Value && Prefs.DevMode)
                 {
+                    float adjustmentValue = newClampedValue / Value;
                     string adjustmentString()
                     {
                         return new StringBuilder()
                             .Append(" - ")
                             .Append(description().CapitalizeFirst())
                             .Append(": x")
-                            .Append((newClampedValue / Value).ToStringPercent())
+                            .Append(adjustmentValue.ToStringPercent())
                             .ToString();
                     }
                     AdjustmentStrings.Add(adjustmentString);
@@ -1718,7 +1724,6 @@ namespace FreeWill
             {
                 throw new Exception("could not consider best at doing: " + e.Message);
             }
-            return this;
         }
 
         private Priority ConsiderInjuredPets()
@@ -1862,14 +1867,14 @@ namespace FreeWill
                     {
                         if (Prefs.DevMode)
                         {
+                            string name = mapComp.ThingsDeteriorating.def.defName;
                             string adjustmentString()
                             {
-                                // Create string builder
-                                StringBuilder stringBuilder = new StringBuilder()
+                                return new StringBuilder()
                                     .Append("FreeWillPriorityThingsDeteriorating".TranslateSimple())
                                     .Append(": ")
-                                    .Append(mapComp.ThingsDeteriorating.def.defName);
-                                return stringBuilder.ToString();
+                                    .Append(name)
+                                    .ToString();
                             }
                             return Multiply(2.0f, adjustmentString);
                         }

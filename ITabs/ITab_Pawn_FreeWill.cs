@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using Verse;
@@ -47,6 +46,12 @@ namespace FreeWill
                 Log.Error("Free will tab found; no selected pawn to display.");
                 return;
             }
+            FreeWill_MapComponent mapComp = pawn.Map?.GetComponent<FreeWill_MapComponent>();
+            if (mapComp == null)
+            {
+                Log.Error("Free will tab found; no map component to display.");
+                return;
+            }
             worldComp = worldComp ?? Find.World?.GetComponent<FreeWill_WorldComponent>();
             if (worldComp == null)
             {
@@ -70,7 +75,7 @@ namespace FreeWill
 
                     DrawPawnProfession(pawn, ref num, viewRect.width);
                     DrawPawnInterestText(pawn, ref num, viewRect.width);
-                    DrawPawnPriorities(pawn, ref num, viewRect.width);
+                    DrawPawnPriorities(pawn, mapComp, ref num, viewRect.width);
                     DrawPawnFreeWillCheckbox(pawn, ref num, viewRect.width);
 
                     if (Event.current.type == EventType.Layout)
@@ -86,7 +91,6 @@ namespace FreeWill
                 finally
                 {
                     Widgets.EndScrollView();
-
                 }
             }
             catch
@@ -143,19 +147,20 @@ namespace FreeWill
             curY += 25f;
         }
 
-        private void DrawPawnPriorities(Pawn pawn, ref float curY, float width)
+        private void DrawPawnPriorities(Pawn pawn, FreeWill_MapComponent mapComp, ref float curY, float width)
         {
             try
             {
                 if (!pawn.Dead)
                 {
-                    foreach (KeyValuePair<WorkTypeDef, Priority> pair in
-                            from x in pawn.Map.GetComponent<FreeWill_MapComponent>().GetPriorities(pawn)
-                            orderby x.Key.naturalPriority descending
-                            select x
+                    foreach (WorkTypeDef workTypeDef in
+                            from workTypeDef in DefDatabase<WorkTypeDef>.AllDefsListForReading
+                            orderby workTypeDef.naturalPriority descending
+                            select workTypeDef
                             )
                     {
-                        DrawPawnWorkPriority(pawn, ref curY, width, pair.Key, pair.Value);
+                        Priority priority = mapComp.GetPriority(pawn, workTypeDef);
+                        DrawPawnWorkPriority(pawn, ref curY, width, workTypeDef, priority);
                     }
                 }
             }
