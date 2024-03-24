@@ -57,11 +57,26 @@ namespace FreeWill
             Text.Font = GameFont.Small;
         }
 
-        public static void DrawWorkBoxFor(float x, float y, Pawn _, Priority priority, bool __)
+        public static void DrawWorkBoxFor(float x, float y, Pawn pawn, Priority priority, bool __)
         {
             Rect rect = new Rect(x, y, 25f, 25f);
             GUI.color = Color.white;
-            GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, priority.Value);
+
+            int h = pawn.HashOffset();
+
+            // Calculate flicker using a time-based function, e.g., sine wave for natural light flickering.
+            // The amplitude (0.1f here) controls the intensity of the flicker.
+            // You may need to adjust the amplitude and frequency (5.0f here) to get the desired effect.
+            float flicker = Mathf.Abs(Mathf.Sin((Time.time + h + x + y) * 5.0f)) * 0.2f;
+            float flickeredValue = priority.Value + flicker;
+            if (flickeredValue > 1.0f)
+            {
+                flickeredValue = 1.0f - (flickeredValue - 1.0f);
+            }
+            flickeredValue = Mathf.Clamp01(flickeredValue);
+
+
+            GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, flickeredValue);
             GUI.DrawTexture(rect, Resources.FreeWillOverlay);
         }
 
