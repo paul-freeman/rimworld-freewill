@@ -62,19 +62,14 @@ namespace FreeWill
             Rect rect = new Rect(x, y, 25f, 25f);
             GUI.color = Color.white;
 
-            int h = pawn.HashOffset();
-
-            // Calculate flicker using a time-based function, e.g., sine wave for natural light flickering.
-            // The amplitude (0.1f here) controls the intensity of the flicker.
-            // You may need to adjust the amplitude and frequency (5.0f here) to get the desired effect.
-            float flicker = Mathf.Abs(Mathf.Sin((Time.time + h + x + y) * 5.0f)) * 0.2f;
-            float flickeredValue = priority.Value + flicker;
+            float uniqueModifier = (pawn.thingIDNumber + x + y) * 18577.0f;
+            float timeBasedFlicker = Mathf.Sin((Find.TickManager.TicksGame + uniqueModifier) * 500.0f) * 0.1f;
+            float flickeredValue = priority.Value + timeBasedFlicker;
             if (flickeredValue > 1.0f)
             {
                 flickeredValue = 1.0f - (flickeredValue - 1.0f);
             }
             flickeredValue = Mathf.Clamp01(flickeredValue);
-
 
             GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, flickeredValue);
             GUI.DrawTexture(rect, Resources.FreeWillOverlay);

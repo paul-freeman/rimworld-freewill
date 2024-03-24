@@ -88,7 +88,7 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {actionCounter}: {e}", 14147584);
+                Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {actionCounter}: {e.Message}", 14147584);
             }
         }
 
@@ -167,7 +167,7 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                throw new Exception("could not get map component tick action", e);
+                throw new Exception("could not get map component tick action:" + e.Message);
             }
         }
 
@@ -246,7 +246,7 @@ namespace FreeWill
             {
                 if (Prefs.DevMode)
                 {
-                    throw new Exception("could not set priorities for pawn: " + pawn.Name + ": " + e, e);
+                    throw new Exception("could not set priorities for pawn: " + pawn.Name + ": " + e.Message);
                 }
                 Log.ErrorOnce("Free Will: could not set priorities for pawn: " + pawn.Name + ": marking " + pawn.Name + " as not having free will: " + e, couldNotSetPrioritiesHash);
                 bool ok = worldComp.TryRemoveFreeWill(pawn);
