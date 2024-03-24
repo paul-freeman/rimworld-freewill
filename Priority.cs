@@ -1602,6 +1602,7 @@ namespace FreeWill
         {
             try
             {
+                mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
                 foreach (Pawn other in mapComp.PawnsInFaction)
                 {
                     if (other == null || other == pawn)
