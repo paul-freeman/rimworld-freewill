@@ -1602,37 +1602,66 @@ namespace FreeWill
         {
             try
             {
-                mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
-                foreach (Pawn other in mapComp.PawnsInFaction)
+                if (pawn?.Map?.mapPawns == null)
                 {
-                    if (other == null || other == pawn)
+                    throw new Exception("map pawns is null");
+                }
+
+                foreach (Pawn other in pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
+                {
+                    if (IsDoing(other))
                     {
-                        continue;
-                    }
-                    if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
-                    {
-                        continue;
-                    }
-                    if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
-                    {
-                        continue;
-                    }
-                    if ((other.workSettings?.GetPriority(WorkTypeDef) ?? 0) != 0)
-                    {
-                        return this; // someone else is doing
-                    }
-                    if (other.RaceProps?.mechEnabledWorkTypes?.Contains(WorkTypeDef) ?? false)
-                    {
-                        return this; // a mech is doing
+                        return this;
                     }
                 }
+
                 return AlwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple);
             }
             catch (Exception e)
             {
                 throw new Exception("could not consider if anyone else is doing: " + e.Message);
             }
+        }
 
+        private bool IsDoing(Pawn other)
+        {
+            try
+            {
+                if (other == null || other == pawn)
+                {
+                    return false;
+                }
+                if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
+                {
+                    return false;
+                }
+                if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
+                {
+                    return false;
+                }
+
+                Pawn_WorkSettings workSettings = other.workSettings ?? throw new Exception("could not get work settings");
+                int priority = workSettings.GetPriority(WorkTypeDef);
+                bool isOtherPawnDoing = priority != 0;
+                if (isOtherPawnDoing)
+                {
+                    return true;
+                }
+
+                RaceProperties raceProps = other.RaceProps ?? throw new Exception("could not get race props");
+                List<WorkTypeDef> mechEnabledWorkTypes = raceProps.mechEnabledWorkTypes ?? throw new Exception("could not get mech enabled work types");
+                bool isMechDoing = mechEnabledWorkTypes.Contains(WorkTypeDef);
+                if (isMechDoing)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("could not determine if other is doing: " + e.Message);
+            }
         }
 
         private Priority ConsiderBestAtDoing()
@@ -1643,12 +1672,14 @@ namespace FreeWill
                 {
                     return this;
                 }
-                List<Pawn> allPawns = mapComp.PawnsInFaction;
+
+                MapPawns mapPawns = (pawn?.Map?.mapPawns) ?? throw new Exception("map pawns is null");
+                List<Pawn> allPawns = mapPawns.PawnsInFaction(Faction.OfPlayer);
                 if (allPawns.Count() <= 1)
                 {
                     return this;
                 }
-                bool isBest = true;
+                bool isBestAtDoing = true;
                 float pawnSkill = pawn.skills.AverageOfRelevantSkillsFor(WorkTypeDef);
                 float impactPerPawn = worldComp.Settings.ConsiderBestAtDoing / allPawns.Count();
                 foreach (Pawn other in allPawns)
@@ -1671,55 +1702,56 @@ namespace FreeWill
                     }
                     float otherSkill = other.IsColonistPlayerControlled ? other.skills.AverageOfRelevantSkillsFor(WorkTypeDef) : other.RaceProps.mechFixedSkillLevel;
                     float skillDiff = otherSkill - pawnSkill;
-                    if (skillDiff > 0.0f)
+                    if (skillDiff <= 0.0f)
                     {
-                        // not the best
-                        isBest = false;
-                        bool isDoing = other.CurJob != null && other.CurJob.workGiverDef != null && other.CurJob.workGiverDef.workType == WorkTypeDef;
-                        bool isMuchBetter = skillDiff >= 5.0f;
-                        bool isMuchMuchBetter = skillDiff >= 10.0f;
-                        bool isMuchMuchMuchBetter = skillDiff >= 15.0f;
-                        if (isDoing)
+                        continue;
+                    }
+                    // not the best
+                    isBestAtDoing = false;
+                    bool isDoing = other.CurJob != null && other.CurJob.workGiverDef != null && other.CurJob.workGiverDef.workType == WorkTypeDef;
+                    bool isMuchBetter = skillDiff >= 5.0f;
+                    bool isMuchMuchBetter = skillDiff >= 10.0f;
+                    bool isMuchMuchMuchBetter = skillDiff >= 15.0f;
+                    if (isDoing)
+                    {
+                        if (isMuchMuchMuchBetter)
                         {
-                            if (isMuchMuchMuchBetter)
-                            {
-                                Add(1.5f * -impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
-                            }
-                            else if (isMuchMuchBetter)
-                            {
-                                Add(1.5f * -impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
-                            }
-                            else if (isMuchBetter)
-                            {
-                                Add(1.5f * -impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterIsDoing".Translate(other.LabelShortCap));
-                            }
-                            else
-                            {
-                                Add(1.5f * -impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterIsDoing".Translate(other.LabelShortCap));
-                            }
+                            Add(1.5f * -impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
+                        }
+                        else if (isMuchMuchBetter)
+                        {
+                            Add(1.5f * -impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
+                        }
+                        else if (isMuchBetter)
+                        {
+                            Add(1.5f * -impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterIsDoing".Translate(other.LabelShortCap));
                         }
                         else
                         {
-                            if (isMuchMuchMuchBetter)
-                            {
-                                Add(-impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
-                            }
-                            else if (isMuchMuchBetter)
-                            {
-                                Add(-impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
-                            }
-                            else if (isMuchBetter)
-                            {
-                                Add(-impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterAtDoing".Translate(other.LabelShortCap));
-                            }
-                            else
-                            {
-                                Add(-impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterAtDoing".Translate(other.LabelShortCap));
-                            }
+                            Add(1.5f * -impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterIsDoing".Translate(other.LabelShortCap));
+                        }
+                    }
+                    else
+                    {
+                        if (isMuchMuchMuchBetter)
+                        {
+                            Add(-impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
+                        }
+                        else if (isMuchMuchBetter)
+                        {
+                            Add(-impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
+                        }
+                        else if (isMuchBetter)
+                        {
+                            Add(-impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterAtDoing".Translate(other.LabelShortCap));
+                        }
+                        else
+                        {
+                            Add(-impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterAtDoing".Translate(other.LabelShortCap));
                         }
                     }
                 }
-                return isBest ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple) : this;
+                return isBestAtDoing ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple) : this;
             }
             catch (Exception e)
             {
