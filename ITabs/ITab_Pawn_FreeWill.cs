@@ -159,14 +159,23 @@ namespace FreeWill
                             select workTypeDef
                             )
                     {
-                        Priority priority = mapComp.GetPriority(pawn, workTypeDef);
+                        Priority priority;
+                        if (worldComp.HasFreeWill(pawn, pawn.GetUniqueLoadID()))
+                        {
+                            priority = mapComp.GetPriority(pawn, workTypeDef);
+                        }
+                        else
+                        {
+                            priority = new Priority(pawn, workTypeDef);
+                            priority.FromGamePriority(pawn.workSettings.GetPriority(workTypeDef));
+                        }
                         DrawPawnWorkPriority(pawn, ref curY, width, workTypeDef, priority);
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
-                Log.Error("could not draw pawn priorities");
+                Log.Error("could not draw pawn priorities: " + e.Message);
             }
         }
 
