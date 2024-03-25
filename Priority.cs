@@ -57,6 +57,7 @@ namespace FreeWill
         {
             this.pawn = pawn;
             WorkTypeDef = workTypeDef;
+            AdjustmentStrings = new List<Func<string>> { };
         }
 
         public void Compute()
@@ -647,6 +648,29 @@ namespace FreeWill
             catch (Exception e)
             {
                 throw new Exception("could not convert to game priority: " + e.Message);
+            }
+        }
+
+        public void FromGamePriority(int gamePriorityValue)
+        {
+            try
+            {
+                AdjustmentStrings = new List<Func<string>> { };
+
+                if (gamePriorityValue == 0)
+                {
+                    Set(0.0f, "FreeWillPriorityFromGame".TranslateSimple);
+                    return;
+                }
+
+                float invertedValueRange = (gamePriorityValue - 0.5f) * ONE_PRIORITY_WIDTH;
+                float valueInt = DISABLED_CUTOFF_ACTIVE_WORK_AREA - invertedValueRange + DISABLED_CUTOFF;
+                float finalValue = Mathf.Clamp(valueInt, 0, 100) / 100;
+                Set(finalValue, "FreeWillPriorityFromGame".TranslateSimple);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("could not convert from game priority: " + e.Message);
             }
         }
 

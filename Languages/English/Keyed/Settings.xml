@@ -46,6 +46,7 @@
   <FreeWillConsiderGauranlenPruningLong>Colonists will prefer to keep their connected tree pruned.</FreeWillConsiderGauranlenPruningLong>
 
   <!-- Priority strings -->
+  <FreeWillPriorityFromGame>work priority</FreeWillPriorityFromGame>
   <FreeWillPriorityGlobalDefault>base priority</FreeWillPriorityGlobalDefault>
   <FreeWillPriorityError>error</FreeWillPriorityError>
   <FreeWillPriorityEnabled>enabled</FreeWillPriorityEnabled>
