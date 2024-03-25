@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <IdeoPresetDef>
+    <defName>Free_Will</defName>
+    <label>free will</label>
+    <description>Guaranteed free will for your colony. Use this to start a simple colony that is free to choose their own work tasks.</description>
+    <categoryDef>Mild</categoryDef>
+    <memes>
+      <li>Individualist</li>
+    </memes>
+  </IdeoPresetDef>
+
+</Defs>
