@@ -399,14 +399,9 @@ namespace FreeWill
                 PlantsBlighted = GridsUtility.GetFirstBlight(map.Center, map) != null;
                 return "checkBlight";
             }
-            catch (Exception err)
+            catch (Exception e)
             {
-                Log.Message("could not check blight levels on map");
-                Log.Message(err.ToString());
-                Log.Message("this consideration will be disabled in the mod settings to avoid future errors");
-                worldComp.Settings.ConsiderPlantsBlighted = 0.0f;
-                PlantsBlighted = false;
-                return "checkBlight";
+                throw new Exception("could not check blight: " + e.Message);
             }
         }
 
