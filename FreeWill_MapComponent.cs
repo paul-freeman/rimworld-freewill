@@ -116,7 +116,7 @@ namespace FreeWill
                             _ = CheckThingsDeteriorating();
                             break;
                         case "checkBlight":
-                            _ = CheckBlight();
+                            PlantsBlighted = CheckBlight();
                             break;
                         case "checkMapFire":
                             _ = CheckMapFire();
@@ -392,17 +392,16 @@ namespace FreeWill
             return "checkThingsDeteriorating";
         }
 
-        private string CheckBlight()
+        private bool CheckBlight()
         {
-            try
+            foreach (Thing thing in map?.listerThings?.ThingsOfDef(ThingDefOf.Blight))
             {
-                PlantsBlighted = GridsUtility.GetFirstBlight(map.Center, map) != null;
-                return "checkBlight";
+                if (thing is Blight)
+                {
+                    return true;
+                }
             }
-            catch (Exception e)
-            {
-                throw new Exception("could not check blight: " + e.Message);
-            }
+            return false;
         }
 
         private string CheckMapFire()
