@@ -228,7 +228,6 @@ namespace FreeWill
                     case HANDLING:
                         return
                             ConsiderRelevantSkills()
-                            .ConsiderMovementSpeed()
                             .ConsiderCarryingCapacity()
                             .ConsiderIsAnyoneElseDoing()
                             .ConsiderBestAtDoing()
@@ -237,6 +236,7 @@ namespace FreeWill
                             .ConsiderInspiration()
                             .ConsiderAnimalsRoaming()
                             .ConsiderColonistLeftUnburied()
+                            .ConsiderMovementSpeed()
                             .ConsiderHealth()
                             .ConsiderAteRawFood()
                             .ConsiderBored()
@@ -274,7 +274,6 @@ namespace FreeWill
                     case HUNTING:
                         return
                             ConsiderRelevantSkills()
-                            .ConsiderMovementSpeed()
                             .ConsiderCarryingCapacity()
                             .ConsiderIsAnyoneElseDoing()
                             .ConsiderBestAtDoing()
@@ -284,6 +283,7 @@ namespace FreeWill
                             .ConsiderLowFood(0.3f)
                             .ConsiderWeaponRange()
                             .ConsiderColonistLeftUnburied()
+                            .ConsiderMovementSpeed()
                             .ConsiderHealth()
                             .ConsiderAteRawFood()
                             .ConsiderBored()
@@ -483,7 +483,6 @@ namespace FreeWill
                         Set(0.3f, "FreeWillPriorityHaulingDefault".TranslateSimple);
                         return
                             ConsiderBeautyExpectations()
-                            .ConsiderMovementSpeed()
                             .ConsiderCarryingCapacity()
                             .ConsiderIsAnyoneElseDoing()
                             .ConsiderPassion()
@@ -492,6 +491,7 @@ namespace FreeWill
                             .ConsiderRefueling()
                             .ConsiderLowFood(0.2f)
                             .ConsiderColonistLeftUnburied()
+                            .ConsiderMovementSpeed()
                             .ConsiderHealth()
                             .ConsiderAteRawFood()
                             .ConsiderThingsDeteriorating()
@@ -549,7 +549,6 @@ namespace FreeWill
                         Set(0.5f, "FreeWillPriorityUrgentHaulingDefault".TranslateSimple);
                         return
                             ConsiderBeautyExpectations()
-                            .ConsiderMovementSpeed()
                             .ConsiderCarryingCapacity()
                             .ConsiderIsAnyoneElseDoing()
                             .ConsiderPassion()
@@ -558,6 +557,7 @@ namespace FreeWill
                             .ConsiderRefueling()
                             .ConsiderLowFood(0.3f)
                             .ConsiderColonistLeftUnburied()
+                            .ConsiderMovementSpeed()
                             .ConsiderHealth()
                             .ConsiderAteRawFood()
                             .ConsiderThingsDeteriorating()
@@ -573,7 +573,6 @@ namespace FreeWill
                     default:
                         return
                             ConsiderRelevantSkills()
-                            .ConsiderMovementSpeed()
                             .ConsiderCarryingCapacity()
                             .ConsiderBeautyExpectations()
                             .ConsiderIsAnyoneElseDoing()
@@ -583,6 +582,7 @@ namespace FreeWill
                             .ConsiderInspiration()
                             .ConsiderLowFood(-0.3f)
                             .ConsiderColonistLeftUnburied()
+                            .ConsiderMovementSpeed()
                             .ConsiderHealth()
                             .ConsiderAteRawFood()
                             .ConsiderBored()
