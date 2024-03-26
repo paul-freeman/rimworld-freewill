@@ -82,6 +82,7 @@
   <FreeWillPriorityColonistLeftUnburied>colonist left unburied</FreeWillPriorityColonistLeftUnburied>
   <FreeWillPriorityRefueling>refueling required</FreeWillPriorityRefueling>
   <FreeWillPriorityFilthyCookingArea>dirty cooking area</FreeWillPriorityFilthyCookingArea>
+  <FreeWillPriorityFoodPoisoning>food poisoning</FreeWillPriorityFoodPoisoning>
   <FreeWillPriorityBestAtDoing>best at doing</FreeWillPriorityBestAtDoing>
   <FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing>{0} is amazing at this</FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing>
   <FreeWillPrioritySomeoneMuchMuchBetterAtDoing>{0} is great at this</FreeWillPrioritySomeoneMuchMuchBetterAtDoing>

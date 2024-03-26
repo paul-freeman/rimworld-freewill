@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -156,18 +155,18 @@ namespace FreeWill
 
                     case PATIENT_BED_REST:
                         Set(0.0f, "FreeWillPriorityBedrestDefault".TranslateSimple);
-                        return
-                            AlwaysDo("FreeWillPriorityBedrestAlways".TranslateSimple)
+                        AlwaysDo("FreeWillPriorityBedrestAlways".TranslateSimple)
                             .ConsiderHealth()
                             .ConsiderBuildingImmunity()
                             .ConsiderLowFood(-0.2f)
                             .ConsiderCompletingTask()
-                            .ConsiderColonistsNeedingTreatment()
                             .ConsiderBored()
+                            .ConsiderHavingFoodPoisoning();
+                        _ = ConsiderColonistsNeedingTreatment()
                             .ConsiderDownedColonists()
                             .ConsiderOperation()
-                            .ConsiderColonyPolicy()
-                            ;
+                            .ConsiderColonyPolicy();
+                        return this;
 
                     case CHILDCARE:
                         Set(0.5f, "FreeWillPriorityChildcareDefault".TranslateSimple);
@@ -259,7 +258,7 @@ namespace FreeWill
                             .ConsiderInspiration()
                             .ConsiderLowFood(0.2f)
                             .ConsiderColonistLeftUnburied()
-                            .ConsiderFoodPoisoning()
+                            .ConsiderFoodPoisoningRisk()
                             .ConsiderHealth()
                             .ConsiderAteRawFood()
                             .ConsiderBored()
@@ -513,7 +512,7 @@ namespace FreeWill
                             .ConsiderThoughts()
                             .ConsiderOwnRoom()
                             .ConsiderLowFood(-0.2f)
-                            .ConsiderFoodPoisoning()
+                            .ConsiderFoodPoisoningRisk()
                             .ConsiderHealth()
                             .ConsiderBored()
                             .NeverDoIf(NotInHomeArea(pawn), "FreeWillPriorityNotInHomeArea".TranslateSimple)
@@ -1125,7 +1124,7 @@ namespace FreeWill
             try
             {
                 return worldComp.Settings.ConsiderMovementSpeed != 0.0f
-                    ? Multiply(worldComp.Settings.ConsiderMovementSpeed * 0.25f * pawn.GetStatValue(StatDefOf.MoveSpeed, true), "FreeWillPriorityMovementSpeed".TranslateSimple)
+                    ? Multiply(worldComp.Settings.ConsiderMovementSpeed * (pawn.GetStatValue(StatDefOf.MoveSpeed, true) / 4.6f), "FreeWillPriorityMovementSpeed".TranslateSimple)
                     : this;
             }
             catch (Exception e)
@@ -1536,7 +1535,19 @@ namespace FreeWill
             }
         }
 
-        private Priority ConsiderFoodPoisoning()
+        private void ConsiderHavingFoodPoisoning()
+        {
+            if (WorkTypeDef.defName == PATIENT_BED_REST)
+            {
+                if (pawn?.health?.hediffSet?.HasHediff(HediffDefOf.FoodPoisoning, true) ?? false)
+                {
+                    float movementSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed, true);
+                    Add(Mathf.Clamp01(1 - (movementSpeed / 4.6f)), "FreeWillPriorityFoodPoisoning".TranslateSimple);
+                }
+            }
+        }
+
+        private Priority ConsiderFoodPoisoningRisk()
         {
             try
             {
