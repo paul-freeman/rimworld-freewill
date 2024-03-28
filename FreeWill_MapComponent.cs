@@ -47,11 +47,13 @@ namespace FreeWill
         public bool RefuelNeededNow { get; private set; }
         public bool RefuelNeeded { get; private set; }
         public bool PlantsBlighted { get; private set; }
-        public bool NeedWarmClothes { get; private set; }
+        public bool AlertNeedWarmClothes { get; private set; }
         public bool AlertColonistLeftUnburied { get; private set; }
         public bool AlertAnimalRoaming { get; private set; }
         public bool AlertLowFood { get; private set; }
         public bool AlertMechDamaged { get; private set; }
+        public bool AlertAnimalPenNeeded { get; private set; }
+        public bool AlertAnimalPenNotEnclosed { get; private set; }
 
         private string pawnIndexCache = "unknown";
         public bool AreaHasHaulables { get; private set; }
@@ -469,11 +471,13 @@ namespace FreeWill
                     return "checkActiveAlerts";
                 }
                 // unset all the alerts
-                AlertLowFood = false;
-                AlertAnimalRoaming = false;
-                NeedWarmClothes = false;
-                AlertColonistLeftUnburied = false;
-                AlertMechDamaged = false;
+                bool alertLowFood = false;
+                bool alertAnimalRoaming = false;
+                bool alertNeedWarmClothes = false;
+                bool alertColonistLeftUnburied = false;
+                bool alertMechDamaged = false;
+                bool alertAnimalPenNeeded = false;
+                bool alertAnimalPenNotEnclosed = false;
                 // check current alerts
                 foreach (Alert alert in (List<Alert>)activeAlertsField.GetValue(ui.alerts))
                 {
@@ -484,13 +488,13 @@ namespace FreeWill
                     switch (alert)
                     {
                         case Alert_LowFood a:
-                            AlertLowFood = true;
+                            alertLowFood = true;
                             break;
                         case Alert_NeedWarmClothes a:
-                            NeedWarmClothes = true;
+                            alertNeedWarmClothes = true;
                             break;
                         case Alert_AnimalRoaming a:
-                            AlertAnimalRoaming = true;
+                            alertAnimalRoaming = true;
                             break;
                         case Alert_ColonistLeftUnburied a:
                             if (map.mapPawns.AnyFreeColonistSpawned)
@@ -501,23 +505,36 @@ namespace FreeWill
                                     Corpse corpse = (Corpse)list[i];
                                     if (Alert_ColonistLeftUnburied.IsCorpseOfColonist(corpse))
                                     {
-                                        AlertColonistLeftUnburied = true;
+                                        alertColonistLeftUnburied = true;
                                         break;
                                     }
                                 }
-                                if (AlertColonistLeftUnburied)
+                                if (alertColonistLeftUnburied)
                                 {
                                     break;
                                 }
                             }
                             break;
                         case Alert_MechDamaged a:
-                            AlertMechDamaged = true;
+                            alertMechDamaged = true;
+                            break;
+                        case Alert_AnimalPenNeeded a:
+                            alertAnimalPenNeeded = true;
+                            break;
+                        case Alert_AnimalPenNotEnclosed a:
+                            alertAnimalPenNotEnclosed = true;
                             break;
                         default:
                             break;
                     }
                 }
+                AlertLowFood = alertLowFood;
+                AlertAnimalRoaming = alertAnimalRoaming;
+                AlertNeedWarmClothes = alertNeedWarmClothes;
+                AlertColonistLeftUnburied = alertColonistLeftUnburied;
+                AlertMechDamaged = alertMechDamaged;
+                AlertAnimalPenNeeded = alertAnimalPenNeeded;
+                AlertAnimalPenNotEnclosed = alertAnimalPenNotEnclosed;
                 return "checkActiveAlerts";
             }
             catch

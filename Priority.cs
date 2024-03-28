@@ -297,26 +297,26 @@ namespace FreeWill
                             ;
 
                     case CONSTRUCTION:
-                        return
-                            ConsiderRelevantSkills()
-                            .ConsiderCarryingCapacity()
-                            .ConsiderIsAnyoneElseDoing()
-                            .ConsiderBestAtDoing()
-                            .ConsiderPassion()
-                            .ConsiderThoughts()
-                            .ConsiderInspiration()
-                            .ConsiderLowFood(-0.3f)
-                            .ConsiderColonistLeftUnburied()
-                            .ConsiderHealth()
-                            .ConsiderAteRawFood()
-                            .ConsiderBored()
-                            .ConsiderFire()
-                            .ConsiderBuildingImmunity()
-                            .ConsiderCompletingTask()
-                            .ConsiderColonistsNeedingTreatment()
-                            .ConsiderDownedColonists()
-                            .ConsiderColonyPolicy()
-                            ;
+                        ConsiderRelevantSkills()
+                        .ConsiderCarryingCapacity()
+                        .ConsiderIsAnyoneElseDoing()
+                        .ConsiderBestAtDoing()
+                        .ConsiderPassion()
+                        .ConsiderThoughts()
+                        .ConsiderInspiration()
+                        .ConsiderAnimalPen();
+                        _ = ConsiderLowFood(-0.3f)
+                        .ConsiderColonistLeftUnburied()
+                        .ConsiderHealth()
+                        .ConsiderAteRawFood()
+                        .ConsiderBored()
+                        .ConsiderFire()
+                        .ConsiderBuildingImmunity()
+                        .ConsiderCompletingTask()
+                        .ConsiderColonistsNeedingTreatment()
+                        .ConsiderDownedColonists()
+                        .ConsiderColonyPolicy();
+                        return this;
 
                     case GROWING:
                         return
@@ -991,7 +991,7 @@ namespace FreeWill
         {
             try
             {
-                if (mapComp.NeedWarmClothes)
+                if (mapComp.AlertNeedWarmClothes)
                 {
                     Add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
                     return this;
@@ -1543,6 +1543,21 @@ namespace FreeWill
                 {
                     float movementSpeed = pawn.GetStatValue(StatDefOf.MoveSpeed, true);
                     Add(Mathf.Clamp01(1 - (movementSpeed / 4.6f)), "FreeWillPriorityFoodPoisoning".TranslateSimple);
+                }
+            }
+        }
+
+        private void ConsiderAnimalPen()
+        {
+            if (WorkTypeDef.defName == CONSTRUCTION)
+            {
+                if (mapComp.AlertAnimalPenNeeded)
+                {
+                    Add(0.3f, "FreeWillPriorityAnimalPenNeeded".TranslateSimple);
+                }
+                if (mapComp.AlertAnimalPenNotEnclosed)
+                {
+                    Add(0.3f, "FreeWillPriorityAnimalPenNotEnclosed".TranslateSimple);
                 }
             }
         }
