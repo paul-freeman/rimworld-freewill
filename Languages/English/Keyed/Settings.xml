@@ -83,6 +83,8 @@
   <FreeWillPriorityRefueling>refueling required</FreeWillPriorityRefueling>
   <FreeWillPriorityFilthyCookingArea>dirty cooking area</FreeWillPriorityFilthyCookingArea>
   <FreeWillPriorityFoodPoisoning>food poisoning</FreeWillPriorityFoodPoisoning>
+  <FreeWillPriorityAnimalPenNeeded>animal pen needed</FreeWillPriorityAnimalPenNeeded>
+  <FreeWillPriorityAnimalPenNotEnclosed>animal pen not enclosed</FreeWillPriorityAnimalPenNotEnclosed>
   <FreeWillPriorityBestAtDoing>best at doing</FreeWillPriorityBestAtDoing>
   <FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing>{0} is amazing at this</FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing>
   <FreeWillPrioritySomeoneMuchMuchBetterAtDoing>{0} is great at this</FreeWillPrioritySomeoneMuchMuchBetterAtDoing>
