@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Verse;
@@ -23,8 +22,6 @@ namespace FreeWill
             "checkActiveAlerts",
             "checkSuppressionNeed",
         };
-
-        private static readonly int couldNotSetPrioritiesHash = ("FreeWill" + "could not set priorities for pawn").GetHashCode();
 
         private Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> priorities;
         private readonly Dictionary<Pawn, int> lastBored;
@@ -88,89 +85,86 @@ namespace FreeWill
                 GetMapComponentTickAction();
                 actionCounter++;
             }
-            catch (Exception e)
+            catch
             {
-                Log.ErrorOnce($"Free Will: could not perform tick action: mapTickCounter = {actionCounter}: {e.Message}", 14147584);
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: could not perform tick action: mapTickCounter = {actionCounter}");
+                }
+                throw;
             }
         }
 
         private void GetMapComponentTickAction()
         {
-            try
+            if (actionCounter < mapComponentCheckActions.Length)
             {
-                if (actionCounter < mapComponentCheckActions.Length)
+                switch (mapComponentCheckActions[actionCounter])
                 {
-                    switch (mapComponentCheckActions[actionCounter])
-                    {
-                        case "checkPrisonerHealth":
-                            _ = CheckPrisonerHealth();
-                            break;
-                        case "checkPetsHealth":
-                            _ = CheckPetsHealth();
-                            break;
-                        case "checkColonyHealth":
-                            _ = CheckColonyHealth();
-                            break;
-                        case "checkPercentPawnsMechHaulers":
-                            _ = CheckPercentPawnsMechHaulers();
-                            break;
-                        case "checkThingsDeteriorating":
-                            _ = CheckThingsDeteriorating();
-                            break;
-                        case "checkBlight":
-                            PlantsBlighted = CheckBlight();
-                            break;
-                        case "checkMapFire":
-                            _ = CheckMapFire();
-                            break;
-                        case "checkRefuelNeeded":
-                            _ = CheckRefuelNeeded();
-                            break;
-                        case "checkActiveAlerts":
-                            _ = CheckActiveAlerts();
-                            break;
-                        case "checkSuppressionNeed":
-                            _ = CheckSuppressionNeed();
-                            break;
-                        default:
-                            Log.ErrorOnce($"Free Will: unknown map component tick action: {mapComponentCheckActions[actionCounter]}", 14147585);
-                            break;
-                    }
-                    return;
+                    case "checkPrisonerHealth":
+                        _ = CheckPrisonerHealth();
+                        break;
+                    case "checkPetsHealth":
+                        _ = CheckPetsHealth();
+                        break;
+                    case "checkColonyHealth":
+                        _ = CheckColonyHealth();
+                        break;
+                    case "checkPercentPawnsMechHaulers":
+                        _ = CheckPercentPawnsMechHaulers();
+                        break;
+                    case "checkThingsDeteriorating":
+                        _ = CheckThingsDeteriorating();
+                        break;
+                    case "checkBlight":
+                        PlantsBlighted = CheckBlight();
+                        break;
+                    case "checkMapFire":
+                        _ = CheckMapFire();
+                        break;
+                    case "checkRefuelNeeded":
+                        _ = CheckRefuelNeeded();
+                        break;
+                    case "checkActiveAlerts":
+                        _ = CheckActiveAlerts();
+                        break;
+                    case "checkSuppressionNeed":
+                        _ = CheckSuppressionNeed();
+                        break;
+                    default:
+                        Log.ErrorOnce($"Free Will: unknown map component tick action: {mapComponentCheckActions[actionCounter]}", 14147585);
+                        break;
                 }
-                int i = actionCounter - mapComponentCheckActions.Length;
-                List<WorkTypeDef> workTypeDefs = DefDatabase<WorkTypeDef>.AllDefsListForReading;
-                List<Pawn> pawns = map.mapPawns.FreeColonistsSpawned;
-                if (i >= workTypeDefs.Count * pawns.Count)
-                {
-                    actionCounter = 0;
-                    _ = CheckPrisonerHealth();
-                    return;
-                }
-                int pawnIndex = i / workTypeDefs.Count;
-                int worktypeIndex = i % workTypeDefs.Count;
-                Pawn pawn = pawns[pawnIndex];
-                if (pawn.GetUniqueLoadID() != pawnIndexCache)
-                {
-                    // new pawn, so check their area
-                    BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
-                    AreaHasHaulables = CheckIfAreaHasHaulables(pawn, BeautyUtility.beautyRelevantCells);
-                    AreaHasFilth = CheckIfAreaHasFilth(pawn, BeautyUtility.beautyRelevantCells);
-                    pawnIndexCache = pawn.GetUniqueLoadID();
-                    // update their thoughts
-                    pawn.needs.mood.thoughts.GetAllMoodThoughts(AllThoughts);
-                    // update their disabled work types
-                    DisabledWorkTypes = pawn.GetDisabledWorkTypes(permanentOnly: true);
+                return;
+            }
+            int i = actionCounter - mapComponentCheckActions.Length;
+            List<WorkTypeDef> workTypeDefs = DefDatabase<WorkTypeDef>.AllDefsListForReading;
+            List<Pawn> pawns = map.mapPawns.FreeColonistsSpawned;
+            if (i >= workTypeDefs.Count * pawns.Count)
+            {
+                actionCounter = 0;
+                _ = CheckPrisonerHealth();
+                return;
+            }
+            int pawnIndex = i / workTypeDefs.Count;
+            int worktypeIndex = i % workTypeDefs.Count;
+            Pawn pawn = pawns[pawnIndex];
+            if (pawn.GetUniqueLoadID() != pawnIndexCache)
+            {
+                // new pawn, so check their area
+                BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
+                AreaHasHaulables = CheckIfAreaHasHaulables(pawn, BeautyUtility.beautyRelevantCells);
+                AreaHasFilth = CheckIfAreaHasFilth(pawn, BeautyUtility.beautyRelevantCells);
+                pawnIndexCache = pawn.GetUniqueLoadID();
+                // update their thoughts
+                pawn.needs.mood.thoughts.GetAllMoodThoughts(AllThoughts);
+                // update their disabled work types
+                DisabledWorkTypes = pawn.GetDisabledWorkTypes(permanentOnly: true);
 
-                }
-                string pawnKey = pawn.GetUniqueLoadID();
-                WorkTypeDef workTypeDef = workTypeDefs[worktypeIndex];
-                _ = SetPriorityAction(pawn, pawnKey, workTypeDef);
             }
-            catch (Exception e)
-            {
-                throw new Exception("could not get map component tick action: " + e.Message);
-            }
+            string pawnKey = pawn.GetUniqueLoadID();
+            WorkTypeDef workTypeDef = workTypeDefs[worktypeIndex];
+            _ = SetPriorityAction(pawn, pawnKey, workTypeDef);
         }
 
         public void UpdateLastBored(Pawn pawn)
@@ -203,6 +197,10 @@ namespace FreeWill
             if (pawn == null)
             {
                 Log.ErrorOnce($"Free Will: pawn is null: mapTickCounter = {actionCounter}", 584624);
+                return msg;
+            }
+            if (pawn.WorkTypeIsDisabled(workTypeDef))
+            {
                 return msg;
             }
             if (!pawn.Awake() || pawn.Downed || pawn.Dead)
@@ -244,19 +242,22 @@ namespace FreeWill
                 }
                 return msg;
             }
-            catch (Exception e)
+            catch
             {
                 if (Prefs.DevMode)
                 {
-                    throw new Exception("could not set priorities for pawn: " + pawn.Name + ": " + e.Message);
+                    Log.Error($"Free Will: could not set priorities for {pawn.Name}");
                 }
-                Log.ErrorOnce("Free Will: could not set priorities for pawn: " + pawn.Name + ": marking " + pawn.Name + " as not having free will: " + e, couldNotSetPrioritiesHash);
-                bool ok = worldComp.TryRemoveFreeWill(pawn);
-                if (!ok)
+                if (worldComp.TryRemoveFreeWill(pawn))
                 {
-                    Log.ErrorOnce("Free Will: could not remove free will", 752116446);
+                    Log.Warning($"Free Will: removed free will from {pawn.Name} due to an error");
+                    return msg;
                 }
-                return msg;
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: could not remove free will from {pawn.Name}");
+                }
+                throw;
             }
         }
 
@@ -290,9 +291,13 @@ namespace FreeWill
                 }
                 return "checkSuppressionNeed";
             }
-            catch (Exception e)
+            catch
             {
-                throw new Exception("could not check suppression need", e);
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not check suppression need");
+                }
+                throw;
             }
         }
 
@@ -364,9 +369,13 @@ namespace FreeWill
                 PercentPawnsMechHaulers = (total == 0.0f) ? 0.0f : numMechHaulers / total;
                 return "checkPercentPawnsMechHaulers";
             }
-            catch (Exception e)
+            catch
             {
-                throw new Exception("could not check percent of mech haulers", e);
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not check percent pawns mech haulers");
+                }
+                throw;
             }
         }
 

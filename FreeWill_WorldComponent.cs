@@ -54,15 +54,19 @@ namespace FreeWill
                             && !ideo.HasPrecept(freeWillPreferred)
                             && !ideo.HasPrecept(freeWillMandatory))
                     {
-                        Log.Message("Adding free will precept, \"flexible\", to " + ideo.name + " ideology.");
+                        Log.Message($"Free Will: adding free will precept, \"flexible\", to {ideo.name} ideology.");
                         ideo.AddPrecept(PreceptMaker.MakePrecept(freeWillFlexible), init: false);
                     }
                 }
                 freePawns = freePawns ?? new Dictionary<string, bool> { };
             }
-            catch (System.Exception e)
+            catch
             {
-                Log.ErrorOnce("could not perform free will world tick: " + e.ToString(), couldNotPerformFreeWillTick);
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not perform free will world tick");
+                }
+                throw;
             }
             base.WorldComponentTick();
         }
@@ -303,7 +307,7 @@ namespace FreeWill
                 System.Type interestDefT = AccessTools.TypeByName("DInterests.InterestDef");
                 if (interestDefT == null)
                 {
-                    Log.ErrorOnce("could not find interest def type", 118574567);
+                    Log.ErrorOnce("Free Will: could not find interest def type", 118574567);
                     return false;
                 }
 

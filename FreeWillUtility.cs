@@ -115,7 +115,7 @@ namespace FreeWill
                     }
                     catch (Exception e)
                     {
-                        Log.ErrorOnce("could not get adjustment string: " + e.Message, couldNotGetAdjustmentString);
+                        Log.ErrorOnce("Free Will: could not get adjustment string: " + e.Message, couldNotGetAdjustmentString);
                         stringBuilder = Prefs.DevMode ? stringBuilder.AppendLine("error: " + e.Message) : stringBuilder.AppendLine("error");
                     }
                 }
@@ -133,7 +133,7 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                Log.ErrorOnce("could not get tip: " + e.Message, couldNotGetTip);
+                Log.ErrorOnce("Free Will: could not get tip: " + e.Message, couldNotGetTip);
                 return "could not get tip";
             }
         }

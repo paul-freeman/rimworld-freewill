@@ -43,13 +43,13 @@ namespace FreeWill
             Pawn pawn = GetCurrentPawn();
             if (pawn == null)
             {
-                Log.Error("Free will tab found; no selected pawn to display.");
+                Log.Error("Free Will: Free will tab found; no selected pawn to display.");
                 return;
             }
             FreeWill_MapComponent mapComp = pawn.Map?.GetComponent<FreeWill_MapComponent>();
             if (mapComp == null)
             {
-                Log.Error("Free will tab found; no map component to display.");
+                Log.Error("Free Will: Free will tab found; no map component to display.");
                 return;
             }
             worldComp = worldComp ?? Find.World?.GetComponent<FreeWill_WorldComponent>();
@@ -86,7 +86,7 @@ namespace FreeWill
                 }
                 catch
                 {
-                    Log.Error("could not draw fill tab scroll view");
+                    Log.Error("Free Will: could not draw fill tab scroll view");
                 }
                 finally
                 {
@@ -95,7 +95,7 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("could not draw fill tab group");
+                Log.Error("Free Will: could not draw fill tab group");
             }
             finally
             {
@@ -118,7 +118,7 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("could not draw pawn profession");
+                Log.Error("Free Will: could not draw pawn profession");
             }
             curY += 30f;
         }
@@ -142,7 +142,7 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("could not draw pawn interest text");
+                Log.Error("Free Will: could not draw pawn interest text");
             }
             curY += 25f;
         }
@@ -175,7 +175,7 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                Log.Error("could not draw pawn priorities: " + e.Message);
+                Log.Error("Free Will: could not draw pawn priorities: " + e.Message);
             }
         }
 
@@ -234,13 +234,13 @@ namespace FreeWill
                     bool ok = isFree ? worldComp.TryGiveFreeWill(pawn) : worldComp.TryRemoveFreeWill(pawn);
                     if (!ok)
                     {
-                        Log.Error($"could not change free will for {pawn.Name.ToStringShort}");
+                        Log.Error($"Free Will: could not change free will for {pawn.Name.ToStringShort}");
                     }
                 }
             }
             catch
             {
-                Log.Error("could not draw pawn free will checkbox");
+                Log.Error("Free Will: could not draw pawn free will checkbox");
             }
             curY += 28f;
         }
@@ -277,7 +277,7 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                Log.ErrorOnce("could not draw pawn work priority: " + e.ToString(), couldNotDrawPawnWorkPriority);
+                Log.ErrorOnce("Free Will: could not draw pawn work priority: " + e.ToString(), couldNotDrawPawnWorkPriority);
             }
             curY += 20f;
         }
