@@ -24,8 +24,6 @@ namespace FreeWill
         private bool checkedForInterestsMod;
         public List<string> interestsStrings;
 
-        private static readonly int couldNotPerformFreeWillTick = "could not perform free will world tick".GetHashCode();
-
         public FreeWill_WorldComponent(World world) : base(world)
         {
             freePawns = new Dictionary<string, bool> { };
