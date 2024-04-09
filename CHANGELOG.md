@@ -1,5 +1,43 @@
 # Changelog
 
+## [1.6.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.5.0...v1.6.0) (2024-04-09)
+
+
+### Features
+
+* add 1.5 tag to support RimWorld Anomaly ([2111a8e](https://github.com/paul-freeman/rimworld-freewill/commit/2111a8ed42c73d44070a197356dcfde96f8be31f))
+* add flicker to work tab ([853bee9](https://github.com/paul-freeman/rimworld-freewill/commit/853bee92ab860f8fdb2f4c074a16f57e7f569b37))
+* add free will ideo preset ([9b63266](https://github.com/paul-freeman/rimworld-freewill/commit/9b632669c47c0731645c8b37913a706d0c3892f1))
+* add initial childcare logic ([#13](https://github.com/paul-freeman/rimworld-freewill/issues/13)) ([8fa7436](https://github.com/paul-freeman/rimworld-freewill/commit/8fa7436a02fcc90f68cba01618a29e376c5a9128))
+* consider animal pen ([9a531b0](https://github.com/paul-freeman/rimworld-freewill/commit/9a531b0c79265e65ac59de9a01bf311f95591fee))
+* consider having food poisoning ([4a7385f](https://github.com/paul-freeman/rimworld-freewill/commit/4a7385f5bfaf7d2da0e4110934f0fb33d4be6991))
+* consider mech skill level ([#15](https://github.com/paul-freeman/rimworld-freewill/issues/15)) ([4bbfe50](https://github.com/paul-freeman/rimworld-freewill/commit/4bbfe50d90f1fcec65c60dbf2afcb5315a3ba895))
+* consider slave suppression need ([#16](https://github.com/paul-freeman/rimworld-freewill/issues/16)) ([fb23874](https://github.com/paul-freeman/rimworld-freewill/commit/fb238744c82d73b2ab82b3c7cfd6be1ee5f59e6c))
+* improve free will tool tip ([#17](https://github.com/paul-freeman/rimworld-freewill/issues/17)) ([94796f1](https://github.com/paul-freeman/rimworld-freewill/commit/94796f1657c7664fc599d041a3f35820c5c3a741))
+* increase childcare default ([30fee47](https://github.com/paul-freeman/rimworld-freewill/commit/30fee475736e9803b674d9f8894658c443ee7650))
+* increase impact of movement speed ([4d894ea](https://github.com/paul-freeman/rimworld-freewill/commit/4d894ea1e2446ea3c30b5fa612cefc3f41411fd3))
+* show freewill priority on work tab ([ae0d195](https://github.com/paul-freeman/rimworld-freewill/commit/ae0d195c79789668488047b439e49a7206d05c43))
+* suppress calculations while sleeping ([#18](https://github.com/paul-freeman/rimworld-freewill/issues/18)) ([f02818d](https://github.com/paul-freeman/rimworld-freewill/commit/f02818d4735401ae5f0affb641bdac119613f216))
+
+
+### Bug Fixes
+
+* check blight works again ([fda5a56](https://github.com/paul-freeman/rimworld-freewill/commit/fda5a56eb0623328045d32d8c751358dd275a764))
+* could not get pawns from faction ([bde0b3d](https://github.com/paul-freeman/rimworld-freewill/commit/bde0b3deac1fec634725c34821951813a04b612f))
+* error when considering thoughts ([fc2f4b4](https://github.com/paul-freeman/rimworld-freewill/commit/fc2f4b46b46020a0c6d8a2250716006689077f40))
+* handle exception getting mood effect ([386201a](https://github.com/paul-freeman/rimworld-freewill/commit/386201af7c65a5252a52cc591be90d601b9d7aa2))
+* null when considering other doing ([544e1a6](https://github.com/paul-freeman/rimworld-freewill/commit/544e1a6482c2fbe190964d2851bc7c834fe6032d))
+* priorities render while sleeping ([2e559d0](https://github.com/paul-freeman/rimworld-freewill/commit/2e559d0b128c60f5233754063e502737c79ded61))
+* set child work correctly ([02ffba2](https://github.com/paul-freeman/rimworld-freewill/commit/02ffba2eb49740f567d854497b2b2ca08862d8bb))
+* setPriorityAction must return string ([#20](https://github.com/paul-freeman/rimworld-freewill/issues/20)) ([633b938](https://github.com/paul-freeman/rimworld-freewill/commit/633b938acab53e2415c72f3384d0829d9d92e4cf))
+* show game priority in freewill tab ([af1a08a](https://github.com/paul-freeman/rimworld-freewill/commit/af1a08ace6584af289e00642178cfd32ef6d297c))
+* update variable to match 1.5 ([169504a](https://github.com/paul-freeman/rimworld-freewill/commit/169504a145405b261f20b6acb219b60ad72dadf3))
+
+
+### Performance Improvements
+
+* improve mod perfomance ([2599edb](https://github.com/paul-freeman/rimworld-freewill/commit/2599edb4b8d616ea620782ac012b3fe70d32e7fd))
+
 ## [1.5.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.4.0...v1.5.0) (2022-10-24)
 
 
