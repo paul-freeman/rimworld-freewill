@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.0...v1.6.1) (2024-04-11)
+
+
+### Bug Fixes
+
+* drop support for RimWorld 1.4 ([585f4fd](https://github.com/paul-freeman/rimworld-freewill/commit/585f4fdcfd5c6be9caeb62e488f3149c2ce43c73))
+
 ## [1.6.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.5.0...v1.6.0) (2024-04-09)
 
 
