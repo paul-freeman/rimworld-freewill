@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using System.Linq;
 using Verse;
@@ -17,8 +16,6 @@ namespace FreeWill
         private Vector2 scrollPosition;
         private Color highlightColor;
         private FreeWill_WorldComponent worldComp;
-
-        private static readonly int couldNotDrawPawnWorkPriority = ("FreeWill" + "could not draw pawn work priority").GetHashCode();
 
         public ITab_Pawn_FreeWill()
         {
@@ -86,7 +83,11 @@ namespace FreeWill
                 }
                 catch
                 {
-                    Log.Error("Free Will: could not draw fill tab scroll view");
+                    if (Prefs.DevMode)
+                    {
+                        Log.Error("Free Will: could not draw fill tab scroll view");
+                    }
+                    throw;
                 }
                 finally
                 {
@@ -95,7 +96,11 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("Free Will: could not draw fill tab group");
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not draw fill tab group");
+                }
+                throw;
             }
             finally
             {
@@ -118,7 +123,11 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("Free Will: could not draw pawn profession");
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not draw pawn profession");
+                }
+                throw;
             }
             curY += 30f;
         }
@@ -142,7 +151,11 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("Free Will: could not draw pawn interest text");
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not draw pawn interest text");
+                }
+                throw;
             }
             curY += 25f;
         }
@@ -173,9 +186,13 @@ namespace FreeWill
                     }
                 }
             }
-            catch (Exception e)
+            catch
             {
-                Log.Error("Free Will: could not draw pawn priorities: " + e.Message);
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not draw pawn priorities");
+                }
+                throw;
             }
         }
 
@@ -240,7 +257,11 @@ namespace FreeWill
             }
             catch
             {
-                Log.Error("Free Will: could not draw pawn free will checkbox");
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not draw pawn free will checkbox");
+                }
+                throw;
             }
             curY += 28f;
         }
@@ -275,9 +296,13 @@ namespace FreeWill
                     Widgets.DrawLineHorizontal(0f, rect.center.y, rect.width);
                 }
             }
-            catch (Exception e)
+            catch
             {
-                Log.ErrorOnce("Free Will: could not draw pawn work priority: " + e.ToString(), couldNotDrawPawnWorkPriority);
+                if (Prefs.DevMode)
+                {
+                    Log.Error("Free Will: could not draw pawn work priority");
+                }
+                throw;
             }
             curY += 20f;
         }
