@@ -1,4 +1,4 @@
-using RimWorld;
+﻿using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -2226,14 +2226,12 @@ namespace FreeWill
                         return this;
                 } // switch
             }
-            catch
+            catch (Exception e)
             {
-                if (Prefs.DevMode)
-                {
-                    Log.Error("Free Will: could not consider beauty expectations");
-                }
-                throw;
+                Log.ErrorOnce($"Free Will: could not consider beauty expectations: {e}: (logged only once)", 1177516601);
             }
+
+            return this;
         }
 
         private Priority ConsiderRelevantSkills(bool shouldAdd = false)
