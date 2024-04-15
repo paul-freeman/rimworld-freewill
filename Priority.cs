@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1782,23 +1782,32 @@ namespace FreeWill
                 float impactPerPawn = worldComp.Settings.ConsiderBestAtDoing / allPawns.Count();
                 foreach (Pawn other in allPawns)
                 {
-                    if (other == null || other == pawn)
+                    float otherSkill;
+                    try
                     {
+                        if (other == null || other == pawn)
+                        {
+                            continue;
+                        }
+                        if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
+                        {
+                            continue;
+                        }
+                        if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
+                        {
+                            continue;
+                        }
+                        if (other.IsColonyMechPlayerControlled && !other.RaceProps.mechEnabledWorkTypes.Contains(WorkTypeDef))
+                        {
+                            continue;
+                        }
+                        otherSkill = other.IsColonistPlayerControlled ? other.skills.AverageOfRelevantSkillsFor(WorkTypeDef) : other.RaceProps.mechFixedSkillLevel;
+                    }
+                    catch (Exception e)
+                    {
+                        Log.ErrorOnce($"Free Will: could not compute skill difference: {e}: (logged only once)", 856149440);
                         continue;
                     }
-                    if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
-                    {
-                        continue;
-                    }
-                    if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
-                    {
-                        continue;
-                    }
-                    if (other.IsColonyMechPlayerControlled && !other.RaceProps.mechEnabledWorkTypes.Contains(WorkTypeDef))
-                    {
-                        continue;
-                    }
-                    float otherSkill = other.IsColonistPlayerControlled ? other.skills.AverageOfRelevantSkillsFor(WorkTypeDef) : other.RaceProps.mechFixedSkillLevel;
                     float skillDiff = otherSkill - pawnSkill;
                     if (skillDiff <= 0.0f)
                     {
