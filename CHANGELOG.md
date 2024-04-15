@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.2](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.1...v1.6.2) (2024-04-15)
+
+
+### Bug Fixes
+
+* log error for failing to compute beauty standards instead of failing ([d0ef776](https://github.com/paul-freeman/rimworld-freewill/commit/d0ef7763f1cfac84ee137544f374b4dad0456943))
+* log error for failing to compute skill difference instead of failing ([7740611](https://github.com/paul-freeman/rimworld-freewill/commit/774061163457ac1463d15f23e31cbfc9205a5ba7))
+
 ## [1.6.1](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.0...v1.6.1) (2024-04-11)
 
 
