@@ -1801,7 +1801,10 @@ namespace FreeWill
             }
             catch (Exception e)
             {
-                AdjustmentStrings.Add(() => "SomeoneElseDoingError");
+                if (Prefs.DevMode)
+                {
+                    AdjustmentStrings.Add(() => "SomeoneElseDoingError");
+                }
                 Log.ErrorOnce($"Free Will: could not determine if someone else is doing: {e}", 1203438361);
                 throw;
             }
@@ -2030,12 +2033,13 @@ namespace FreeWill
                 float relativeRange = range / boltActionRifleRange;
                 return Multiply(relativeRange * worldComp.Settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple);
             }
-            catch
+            catch (Exception e)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider weapon range");
+                    AdjustmentStrings.Add(() => "WeaponRangeError");
                 }
+                Log.ErrorOnce($"Free Will: could not consider weapon range: {e}", 219276975);
                 throw;
             }
         }
