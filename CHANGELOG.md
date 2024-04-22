@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.2...v1.7.0) (2024-04-22)
+
+
+### Features
+
+* add basic support for vanilla expanded skills ([cab9031](https://github.com/paul-freeman/rimworld-freewill/commit/cab90319b3af44ba2d6c1cedd6956b00471a1411))
+
+
+### Bug Fixes
+
+* show debug error for someone else doing error ([3714cb5](https://github.com/paul-freeman/rimworld-freewill/commit/3714cb585589afd520dd2bc0bdf6e6768cf62c57))
+* show error for weapon range error ([560bca7](https://github.com/paul-freeman/rimworld-freewill/commit/560bca77dce7f918376667c05c0e682647528d4f))
+
 ## [1.6.2](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.1...v1.6.2) (2024-04-15)
 
 
