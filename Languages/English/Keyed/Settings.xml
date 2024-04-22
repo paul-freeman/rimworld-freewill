@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
 
   <!-- Mod settings -->
@@ -121,10 +121,13 @@
   <FreeWillPriorityExpectionsLetDown>very messy</FreeWillPriorityExpectionsLetDown>
   <FreeWillPriorityExpectionsIgnored>mess everywhere</FreeWillPriorityExpectionsIgnored>
   <FreeWillPriorityBeautyDefault>beauty default</FreeWillPriorityBeautyDefault>
-  <FreeWillPriorityMajorPassionFor>major passion for {0}</FreeWillPriorityMajorPassionFor>
-  <FreeWillPriorityMinorPassionFor>minor passion for {0}</FreeWillPriorityMinorPassionFor>
   <FreeWillPriorityMinorAversionTo>minor aversion to</FreeWillPriorityMinorAversionTo>
   <FreeWillPriorityMajorAversionTo>major aversion to</FreeWillPriorityMajorAversionTo>
+  <FreeWillPriorityMajorPassionFor>major passion for {0}</FreeWillPriorityMajorPassionFor>
+  <FreeWillPriorityMinorPassionFor>minor passion for {0}</FreeWillPriorityMinorPassionFor>
+  <FreeWillPriorityApathy>apathy for {0}</FreeWillPriorityApathy>
+  <FreeWillPriorityNatural>natural at {0}</FreeWillPriorityNatural>
+  <FreeWillPriorityCritical>{0} is critical</FreeWillPriorityCritical>
   <FreeWillPriorityCompulsiveItch>itching to do</FreeWillPriorityCompulsiveItch>
   <FreeWillPriorityCompulsiveNeed>needing to do</FreeWillPriorityCompulsiveNeed>
   <FreeWillPriorityCompulsiveObsession>obsessed with</FreeWillPriorityCompulsiveObsession>

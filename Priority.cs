@@ -1,4 +1,4 @@
-﻿using RimWorld;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1136,15 +1136,10 @@ namespace FreeWill
                 for (int i = 0; i < relevantSkills.Count; i++)
                 {
                     int index = i;
-                    switch (pawn.skills.GetSkill(relevantSkills[i]).passion)
+                    Passion passion = pawn.skills.GetSkill(relevantSkills[i]).passion;
+                    switch (passion)
                     {
                         case Passion.None:
-                            continue;
-                        case Passion.Major:
-                            x = worldComp.Settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
-
-                            _ = AlwaysDo(() => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
-                            Add(x, () => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
                             continue;
                         case Passion.Minor:
                             x = worldComp.Settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.25f / relevantSkills.Count;
@@ -1152,7 +1147,14 @@ namespace FreeWill
                             _ = AlwaysDo(() => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel));
                             Add(x, () => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel));
                             continue;
+                        case Passion.Major:
+                            x = worldComp.Settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
+
+                            _ = AlwaysDo(() => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
+                            Add(x, () => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
+                            continue;
                         default:
+                            ConsiderVanillaSkillsExpanded(passion, relevantSkills[index], relevantSkills.Count);
                             continue;
                     }
                 }
@@ -1164,6 +1166,50 @@ namespace FreeWill
                 {
                     Log.Error("Free Will: could not consider passion");
                 }
+                throw;
+            }
+        }
+
+        private void ConsiderVanillaSkillsExpanded(Passion passion, SkillDef relevantSkill, int relevantSkillsCount)
+        {
+            try
+            {
+                switch ((int)passion)
+                {
+                    case 3: // Vanilla Skills Expanded: Apathy
+                        if (passion.GetLabel() != "Apathy")
+                        {
+                            // There is a third passion from another mod, which we don't want to consider.
+                            return;
+                        }
+                        Set(0.0f, () => "FreeWillPriorityApathy".Translate(relevantSkill.skillLabel));
+                        break;
+                    case 4: // Vanilla Skills Expanded: Natural
+                        if (passion.GetLabel() != "Natural")
+                        {
+                            // There is a fourth passion from another mod, which we don't want to consider.
+                            return;
+                        }
+                        _ = AlwaysDo(() => "FreeWillPriorityNatural".Translate(relevantSkill.skillLabel));
+                        break;
+                    case 5: // Vanilla Skills Expanded: Critical
+                        if (passion.GetLabel() != "Critical")
+                        {
+                            // There is a fifth passion from another mod, which we don't want to consider.
+                            return;
+                        }
+                        float x = worldComp.Settings.ConsiderPassions / relevantSkillsCount;
+                        _ = AlwaysDo(() => "FreeWillPriorityCritical".Translate(relevantSkill.skillLabel));
+                        Add(x, () => "FreeWillPriorityCritical".Translate(relevantSkill.skillLabel));
+                        break;
+                    default:
+                        Log.WarningOnce($"Free Will: could not consider {passion} ({passion.GetLabel()}) passion for {WorkTypeDef.defName}", 1518670634);
+                        return;
+                }
+            }
+            catch (Exception e)
+            {
+                Log.ErrorOnce($"Free Will: could not consider vanilla skills expanded: {e}", 1550506890);
                 throw;
             }
         }
