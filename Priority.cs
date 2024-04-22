@@ -1,4 +1,4 @@
-using RimWorld;
+﻿using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -1799,12 +1799,10 @@ namespace FreeWill
 
                 return isMechDoing;
             }
-            catch
+            catch (Exception e)
             {
-                if (Prefs.DevMode)
-                {
-                    Log.Error("Free Will: could not determine if someone else is doing");
-                }
+                AdjustmentStrings.Add(() => "SomeoneElseDoingError");
+                Log.ErrorOnce($"Free Will: could not determine if someone else is doing: {e}", 1203438361);
                 throw;
             }
         }
