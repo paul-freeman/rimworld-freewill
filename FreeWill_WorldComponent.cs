@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Verse;
 using System.Linq;
+using HarmonyLib;
 using RimWorld;
 using RimWorld.Planet;
-using HarmonyLib;
+using Verse;
 
 namespace FreeWill
 {
@@ -69,9 +69,9 @@ namespace FreeWill
             base.WorldComponentTick();
         }
 
-        public override void FinalizeInit()
+        public override void FinalizeInit(bool fromLoad)
         {
-            base.FinalizeInit();
+            base.FinalizeInit(fromLoad);
             FreeWillUtility.UpdateWorldComponent(this);
         }
 

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using System.Reflection;
-using Verse;
 using System.Linq;
-using RimWorld;
+using System.Reflection;
 using HarmonyLib;
+using RimWorld;
+using Verse;
 using Verse.AI;
 
 namespace FreeWill
@@ -382,7 +382,7 @@ namespace FreeWill
         private string CheckThingsDeteriorating()
         {
             ThingsDeteriorating = null;
-            List<Thing> thingsPotentiallyNeedingHauling = map?.listerHaulables?.ThingsPotentiallyNeedingHauling();
+            ICollection<Thing> thingsPotentiallyNeedingHauling = map?.listerHaulables?.ThingsPotentiallyNeedingHauling();
             if (thingsPotentiallyNeedingHauling == null)
             {
                 return "checkThingsDeteriorating";
