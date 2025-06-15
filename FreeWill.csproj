@@ -4,11 +4,8 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
 
   <PropertyGroup>
-    <SteamBasePath>C:\Program Files (x86)\Steam</SteamBasePath>
-
-    <RimWorldBasePath>$(SteamBasePath)\steamapps\common\RimWorld</RimWorldBasePath>
-    <RimWorldManaged>$(RimWorldBasePath)\RimWorldWin64_Data\Managed</RimWorldManaged>
-    <ModOutputPath>$(RimWorldBasePath)\Mods\FreeWill</ModOutputPath>
+    <RimWorldManaged>$(RimWorldDir)\RimWorldWin64_Data\Managed</RimWorldManaged>
+    <ModOutputPath>$(RimWorldDir)\Mods\FreeWill</ModOutputPath>
 
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AssemblyName>FreeWill</AssemblyName>
@@ -45,7 +42,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>$(SteamBasePath)\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
+      <HintPath>$(RimWorldDir)\..\..\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
