@@ -1,9 +1,25 @@
 # Free Will
 
-Colonists have free will! Adds a precept that influences how willing colonists
-are to do what they're told.
+Colonists have free will! Adds a precept that influences how willing colonists are to do what they're told.
 
-The project assumes RimWorld is installed in
-`C:\Program Files (x86)\Steam\steamapps\common\RimWorld`. Set the
-`RIMWORLD_DIR` environment variable to point to a different installation
-directory before building.
+## Prerequisites
+
+- RimWorld must be installed. By default the build expects the game in `C:\Program Files (x86)\Steam\steamapps\common\RimWorld`. Set the `RIMWORLD_DIR` environment variable if your copy lives elsewhere.
+- A .NET SDK capable of targeting **.NET Framework 4.7.2** is required.
+
+## Building the DLL
+
+Use the `dotnet` CLI in the repository root. The build process reads `RIMWORLD_DIR` and copies the result into `Mods/FreeWill` inside the game directory.
+
+```bash
+RIMWORLD_DIR="C:\\Games\\RimWorld" dotnet build -c Stable
+```
+
+Use `-c Unstable` for a debug build.
+
+## Key files
+
+- `FreeWill_Mod.cs` &ndash; entry point for the mod and Harmony patches.
+- `FreeWill_MapComponent.cs` &ndash; `MapComponent` that tracks colony state and updates work priorities.
+
+For a detailed overview of features see [description.txt](description.txt).
