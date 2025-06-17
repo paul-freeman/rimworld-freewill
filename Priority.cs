@@ -9,6 +9,10 @@ using Verse;
 
 namespace FreeWill
 {
+    /// <summary>
+    /// Calculates a pawn's work priority based on many in-game factors and
+    /// converts between mod values and game values.
+    /// </summary>
     public class Priority : IComparable
     {
         private const int DISABLED_CUTOFF = 100 / (Pawn_WorkSettings.LowestPriority + 1); // 20 if LowestPriority is 4
@@ -52,6 +56,11 @@ namespace FreeWill
         private const string HAULING_URGENT = "HaulingUrgent";
 
 
+        /// <summary>
+        /// Initializes a new priority instance for a pawn and work type.
+        /// </summary>
+        /// <param name="pawn">Pawn to evaluate.</param>
+        /// <param name="workTypeDef">Work type being processed.</param>
         public Priority(Pawn pawn, WorkTypeDef workTypeDef)
         {
             this.pawn = pawn;
@@ -59,6 +68,9 @@ namespace FreeWill
             AdjustmentStrings = new List<Func<string>> { };
         }
 
+        /// <summary>
+        /// Calculates the priority value using numerous heuristics.
+        /// </summary>
         public void Compute()
         {
             try
@@ -592,6 +604,9 @@ namespace FreeWill
             }
         }
 
+        /// <summary>
+        /// Writes the computed priority back to the pawn's work settings.
+        /// </summary>
         public void ApplyPriorityToGame()
         {
             if (!Current.Game.playSettings.useWorkPriorities)
@@ -606,6 +621,10 @@ namespace FreeWill
             }
         }
 
+        /// <summary>
+        /// Converts the current value into a RimWorld work priority integer.
+        /// </summary>
+        /// <returns>The equivalent game priority value.</returns>
         public int ToGamePriority()
         {
             int valueInt = Mathf.Clamp(Mathf.RoundToInt(Value * 100), 0, 100);
@@ -628,6 +647,10 @@ namespace FreeWill
             return gamePriorityValue;
         }
 
+        /// <summary>
+        /// Updates the priority value using a RimWorld work priority integer.
+        /// </summary>
+        /// <param name="gamePriorityValue">Game priority value.</param>
         public void FromGamePriority(int gamePriorityValue)
         {
             AdjustmentStrings = new List<Func<string>> { };
