@@ -22,4 +22,6 @@ Use `-c Unstable` for a debug build.
 - `FreeWill_Mod.cs` &ndash; entry point for the mod and Harmony patches.
 - `FreeWill_MapComponent.cs` &ndash; `MapComponent` that tracks colony state and updates work priorities.
 
+See [docs/architecture.md](docs/architecture.md) for an overview of how these pieces work together.
+
 For a detailed overview of features see [description.txt](description.txt).
