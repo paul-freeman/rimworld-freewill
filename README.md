@@ -26,3 +26,6 @@ See [docs/architecture.md](docs/architecture.md) for an overview of how these pi
 See [docs/settings.md](docs/settings.md) for a list of configurable mod settings.
 
 For a detailed overview of features see [description.txt](description.txt).
+This file is also the description shown on the Steam Workshop. Update it for each
+release and follow the steps in [docs/workshop.md](docs/workshop.md) to keep the
+page in sync.
