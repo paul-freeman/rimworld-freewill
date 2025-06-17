@@ -25,3 +25,6 @@ Currently, we are working on the following tasks:
    RimWorld.
  - We run a "minimal" .NET project that targets VSCode (and not Visual Studio).
    We use `dotnet` directly to build the DLL.
+### Contribution guidelines
+
+- Pull requests should use "conventional commit" style messages.
