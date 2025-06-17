@@ -4,6 +4,7 @@ using HarmonyLib;
 using RimWorld;
 using RimWorld.Planet;
 using Verse;
+using FreeWill.Core.Interfaces;
 
 namespace FreeWill
 {
@@ -11,7 +12,7 @@ namespace FreeWill
     /// World component that tracks which pawns have free will and integrates
     /// ideology related behaviour.
     /// </summary>
-    public class FreeWill_WorldComponent : WorldComponent
+    public class FreeWill_WorldComponent : WorldComponent, IWorldComponent
     {
         private readonly FreeWill_Mod mod = LoadedModManager.GetMod<FreeWill_Mod>();
         public FreeWill_ModSettings Settings => mod.GetSettings<FreeWill_ModSettings>();
@@ -128,6 +129,11 @@ namespace FreeWill
             return freePawns[pawnKey];
         }
 
+        bool IWorldComponent.HasFreeWill(IPawn pawn, string pawnKey)
+        {
+            return HasFreeWill((Pawn)pawn, pawnKey);
+        }
+
         /// <summary>
         /// Checks whether the pawn's free will status can be changed by the player.
         /// </summary>
@@ -167,6 +173,11 @@ namespace FreeWill
                 Log.ErrorOnce("Free Will: could not check if free will can be changed", 48620057);
                 return false;
             }
+        }
+
+        bool IWorldComponent.FreeWillCanChange(IPawn pawn, string pawnKey)
+        {
+            return FreeWillCanChange((Pawn)pawn, pawnKey);
         }
 
         /// <summary>
@@ -211,6 +222,11 @@ namespace FreeWill
             }
         }
 
+        void IWorldComponent.EnsureFreeWillStatusIsCorrect(IPawn pawn, string pawnKey)
+        {
+            EnsureFreeWillStatusIsCorrect((Pawn)pawn, pawnKey);
+        }
+
         /// <summary>
         /// Attempts to grant free will to a pawn.
         /// </summary>
@@ -231,6 +247,11 @@ namespace FreeWill
             return true;
         }
 
+        bool IWorldComponent.TryGiveFreeWill(IPawn pawn)
+        {
+            return TryGiveFreeWill((Pawn)pawn);
+        }
+
         /// <summary>
         /// Attempts to remove free will from a pawn.
         /// </summary>
@@ -249,6 +270,11 @@ namespace FreeWill
             freePawns = freePawns ?? new Dictionary<string, bool> { };
             freePawns[pawn.GetUniqueLoadID()] = false;
             return true;
+        }
+
+        bool IWorldComponent.TryRemoveFreeWill(IPawn pawn)
+        {
+            return TryRemoveFreeWill((Pawn)pawn);
         }
 
         /// <summary>
@@ -274,6 +300,11 @@ namespace FreeWill
             {
                 Log.ErrorOnce("Free Will: error during FreeWillOverride", 1454146);
             }
+        }
+
+        void IWorldComponent.FreeWillOverride(IPawn pawn)
+        {
+            FreeWillOverride((Pawn)pawn);
         }
 
         /// <summary>
@@ -306,6 +337,11 @@ namespace FreeWill
                 Log.ErrorOnce("Free Will: error during FreeWillTicks: " + err.ToString(), 1454147);
                 return 0;
             }
+        }
+
+        int IWorldComponent.FreeWillTicks(IPawn pawn)
+        {
+            return FreeWillTicks((Pawn)pawn);
         }
 
         /// <summary>

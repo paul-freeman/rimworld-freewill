@@ -26,7 +26,12 @@
     <Compile Include="ThoughtWorkers\EnforcedWorkSchedule.cs" />
     <Compile Include="ThoughtWorkers\NoWorkSchedule.cs" />
     <Compile Include="ThoughtWorkers\ThoughtWorker_Precept_FreeWillStreak.cs" />
-    <Compile Include="Priority.cs" />
+    <Compile Include="Core\Priority.cs" />
+    <Compile Include="Core\Interfaces\IPawn.cs" />
+    <Compile Include="Core\Interfaces\IMap.cs" />
+    <Compile Include="Core\Interfaces\IMapComponent.cs" />
+    <Compile Include="Core\Interfaces\IWorldComponent.cs" />
+    <Compile Include="Core\Interfaces\IWorkTypeDef.cs" />
     <Folder Include="About\" />
     <Folder Include="Assemblies\" />
     <Folder Include="Defs\" />

@@ -19,10 +19,10 @@ namespace FreeWill
         private const int DISABLED_CUTOFF_ACTIVE_WORK_AREA = 100 - DISABLED_CUTOFF; // 80 if LowestPriority is 4
         private const float ONE_PRIORITY_WIDTH = DISABLED_CUTOFF_ACTIVE_WORK_AREA / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
 
-        private readonly Pawn pawn;
-        private FreeWill_WorldComponent worldComp;
-        private FreeWill_MapComponent mapComp;
-        public WorkTypeDef WorkTypeDef { get; }
+        private readonly IPawn pawn;
+        private IWorldComponent worldComp;
+        private IMapComponent mapComp;
+        public IWorkTypeDef WorkTypeDef { get; }
         public float Value { get; private set; }
         public List<Func<string>> AdjustmentStrings { get; private set; }
 
@@ -61,7 +61,7 @@ namespace FreeWill
         /// </summary>
         /// <param name="pawn">Pawn to evaluate.</param>
         /// <param name="workTypeDef">Work type being processed.</param>
-        public Priority(Pawn pawn, WorkTypeDef workTypeDef)
+        public Priority(IPawn pawn, IWorkTypeDef workTypeDef)
         {
             this.pawn = pawn;
             WorkTypeDef = workTypeDef;
@@ -77,8 +77,8 @@ namespace FreeWill
             {
                 AdjustmentStrings = new List<Func<string>> { };
 
-                mapComp = pawn.Map.GetComponent<FreeWill_MapComponent>();
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+                mapComp = (IMapComponent)pawn.Map.GetComponent<FreeWill_MapComponent>();
+                worldComp = (IWorldComponent)Find.World.GetComponent<FreeWill_WorldComponent>();
 
                 // start priority at the global default and compute the priority
                 // using the AI in this file
@@ -890,7 +890,7 @@ namespace FreeWill
         {
             try
             {
-                mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
+                mapComp = mapComp ?? (IMapComponent)pawn.Map.GetComponent<FreeWill_MapComponent>();
                 foreach (Thought thought in mapComp.AllThoughts)
                 {
                     if (thought.def.defName == "NeedFood")
@@ -1726,7 +1726,7 @@ namespace FreeWill
                 }
                 Room room = pawn.GetRoom();
                 bool isPawnsRoom = false;
-                foreach (Pawn owner in room.Owners)
+                foreach (IPawn owner in room.Owners)
                 {
                     if (pawn == owner)
                     {
@@ -1775,7 +1775,7 @@ namespace FreeWill
         {
             try
             {
-                foreach (Pawn other in pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
+                foreach (IPawn other in pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
                 {
                     if (IsDoing(other))
                     {
@@ -1794,7 +1794,7 @@ namespace FreeWill
             }
         }
 
-        private bool IsDoing(Pawn other)
+        private bool IsDoing(IPawn other)
         {
             try
             {
@@ -1842,7 +1842,7 @@ namespace FreeWill
                     return this;
                 }
 
-                List<Pawn> allPawns = pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
+                List<IPawn> allPawns = pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
                 if (allPawns.Count() <= 1)
                 {
                     return this;
@@ -1850,7 +1850,7 @@ namespace FreeWill
                 bool isBestAtDoing = true;
                 float pawnSkill = pawn.skills.AverageOfRelevantSkillsFor(WorkTypeDef);
                 float impactPerPawn = worldComp.Settings.ConsiderBestAtDoing / allPawns.Count();
-                foreach (Pawn other in allPawns)
+                foreach (IPawn other in allPawns)
                 {
                     float otherSkill;
                     try
@@ -2380,7 +2380,7 @@ namespace FreeWill
             }
         }
 
-        private bool NotInHomeArea(Pawn pawn)
+        private bool NotInHomeArea(IPawn pawn)
         {
             try
             {

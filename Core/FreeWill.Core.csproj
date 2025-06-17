@@ -9,8 +9,10 @@
   <ItemGroup>
     <Compile Include="Interfaces\IPawn.cs" />
     <Compile Include="Interfaces\IMap.cs" />
+    <Compile Include="Interfaces\IMapComponent.cs" />
     <Compile Include="Interfaces\IWorldComponent.cs" />
     <Compile Include="Interfaces\IWorkTypeDef.cs" />
+    <Compile Include="Priority.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

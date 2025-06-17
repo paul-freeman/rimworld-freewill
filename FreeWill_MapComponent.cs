@@ -5,6 +5,7 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 using Verse.AI;
+using FreeWill.Core.Interfaces;
 
 namespace FreeWill
 {
@@ -12,7 +13,7 @@ namespace FreeWill
     /// MapComponent responsible for computing pawn work priorities and
     /// caching various map level state needed by the mod.
     /// </summary>
-    public class FreeWill_MapComponent : MapComponent
+    public class FreeWill_MapComponent : MapComponent, IMapComponent
     {
         private static readonly string[] mapComponentCheckActions = new string[]{
             "checkPrisonerHealth",
@@ -61,6 +62,9 @@ namespace FreeWill
         public bool AreaHasFilth { get; private set; }
         public List<Thought> AllThoughts = new List<Thought>();
         public List<WorkTypeDef> DisabledWorkTypes = new List<WorkTypeDef>();
+
+        IEnumerable<Thought> IMapComponent.AllThoughts => AllThoughts;
+        IEnumerable<IWorkTypeDef> IMapComponent.DisabledWorkTypes => DisabledWorkTypes.Cast<IWorkTypeDef>();
 
         private int actionCounter = 0;
 
@@ -190,6 +194,11 @@ namespace FreeWill
             lastBored[pawn] = Find.TickManager.TicksGame;
         }
 
+        void IMapComponent.UpdateLastBored(IPawn pawn)
+        {
+            UpdateLastBored((Pawn)pawn);
+        }
+
         /// <summary>
         /// Gets the tick count when the pawn was last bored.
         /// </summary>
@@ -198,6 +207,11 @@ namespace FreeWill
         public int GetLastBored(Pawn pawn)
         {
             return lastBored.ContainsKey(pawn) ? lastBored[pawn] : 0;
+        }
+
+        int IMapComponent.GetLastBored(IPawn pawn)
+        {
+            return GetLastBored((Pawn)pawn);
         }
 
         /// <summary>
