@@ -6,5 +6,11 @@
     <AssemblyName>FreeWill.Core</AssemblyName>
     <OutputType>Library</OutputType>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Interfaces\IPawn.cs" />
+    <Compile Include="Interfaces\IMap.cs" />
+    <Compile Include="Interfaces\IWorldComponent.cs" />
+    <Compile Include="Interfaces\IWorkTypeDef.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
