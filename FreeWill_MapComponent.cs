@@ -8,6 +8,10 @@ using Verse.AI;
 
 namespace FreeWill
 {
+    /// <summary>
+    /// MapComponent responsible for computing pawn work priorities and
+    /// caching various map level state needed by the mod.
+    /// </summary>
     public class FreeWill_MapComponent : MapComponent
     {
         private static readonly string[] mapComponentCheckActions = new string[]{
@@ -60,6 +64,10 @@ namespace FreeWill
 
         private int actionCounter = 0;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FreeWill_MapComponent"/> class.
+        /// </summary>
+        /// <param name="map">Map this component belongs to.</param>
         public FreeWill_MapComponent(Map map) : base(map)
         {
             priorities = new Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>> { };
@@ -67,12 +75,18 @@ namespace FreeWill
             activeAlertsField = AccessTools.Field(typeof(AlertsReadout), "AllAlerts");
         }
 
+        /// <summary>
+        /// Finalizes initialization and updates the utility cache.
+        /// </summary>
         public override void FinalizeInit()
         {
             base.FinalizeInit();
             FreeWillUtility.UpdateMapComponent(this);
         }
 
+        /// <summary>
+        /// Executes periodic checks each game tick.
+        /// </summary>
         public override void MapComponentTick()
         {
             base.MapComponentTick();
@@ -167,16 +181,31 @@ namespace FreeWill
             _ = SetPriorityAction(pawn, pawnKey, workTypeDef);
         }
 
+        /// <summary>
+        /// Records the current tick as the last time the specified pawn was bored.
+        /// </summary>
+        /// <param name="pawn">Pawn for which to record boredom.</param>
         public void UpdateLastBored(Pawn pawn)
         {
             lastBored[pawn] = Find.TickManager.TicksGame;
         }
 
+        /// <summary>
+        /// Gets the tick count when the pawn was last bored.
+        /// </summary>
+        /// <param name="pawn">Pawn to query.</param>
+        /// <returns>The last bored tick.</returns>
         public int GetLastBored(Pawn pawn)
         {
             return lastBored.ContainsKey(pawn) ? lastBored[pawn] : 0;
         }
 
+        /// <summary>
+        /// Retrieves the computed priority for a pawn and work type.
+        /// </summary>
+        /// <param name="pawn">Pawn to evaluate.</param>
+        /// <param name="workTypeDef">Work type being evaluated.</param>
+        /// <returns>The corresponding <see cref="Priority"/> instance.</returns>
         public Priority GetPriority(Pawn pawn, WorkTypeDef workTypeDef)
         {
             if (!priorities.ContainsKey(pawn))
@@ -471,6 +500,10 @@ namespace FreeWill
             return "checkRefuelNeeded";
         }
 
+        /// <summary>
+        /// Updates cached state for various map alerts.
+        /// </summary>
+        /// <returns>Identifier for the performed check.</returns>
         public string CheckActiveAlerts()
         {
             try

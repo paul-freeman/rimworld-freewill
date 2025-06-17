@@ -7,6 +7,10 @@ using Verse;
 
 namespace FreeWill
 {
+    /// <summary>
+    /// World component that tracks which pawns have free will and integrates
+    /// ideology related behaviour.
+    /// </summary>
     public class FreeWill_WorldComponent : WorldComponent
     {
         private readonly FreeWill_Mod mod = LoadedModManager.GetMod<FreeWill_Mod>();
@@ -24,6 +28,10 @@ namespace FreeWill
         private bool checkedForInterestsMod;
         public List<string> interestsStrings;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FreeWill_WorldComponent"/> class.
+        /// </summary>
+        /// <param name="world">World instance the component belongs to.</param>
         public FreeWill_WorldComponent(World world) : base(world)
         {
             freePawns = new Dictionary<string, bool> { };
@@ -39,6 +47,9 @@ namespace FreeWill
             interestsStrings = new List<string> { };
         }
 
+        /// <summary>
+        /// Executes world-level checks each game tick.
+        /// </summary>
         public override void WorldComponentTick()
         {
             try
@@ -69,12 +80,22 @@ namespace FreeWill
             base.WorldComponentTick();
         }
 
+        /// <summary>
+        /// Finalizes initialization after loading a save or starting a new game.
+        /// </summary>
+        /// <param name="fromLoad">Indicates whether the component was loaded from a save.</param>
         public override void FinalizeInit(bool fromLoad)
         {
             base.FinalizeInit(fromLoad);
             FreeWillUtility.UpdateWorldComponent(this);
         }
 
+        /// <summary>
+        /// Determines whether a pawn currently has free will enabled.
+        /// </summary>
+        /// <param name="pawn">Pawn to check.</param>
+        /// <param name="pawnKey">Unique identifier for the pawn.</param>
+        /// <returns>True if the pawn has free will.</returns>
         public bool HasFreeWill(Pawn pawn, string pawnKey)
         {
             if (pawn?.Ideo == null ||
@@ -107,6 +128,12 @@ namespace FreeWill
             return freePawns[pawnKey];
         }
 
+        /// <summary>
+        /// Checks whether the pawn's free will status can be changed by the player.
+        /// </summary>
+        /// <param name="pawn">Pawn to evaluate.</param>
+        /// <param name="pawnKey">Unique identifier for the pawn.</param>
+        /// <returns>True if the status can be modified.</returns>
         public bool FreeWillCanChange(Pawn pawn, string pawnKey)
         {
             try
@@ -142,6 +169,11 @@ namespace FreeWill
             }
         }
 
+        /// <summary>
+        /// Ensures that a pawn's free will status matches their ideology rules.
+        /// </summary>
+        /// <param name="pawn">Pawn to evaluate.</param>
+        /// <param name="pawnKey">Unique identifier for the pawn.</param>
         public void EnsureFreeWillStatusIsCorrect(Pawn pawn, string pawnKey)
         {
             try
@@ -179,6 +211,11 @@ namespace FreeWill
             }
         }
 
+        /// <summary>
+        /// Attempts to grant free will to a pawn.
+        /// </summary>
+        /// <param name="pawn">Pawn to modify.</param>
+        /// <returns>True if free will was granted.</returns>
         public bool TryGiveFreeWill(Pawn pawn)
         {
             if (pawn?.Ideo == null)
@@ -194,6 +231,11 @@ namespace FreeWill
             return true;
         }
 
+        /// <summary>
+        /// Attempts to remove free will from a pawn.
+        /// </summary>
+        /// <param name="pawn">Pawn to modify.</param>
+        /// <returns>True if free will was removed.</returns>
         public bool TryRemoveFreeWill(Pawn pawn)
         {
             if (pawn?.Ideo == null)
@@ -209,6 +251,10 @@ namespace FreeWill
             return true;
         }
 
+        /// <summary>
+        /// Marks that the player manually changed this pawn's work priorities.
+        /// </summary>
+        /// <param name="pawn">Pawn that was overridden.</param>
         public void FreeWillOverride(Pawn pawn)
         {
             try
@@ -230,6 +276,11 @@ namespace FreeWill
             }
         }
 
+        /// <summary>
+        /// Gets the number of ticks since the player's last override for this pawn.
+        /// </summary>
+        /// <param name="pawn">Pawn to query.</param>
+        /// <returns>Ticks since the last manual override.</returns>
         public int FreeWillTicks(Pawn pawn)
         {
             try
@@ -257,6 +308,10 @@ namespace FreeWill
             }
         }
 
+        /// <summary>
+        /// Detects if the Interests Framework mod is installed and caches its data.
+        /// </summary>
+        /// <returns>True if the Interests Framework is available.</returns>
         public bool HasInterestsFramework()
         {
             if (checkedForInterestsMod)
@@ -345,6 +400,9 @@ namespace FreeWill
             return false;
         }
 
+        /// <summary>
+        /// Saves and loads the component's persistent data.
+        /// </summary>
         public override void ExposeData()
         {
             base.ExposeData();

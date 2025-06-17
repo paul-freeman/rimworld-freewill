@@ -23,6 +23,7 @@ Use `-c Unstable` for a debug build.
 - `FreeWill_MapComponent.cs` &ndash; `MapComponent` that tracks colony state and updates work priorities.
 
 See [docs/architecture.md](docs/architecture.md) for an overview of how these pieces work together.
+See [docs/settings.md](docs/settings.md) for a list of configurable mod settings.
 
 For a detailed overview of features see [description.txt](description.txt).
 This file is also the description shown on the Steam Workshop. Update it for each
