@@ -28,3 +28,6 @@ Currently, we are working on the following tasks:
 ### Contribution guidelines
 
 - Pull requests should use "conventional commit" style messages.
+- Update documentation as part of the PR when changes require it.
+- We use "release-please" so the `CHANGELOG.md` is generated automatically and
+  should not be updated manually in pull requests.
