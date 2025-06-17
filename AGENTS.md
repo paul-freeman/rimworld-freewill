@@ -31,3 +31,14 @@ Currently, we are working on the following tasks:
 - Update documentation as part of the PR when changes require it.
 - We use "release-please" so the `CHANGELOG.md` is generated automatically and
   should not be updated manually in pull requests.
+
+### Development environment
+
+- All work happens on Ubuntu 24.04 machines that do not have access to the
+  `dotnet` CLI. As a result it is **not expected** that pull requests will build,
+  run or test the project directly in this environment.
+- Instead, the PR description **must** include clear instructions for how to
+  build and test the change on a Windows machine with the RimWorld DLLs
+  available.
+- An external tester will follow these instructions by checking out the branch on
+  a Windows setup and performing the verification steps.
