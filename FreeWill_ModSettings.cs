@@ -4,6 +4,9 @@ using Verse;
 
 namespace FreeWill
 {
+    /// <summary>
+    /// Holds user configurable settings for the FreeWill mod and draws the mod settings UI.
+    /// </summary>
     public class FreeWill_ModSettings : ModSettings
     {
         // mod default settings
@@ -38,6 +41,9 @@ namespace FreeWill
         private Vector2 pos;
         private float height;
 
+        /// <summary>
+        /// Initializes the settings with default values.
+        /// </summary>
         public FreeWill_ModSettings()
         {
             globalWorkAdjustments = new Dictionary<string, float>();
@@ -45,6 +51,10 @@ namespace FreeWill
             height = 500.0f;
         }
 
+        /// <summary>
+        /// Draws the settings UI for the mod.
+        /// </summary>
+        /// <param name="inRect">Area to draw within.</param>
         public void DoSettingsWindowContents(Rect inRect)
         {
             if (globalWorkAdjustments == null)
@@ -209,6 +219,9 @@ namespace FreeWill
             Widgets.EndScrollView();
         }
 
+        /// <summary>
+        /// Saves and loads the mod settings.
+        /// </summary>
         public override void ExposeData()
         {
             Scribe_Values.Look(ref ConsiderMovementSpeed, "freeWillConsiderMovementSpeed", ConsiderMovementSpeedDefault, true);
