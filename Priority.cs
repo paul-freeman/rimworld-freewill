@@ -169,9 +169,11 @@ namespace FreeWill
                 }
                 return this;
             }
-        }        /// <summary>
-                 /// Writes the computed priority back to the pawn's work settings.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Writes the computed priority back to the pawn's work settings.
+        /// </summary>
         public void ApplyPriorityToGame()
         {
             HandleExceptionWrapper(() =>
