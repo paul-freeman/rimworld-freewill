@@ -32,6 +32,12 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Testing configuration DLL copies
+FreeWill.Tests/bin/Testing/
+**/bin/Testing/Assembly-CSharp.dll
+**/bin/Testing/UnityEngine*.dll
+**/bin/Testing/0Harmony.dll
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
