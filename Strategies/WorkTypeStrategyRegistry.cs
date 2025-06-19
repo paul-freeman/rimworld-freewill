@@ -24,34 +24,54 @@ namespace FreeWill
                 return;
             }
 
-            // Register all strategy implementations
-            RegisterStrategy(new FirefighterStrategy());
-            RegisterStrategy(new PatientStrategy());
-            RegisterStrategy(new DoctorStrategy());
-            RegisterStrategy(new PatientBedRestStrategy());
-            RegisterStrategy(new ChildcareStrategy());
-            RegisterStrategy(new BasicWorkerStrategy());
-            RegisterStrategy(new WardenStrategy());
-            RegisterStrategy(new HandlingStrategy());
-            RegisterStrategy(new CookingStrategy());
-            RegisterStrategy(new HuntingStrategy());
-            RegisterStrategy(new ConstructionStrategy());
-            RegisterStrategy(new GrowingStrategy());
-            RegisterStrategy(new MiningStrategy());
-            RegisterStrategy(new PlantCuttingStrategy());
-            RegisterStrategy(new SmithingStrategy());
-            RegisterStrategy(new TailoringStrategy());
-            RegisterStrategy(new ArtStrategy());
-            RegisterStrategy(new CraftingStrategy());
-            RegisterStrategy(new HaulingStrategy());
-            RegisterStrategy(new CleaningStrategy());
-            RegisterStrategy(new ResearchingStrategy());
-            RegisterStrategy(new HaulingUrgentStrategy());
+            // Don't initialize until the game and defs are fully loaded
+            if (Current.Game == null || DefDatabase<WorkTypeDef>.DefCount == 0)
+            {
+                return;
+            }
+            try
+            {
+                // Register all strategy implementations
+                RegisterStrategy(new FirefighterStrategy());
+                RegisterStrategy(new PatientStrategy());
+                RegisterStrategy(new DoctorStrategy());
+                RegisterStrategy(new PatientBedRestStrategy());
+                RegisterStrategy(new ChildcareStrategy());
+                RegisterStrategy(new BasicWorkerStrategy());
+                RegisterStrategy(new WardenStrategy());
+                RegisterStrategy(new HandlingStrategy());
+                RegisterStrategy(new CookingStrategy());
+                RegisterStrategy(new HuntingStrategy());
+                RegisterStrategy(new ConstructionStrategy());
+                RegisterStrategy(new GrowingStrategy());
+                RegisterStrategy(new MiningStrategy());
+                RegisterStrategy(new PlantCuttingStrategy());
+                RegisterStrategy(new SmithingStrategy());
+                RegisterStrategy(new TailoringStrategy());
+                RegisterStrategy(new ArtStrategy());
+                RegisterStrategy(new CraftingStrategy());
+                RegisterStrategy(new HaulingStrategy());
+                RegisterStrategy(new CleaningStrategy());
+                RegisterStrategy(new ResearchingStrategy());
 
-            // Handle default strategy separately since it has null WorkType
-            defaultStrategy = new DefaultWorkTypeStrategy();
+                // Only register modded work type strategies if the work type exists
+                if (DefDatabase<WorkTypeDef>.GetNamedSilentFail("HaulingUrgent") != null)
+                {
+                    RegisterStrategy(new HaulingUrgentStrategy());
+                }
 
-            initialized = true;
+                // Handle default strategy separately since it has null WorkType
+                defaultStrategy = new DefaultWorkTypeStrategy();
+
+                initialized = true;
+            }
+            catch (System.Exception ex)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: Failed to initialize WorkTypeStrategyRegistry: {ex}");
+                }
+            }
         }
 
         /// <summary>
@@ -60,6 +80,14 @@ namespace FreeWill
         /// <param name="strategy">The strategy to register.</param>
         private static void RegisterStrategy(IWorkTypeStrategy strategy)
         {
+            if (strategy?.WorkType?.defName == null)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Warning($"Free Will: Failed to register strategy {strategy?.GetType()?.Name ?? "unknown"} - WorkType is null");
+                }
+                return;
+            }
             strategies[strategy.WorkType.defName] = strategy;
         }
 

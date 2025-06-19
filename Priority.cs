@@ -70,8 +70,39 @@ namespace FreeWill
             {
                 AdjustmentStrings = new List<Func<string>> { };
 
+                // Validate pawn state before computation
+                if (pawn?.Map == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: pawn {pawn?.Name?.ToStringShort ?? "null"} has no map, using default priority for {WorkTypeDef?.defName ?? "null"}");
+                    }
+                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    return;
+                }
+
                 mapComp = pawn.Map.GetComponent<FreeWill_MapComponent>();
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+                worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
+
+                if (mapComp == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: no map component found for pawn {pawn.Name}, using default priority");
+                    }
+                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    return;
+                }
+
+                if (worldComp == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: no world component found for pawn {pawn.Name}, using default priority");
+                    }
+                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    return;
+                }
 
                 // start priority at the global default and compute the priority
                 // using the AI in this file
@@ -79,15 +110,16 @@ namespace FreeWill
                 _ = InnerCompute();
                 return;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not compute " + WorkTypeDef.defName + " priority for pawn: " + pawn.Name);
+                    Log.Error($"Free Will: could not compute {WorkTypeDef?.defName ?? "unknown"} priority for pawn: {pawn?.Name?.ToStringShort ?? "unknown"}: {ex.Message}");
                 }
                 _ = AlwaysDo("FreeWillPriorityError".TranslateSimple);
                 Set(0.4f, "FreeWillPriorityError".TranslateSimple);
-                throw;
+                // Do NOT re-throw - handle gracefully with default priority
+                return;
             }
         }
 
@@ -95,19 +127,48 @@ namespace FreeWill
         {
             return obj == null ? 1 : !(obj is Priority p) ? 1 : Value.CompareTo(p.Value);
         }
-
         private Priority InnerCompute()
         {
             Enabled = false;
             Disabled = false;
+
+            // Additional safety checks
+            if (mapComp?.DisabledWorkTypes == null)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Warning($"Free Will: mapComp.DisabledWorkTypes is null for pawn {pawn?.Name?.ToStringShort ?? "unknown"}");
+                }
+                return this;
+            }
+
             if (mapComp.DisabledWorkTypes.Contains(WorkTypeDef))
             {
                 return NeverDo("FreeWillPriorityPermanentlyDisabled".TranslateSimple);
             }
 
-            // Use strategy pattern instead of large switch statement
-            IWorkTypeStrategy strategy = WorkTypeStrategyRegistry.GetStrategy(WorkTypeDef);
-            return strategy.CalculatePriority(this);
+            try
+            {
+                // Use strategy pattern instead of large switch statement
+                IWorkTypeStrategy strategy = WorkTypeStrategyRegistry.GetStrategy(WorkTypeDef);
+                if (strategy == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: no strategy found for work type {WorkTypeDef?.defName ?? "unknown"}");
+                    }
+                    return this;
+                }
+                return strategy.CalculatePriority(this);
+            }
+            catch (Exception ex)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: error in strategy calculation for {WorkTypeDef?.defName ?? "unknown"}: {ex}");
+                }
+                return this;
+            }
         }
 
         /// <summary>
@@ -115,15 +176,34 @@ namespace FreeWill
         /// </summary>
         public void ApplyPriorityToGame()
         {
-            if (!Current.Game.playSettings.useWorkPriorities)
+            try
             {
-                Current.Game.playSettings.useWorkPriorities = true;
-            }
+                if (pawn?.workSettings == null || WorkTypeDef == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: cannot apply priority - pawn.workSettings or WorkTypeDef is null for {pawn?.Name?.ToStringShort ?? "unknown"}");
+                    }
+                    return;
+                }
 
-            int priority = ToGamePriority();
-            if (pawn.workSettings.GetPriority(WorkTypeDef) != priority)
+                if (!Current.Game.playSettings.useWorkPriorities)
+                {
+                    Current.Game.playSettings.useWorkPriorities = true;
+                }
+
+                int priority = ToGamePriority();
+                if (pawn.workSettings.GetPriority(WorkTypeDef) != priority)
+                {
+                    pawn.workSettings.SetPriority(WorkTypeDef, priority);
+                }
+            }
+            catch (Exception ex)
             {
-                pawn.workSettings.SetPriority(WorkTypeDef, priority);
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: error applying priority to game for {pawn?.Name?.ToStringShort ?? "unknown"}: {ex.Message}");
+                }
             }
         }
 
@@ -354,7 +434,7 @@ namespace FreeWill
         {
             try
             {
-                if (!pawn.mindState.inspirationHandler.Inspired)
+                if (pawn?.mindState?.inspirationHandler?.Inspired != true)
                 {
                     return this;
                 }
@@ -382,21 +462,28 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider inspiration");
+                    Log.Error($"Free Will: could not consider inspiration: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
-
         public Priority ConsiderThoughts()
         {
             try
             {
+                if (pawn?.Map == null)
+                {
+                    return this;
+                }
                 mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
+                if (mapComp == null)
+                {
+                    return this;
+                }
                 foreach (Thought thought in mapComp.AllThoughts)
                 {
                     if (thought.def.defName == "NeedFood")
@@ -417,13 +504,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider thoughts");
+                    Log.Error($"Free Will: could not consider thoughts: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -450,6 +537,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (mapComp.AlertNeedWarmClothes)
                 {
                     Add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
@@ -457,13 +548,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider needing warm clothes");
+                    Log.Error($"Free Will: could not consider needing warm clothes: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -471,6 +562,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (mapComp.AlertAnimalRoaming)
                 {
                     Add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple);
@@ -478,13 +573,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider animals roaming");
+                    Log.Error($"Free Will: could not consider animals roaming: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -492,6 +587,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (mapComp.SuppressionNeed != 0.0f)
                 {
                     Add(mapComp.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple);
@@ -499,13 +598,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider suppression need");
+                    Log.Error($"Free Will: could not consider suppression need: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -513,6 +612,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (mapComp.AlertColonistLeftUnburied && (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT))
                 {
                     Add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple);
@@ -520,13 +623,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider colonist left unburied");
+                    Log.Error($"Free Will: could not consider colonist left unburied: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -540,17 +643,21 @@ namespace FreeWill
                     mapComp?.UpdateLastBored(pawn);
                     return AlwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple);
                 }
-                int? lastBored = mapComp?.GetLastBored(pawn);
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
+                int? lastBored = mapComp.GetLastBored(pawn);
                 bool wasBored = lastBored != 0 && Find.TickManager.TicksGame - lastBored < boredomMemory;
                 return AlwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple);
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider bored");
+                    Log.Error($"Free Will: could not consider bored: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -558,17 +665,17 @@ namespace FreeWill
         {
             try
             {
-                return worldComp.Settings.ConsiderHasHuntingWeapon
+                return (worldComp?.Settings.ConsiderHasHuntingWeapon ?? false)
                     ? NeverDoIf(!WorkGiver_HunterHunt.HasHuntingWeapon(pawn), "FreeWillPriorityNoHuntingWeapon".TranslateSimple)
                     : this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider has hunting weapon");
+                    Log.Error($"Free Will: could not consider has hunting weapon: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -576,17 +683,17 @@ namespace FreeWill
         {
             try
             {
-                return worldComp.Settings.ConsiderBrawlersNotHunting && WorkTypeDef.defName == HUNTING
+                return (worldComp?.Settings.ConsiderBrawlersNotHunting ?? false) && WorkTypeDef.defName == HUNTING
                     ? NeverDoIf(pawn.story.traits.HasTrait(DefDatabase<TraitDef>.GetNamed("Brawler")), "FreeWillPriorityBrawler".TranslateSimple)
                     : this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider brawlers not hunting");
+                    Log.Error($"Free Will: could not consider brawlers not hunting: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -600,13 +707,13 @@ namespace FreeWill
                         .Multiply(1.8f, "FreeWillPriorityCurrentlyDoing".TranslateSimple)
                     : this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider completing task");
+                    Log.Error($"Free Will: could not consider completing task: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -614,17 +721,18 @@ namespace FreeWill
         {
             try
             {
-                return worldComp.Settings.ConsiderMovementSpeed != 0.0f
-                    ? Multiply(worldComp.Settings.ConsiderMovementSpeed * (pawn.GetStatValue(StatDefOf.MoveSpeed, true) / 4.6f), "FreeWillPriorityMovementSpeed".TranslateSimple)
+                float setting = worldComp?.Settings?.ConsiderMovementSpeed ?? 0.0f;
+                return setting != 0.0f
+                    ? Multiply(setting * (pawn.GetStatValue(StatDefOf.MoveSpeed, true) / 4.6f), "FreeWillPriorityMovementSpeed".TranslateSimple)
                     : this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider movement speed");
+                    Log.Error($"Free Will: could not consider movement speed: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -642,13 +750,13 @@ namespace FreeWill
                     ? this
                     : Multiply(_carryingCapacity / _baseCarryingCapacity, "FreeWillPriorityCarryingCapacity".TranslateSimple);
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider carrying capacity");
+                    Log.Error($"Free Will: could not consider carrying capacity: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -656,7 +764,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp.Settings.ConsiderPassions == 0f)
+                if (worldComp?.Settings?.ConsiderPassions == 0f)
                 {
                     return this;
                 }
@@ -689,13 +797,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider passion");
+                    Log.Error($"Free Will: could not consider passion: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -703,6 +811,10 @@ namespace FreeWill
         {
             try
             {
+                if (worldComp == null)
+                {
+                    return;
+                }
                 switch ((int)passion)
                 {
                     case 3: // Vanilla Skills Expanded: Apathy
@@ -739,7 +851,6 @@ namespace FreeWill
             catch (Exception e)
             {
                 Log.ErrorOnce($"Free Will: could not consider vanilla skills expanded: {e}", 1550506890);
-                throw;
             }
         }
 
@@ -747,7 +858,11 @@ namespace FreeWill
         {
             try
             {
-                List<Thing> mechGestators = pawn?.Map?.listerThings?.ThingsInGroup(ThingRequestGroup.MechGestator);
+                if (pawn?.Map?.listerThings == null)
+                {
+                    return this;
+                }
+                List<Thing> mechGestators = pawn.Map.listerThings.ThingsInGroup(ThingRequestGroup.MechGestator);
                 if (mechGestators == null)
                 {
                     return this;
@@ -777,16 +892,15 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider finished mech gestators");
+                    Log.Error($"Free Will: could not consider finished mech gestators: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
-
         public Priority ConsiderDownedColonists()
         {
             try
@@ -805,6 +919,12 @@ namespace FreeWill
                         return this;
                     }
                 }
+
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
+
                 if (mapComp.PercentPawnsDowned <= 0.0f)
                 {
                     return this;
@@ -826,13 +946,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider downed colonists");
+                    Log.Error($"Free Will: could not consider downed colonists: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -840,6 +960,10 @@ namespace FreeWill
         {
             try
             {
+                if (worldComp == null)
+                {
+                    return this;
+                }
                 if (!worldComp.Settings.globalWorkAdjustments.ContainsKey(WorkTypeDef.defName))
                 {
                     worldComp.Settings.globalWorkAdjustments.Add(WorkTypeDef.defName, 0.0f);
@@ -848,13 +972,13 @@ namespace FreeWill
                 Add(adj, "FreeWillPriorityColonyPolicy".TranslateSimple);
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider colony policy");
+                    Log.Error($"Free Will: could not consider colony policy: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -862,6 +986,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (mapComp.RefuelNeededNow)
                 {
                     Add(0.35f, "FreeWillPriorityRefueling".TranslateSimple);
@@ -874,20 +1002,24 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider refueling");
+                    Log.Error($"Free Will: could not consider refueling: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
-
         public Priority ConsiderFire()
         {
             try
             {
+                if (mapComp == null)
+                {
+                    return this;
+                }
+
                 if (WorkTypeDef.defName != FIREFIGHTER)
                 {
                     if (mapComp.HomeFire)
@@ -914,13 +1046,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider fire");
+                    Log.Error($"Free Will: could not consider fire: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -938,13 +1070,13 @@ namespace FreeWill
                     return this;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider operation");
+                    Log.Error($"Free Will: could not consider operation: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -968,13 +1100,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider building immunity");
+                    Log.Error($"Free Will: could not consider building immunity: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -982,6 +1114,11 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
+
                 if (mapComp.PercentPawnsNeedingTreatment <= 0.0f)
                 {
                     return this;
@@ -997,13 +1134,13 @@ namespace FreeWill
                     return ConsiderAnotherPawnNeedsTreatment();
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider colonists needing treatment");
+                    Log.Error($"Free Will: could not consider colonists needing treatment: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1035,13 +1172,13 @@ namespace FreeWill
                 // don't do other work types
                 return NeverDo("FreeWillPriorityNeedTreatment".TranslateSimple);
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider this pawn needs treatment");
+                    Log.Error($"Free Will: could not consider this pawn needs treatment: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1049,6 +1186,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName == FIREFIGHTER ||
                     WorkTypeDef.defName == PATIENT_BED_REST
                     )
@@ -1100,13 +1241,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider another pawn needs treatment");
+                    Log.Error($"Free Will: could not consider another pawn needs treatment: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1121,13 +1262,13 @@ namespace FreeWill
                 }
                 return Multiply(pawn.health.summaryHealth.SummaryHealthPercent, "FreeWillPriorityHealth".TranslateSimple);
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider health");
+                    Log.Error($"Free Will: could not consider health: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1162,7 +1303,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp.Settings.ConsiderFoodPoisoning == 0.0f)
+                if (worldComp?.Settings?.ConsiderFoodPoisoning == 0.0f)
                 {
                     return this;
                 }
@@ -1208,13 +1349,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider food poisoning risk");
+                    Log.Error($"Free Will: could not consider food poisoning risk: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1222,7 +1363,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp.Settings.ConsiderOwnRoom == 0.0f)
+                if (worldComp?.Settings?.ConsiderOwnRoom == 0.0f)
                 {
                     return this;
                 }
@@ -1242,13 +1383,13 @@ namespace FreeWill
                 }
                 return !isPawnsRoom ? this : Multiply(worldComp.Settings.ConsiderOwnRoom * 2.0f, "FreeWillPriorityOwnRoom".TranslateSimple);
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider own room");
+                    Log.Error($"Free Will: could not consider own room: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1256,6 +1397,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (mapComp.AlertMechDamaged)
                 {
                     if (MechanitorUtility.IsMechanitor(pawn))
@@ -1267,20 +1412,24 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider repairing mech");
+                    Log.Error($"Free Will: could not consider repairing mech: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
-
         public Priority ConsiderIsAnyoneElseDoing()
         {
             try
             {
+                if (pawn?.Map?.mapPawns == null)
+                {
+                    return this;
+                }
+
                 foreach (Pawn other in pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
                 {
                     if (IsDoing(other))
@@ -1290,13 +1439,13 @@ namespace FreeWill
                 }
                 return AlwaysDo("FreeWillPriorityNoOneElseDoing".TranslateSimple);
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider is anyone else doing");
+                    Log.Error($"Free Will: could not consider is anyone else doing: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1335,17 +1484,28 @@ namespace FreeWill
                     AdjustmentStrings.Add(() => "SomeoneElseDoingError");
                 }
                 Log.ErrorOnce($"Free Will: could not determine if someone else is doing: {e}", 1203438361);
-                throw;
+                return false;
             }
         }
 
         public Priority ConsiderBestAtDoing()
         {
-            return HandleExceptionWrapper(() => ConsiderBestAtDoingCore(), "could not consider best at doing");
+            try
+            {
+                return ConsiderBestAtDoingCore();
+            }
+            catch (Exception ex)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: could not consider best at doing: {ex.Message}");
+                }
+                return this;
+            }
         }
         public Priority ConsiderBestAtDoingCore()
         {
-            if (worldComp.Settings.ConsiderBestAtDoing == 0.0f)
+            if (worldComp?.Settings?.ConsiderBestAtDoing == 0.0f)
             {
                 return this;
             }
@@ -1363,10 +1523,9 @@ namespace FreeWill
                 ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple)
                 : this;
         }
-
         private List<Pawn> GetEligiblePawns()
         {
-            return pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
+            return pawn?.Map?.mapPawns == null ? new List<Pawn>() : pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
         }
         private SkillComparisonData CalculatePawnSkillComparison(List<Pawn> allPawns)
         {
@@ -1456,11 +1615,9 @@ namespace FreeWill
 
         private SkillLevel GetSkillLevel(float skillDifference)
         {
-            if (skillDifference >= 15.0f)
-            {
-                return SkillLevel.MuchMuchMuchBetter;
-            }
-            return skillDifference >= 10.0f ? SkillLevel.MuchMuchBetter : skillDifference >= 5.0f ? SkillLevel.MuchBetter : SkillLevel.Better;
+            return skillDifference >= 15.0f
+                ? SkillLevel.MuchMuchMuchBetter
+                : skillDifference >= 10.0f ? SkillLevel.MuchMuchBetter : skillDifference >= 5.0f ? SkillLevel.MuchBetter : SkillLevel.Better;
         }
 
         private float GetImpactMultiplier(SkillLevel skillLevel)
@@ -1498,26 +1655,14 @@ namespace FreeWill
             }
         }
 
-        private Priority HandleExceptionWrapper(Func<Priority> action, string errorMessage)
-        {
-            try
-            {
-                return action();
-            }
-            catch
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: {errorMessage}");
-                }
-                throw;
-            }
-        }
-
         public Priority ConsiderInjuredPets()
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName != DOCTOR)
                 {
                     return this;
@@ -1531,13 +1676,13 @@ namespace FreeWill
                 Add(Mathf.Clamp01(numPetsNeedingTreatment / n) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple);
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider injured pets");
+                    Log.Error($"Free Will: could not consider injured pets: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1545,17 +1690,21 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 float percentPawnsMechHaulers = mapComp.PercentPawnsMechHaulers;
                 Add(-percentPawnsMechHaulers, "FreeWillPriorityMechHaulers".TranslateSimple);
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider mech haulers");
+                    Log.Error($"Free Will: could not consider mech haulers: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1563,6 +1712,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName != DOCTOR)
                 {
                     return this;
@@ -1576,13 +1729,13 @@ namespace FreeWill
                 Add(Mathf.Clamp01(numPrisonersNeedingTreatment / n) * 0.5f, "FreeWillPriorityPrisonersInjured".TranslateSimple);
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider injured prisoners");
+                    Log.Error($"Free Will: could not consider injured prisoners: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1590,7 +1743,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp.Settings.ConsiderLowFood == 0.0f || !mapComp.AlertLowFood)
+                if (worldComp?.Settings?.ConsiderLowFood == 0.0f || !mapComp.AlertLowFood)
                 {
                     return this;
                 }
@@ -1603,13 +1756,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider low food");
+                    Log.Error($"Free Will: could not consider low food: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1637,7 +1790,7 @@ namespace FreeWill
                     AdjustmentStrings.Add(() => "WeaponRangeError");
                 }
                 Log.ErrorOnce($"Free Will: could not consider weapon range: {e}", 219276975);
-                throw;
+                return this;
             }
         }
 
@@ -1645,6 +1798,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName != COOKING)
                 {
                     return this;
@@ -1660,13 +1817,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider ate raw food");
+                    Log.Error($"Free Will: could not consider ate raw food: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1674,6 +1831,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT)
                 {
                     if (mapComp.ThingsDeteriorating != null)
@@ -1696,13 +1857,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider things deteriorating");
+                    Log.Error($"Free Will: could not consider things deteriorating: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1710,9 +1871,13 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp.Settings.ConsiderPlantsBlighted == 0.0f)
+                if (worldComp?.Settings?.ConsiderPlantsBlighted == 0.0f)
                 {
                     // no point checking if it is disabled
+                    return this;
+                }
+                if (!EnsureMapComp())
+                {
                     return this;
                 }
                 if (mapComp.PlantsBlighted)
@@ -1722,13 +1887,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider plants blighted");
+                    Log.Error($"Free Will: could not consider plants blighted: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1736,6 +1901,10 @@ namespace FreeWill
         {
             try
             {
+                if (worldComp == null)
+                {
+                    return this;
+                }
                 if (WorkTypeDef.defName != PLANT_CUTTING)
                 {
                     return this;
@@ -1754,13 +1923,13 @@ namespace FreeWill
                 }
                 return this;
             }
-            catch
+            catch (Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider gauranlen pruning");
+                    Log.Error($"Free Will: could not consider gauranlen pruning: {ex.Message}");
                 }
-                throw;
+                return this;
             }
         }
 
@@ -1768,7 +1937,11 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp.Settings.ConsiderBeauty == 0.0f)
+                if ((worldComp?.Settings?.ConsiderBeauty ?? 0.0f) == 0.0f)
+                {
+                    return this;
+                }
+                if (!EnsureMapComp())
                 {
                     return this;
                 }
@@ -1883,6 +2056,10 @@ namespace FreeWill
         {
             try
             {
+                if (!EnsureMapComp())
+                {
+                    return this;
+                }
                 float badSkillCutoff = Mathf.Min(3f, mapComp.NumPawns);
                 float goodSkillCutoff = badSkillCutoff + ((20f - badSkillCutoff) / 2f);
                 float greatSkillCutoff = goodSkillCutoff + ((20f - goodSkillCutoff) / 2f);
@@ -1950,15 +2127,14 @@ namespace FreeWill
                 {
                     Log.Error("Free Will: could not consider relevant skills");
                 }
-                throw;
+                return this;
             }
         }
-
         public bool NotInHomeArea(Pawn pawn)
         {
             try
             {
-                return !this.pawn.Map.areaManager.Home[pawn.Position];
+                return this.pawn?.Map?.areaManager?.Home != null && !this.pawn.Map.areaManager.Home[pawn.Position];
             }
             catch
             {
@@ -1968,6 +2144,26 @@ namespace FreeWill
                 }
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Ensures mapComp is available and not null.
+        /// </summary>
+        /// <returns>True if mapComp is available, false otherwise</returns>
+        private bool EnsureMapComp()
+        {
+            if (mapComp != null)
+            {
+                return true;
+            }
+
+            if (pawn?.Map == null)
+            {
+                return false;
+            }
+
+            mapComp = pawn.Map.GetComponent<FreeWill_MapComponent>();
+            return mapComp != null;
         }
 
         private static readonly Dictionary<string, Dictionary<BeautyCategory, float>> expectationGrid =
