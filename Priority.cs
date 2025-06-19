@@ -1,8 +1,8 @@
-﻿using RimWorld;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -1835,106 +1835,182 @@ namespace FreeWill
 
         private Priority ConsiderBestAtDoing()
         {
-            try
+            return HandleExceptionWrapper(() => ConsiderBestAtDoingCore(), "could not consider best at doing");
+        }
+        private Priority ConsiderBestAtDoingCore()
+        {
+            if (worldComp.Settings.ConsiderBestAtDoing == 0.0f)
             {
-                if (worldComp.Settings.ConsiderBestAtDoing == 0.0f)
+                return this;
+            }
+
+            List<Pawn> allPawns = GetEligiblePawns();
+            if (allPawns.Count <= 1)
+            {
+                return this;
+            }
+
+            SkillComparisonData comparisonData = CalculatePawnSkillComparison(allPawns);
+            ApplySkillBasedAdjustments(comparisonData);
+
+            return comparisonData.IsBestAtDoing
+                ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple)
+                : this;
+        }
+
+        private List<Pawn> GetEligiblePawns()
+        {
+            return pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
+        }
+        private SkillComparisonData CalculatePawnSkillComparison(List<Pawn> allPawns)
+        {
+            SkillComparisonData data = new SkillComparisonData
+            {
+                IsBestAtDoing = true,
+                PawnSkill = pawn.skills.AverageOfRelevantSkillsFor(WorkTypeDef),
+                ImpactPerPawn = worldComp.Settings.ConsiderBestAtDoing / allPawns.Count
+            };
+
+            foreach (Pawn other in allPawns)
+            {
+                OtherPawnSkillInfo otherSkillInfo = GetOtherPawnSkillInfo(other);
+                if (otherSkillInfo == null)
                 {
-                    return this;
+                    continue;
                 }
 
-                List<Pawn> allPawns = pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
-                if (allPawns.Count() <= 1)
+                float skillDiff = otherSkillInfo.Skill - data.PawnSkill;
+                if (skillDiff <= 0.0f)
                 {
-                    return this;
+                    continue;
                 }
-                bool isBestAtDoing = true;
-                float pawnSkill = pawn.skills.AverageOfRelevantSkillsFor(WorkTypeDef);
-                float impactPerPawn = worldComp.Settings.ConsiderBestAtDoing / allPawns.Count();
-                foreach (Pawn other in allPawns)
+
+                data.IsBestAtDoing = false;
+                data.SkillComparisons.Add(new PawnSkillComparison
                 {
-                    float otherSkill;
-                    try
-                    {
-                        if (other == null || other == pawn)
-                        {
-                            continue;
-                        }
-                        if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
-                        {
-                            continue;
-                        }
-                        if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
-                        {
-                            continue;
-                        }
-                        if (other.IsColonyMechPlayerControlled && !other.RaceProps.mechEnabledWorkTypes.Contains(WorkTypeDef))
-                        {
-                            continue;
-                        }
-                        otherSkill = other.IsColonistPlayerControlled ? other.skills.AverageOfRelevantSkillsFor(WorkTypeDef) : other.RaceProps.mechFixedSkillLevel;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.ErrorOnce($"Free Will: could not compute skill difference: {e}: (logged only once)", 856149440);
-                        continue;
-                    }
-                    float skillDiff = otherSkill - pawnSkill;
-                    if (skillDiff <= 0.0f)
-                    {
-                        continue;
-                    }
-                    // not the best
-                    isBestAtDoing = false;
-                    bool isDoing = other.CurJob != null && other.CurJob.workGiverDef != null && other.CurJob.workGiverDef.workType == WorkTypeDef;
-                    bool isMuchBetter = skillDiff >= 5.0f;
-                    bool isMuchMuchBetter = skillDiff >= 10.0f;
-                    bool isMuchMuchMuchBetter = skillDiff >= 15.0f;
-                    if (isDoing)
-                    {
-                        if (isMuchMuchMuchBetter)
-                        {
-                            Add(1.5f * -impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
-                        }
-                        else if (isMuchMuchBetter)
-                        {
-                            Add(1.5f * -impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterIsDoing".Translate(other.LabelShortCap));
-                        }
-                        else if (isMuchBetter)
-                        {
-                            Add(1.5f * -impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterIsDoing".Translate(other.LabelShortCap));
-                        }
-                        else
-                        {
-                            Add(1.5f * -impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterIsDoing".Translate(other.LabelShortCap));
-                        }
-                    }
-                    else
-                    {
-                        if (isMuchMuchMuchBetter)
-                        {
-                            Add(-impactPerPawn, () => "FreeWillPrioritySomeoneMuchMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
-                        }
-                        else if (isMuchMuchBetter)
-                        {
-                            Add(-impactPerPawn * 0.8f, () => "FreeWillPrioritySomeoneMuchMuchBetterAtDoing".Translate(other.LabelShortCap));
-                        }
-                        else if (isMuchBetter)
-                        {
-                            Add(-impactPerPawn * 0.6f, () => "FreeWillPrioritySomeoneMuchBetterAtDoing".Translate(other.LabelShortCap));
-                        }
-                        else
-                        {
-                            Add(-impactPerPawn * 0.4f, () => "FreeWillPrioritySomeoneBetterAtDoing".Translate(other.LabelShortCap));
-                        }
-                    }
+                    Other = other,
+                    SkillDifference = skillDiff,
+                    IsCurrentlyDoing = IsPawnCurrentlyDoingWork(other)
+                });
+            }
+
+            return data;
+        }
+        private OtherPawnSkillInfo GetOtherPawnSkillInfo(Pawn other)
+        {
+            try
+            {
+                if (other == null || other == pawn)
+                {
+                    return null;
                 }
-                return isBestAtDoing ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple) : this;
+                if (!other.IsColonistPlayerControlled && !other.IsColonyMechPlayerControlled)
+                {
+                    return null;
+                }
+                if (!other.Awake() || other.Downed || other.Dead || other.IsCharging())
+                {
+                    return null;
+                }
+                if (other.IsColonyMechPlayerControlled && !other.RaceProps.mechEnabledWorkTypes.Contains(WorkTypeDef))
+                {
+                    return null;
+                }
+
+                float skill = other.IsColonistPlayerControlled
+                    ? other.skills.AverageOfRelevantSkillsFor(WorkTypeDef)
+                    : other.RaceProps.mechFixedSkillLevel;
+
+                return new OtherPawnSkillInfo { Skill = skill };
+            }
+            catch (Exception e)
+            {
+                Log.ErrorOnce($"Free Will: could not compute skill difference: {e}: (logged only once)", 856149440);
+                return null;
+            }
+        }
+
+        private bool IsPawnCurrentlyDoingWork(Pawn other)
+        {
+            return other.CurJob?.workGiverDef?.workType == WorkTypeDef;
+        }
+
+        private void ApplySkillBasedAdjustments(SkillComparisonData data)
+        {
+            foreach (PawnSkillComparison comparison in data.SkillComparisons)
+            {
+                SkillLevel skillLevel = GetSkillLevel(comparison.SkillDifference);
+                float impactMultiplier = GetImpactMultiplier(skillLevel);
+                float adjustment = comparison.IsCurrentlyDoing ? -1.5f * data.ImpactPerPawn * impactMultiplier : -data.ImpactPerPawn * impactMultiplier;
+                string messageKey = GetMessageKey(skillLevel, comparison.IsCurrentlyDoing);
+
+                Add(adjustment, () => messageKey.Translate(comparison.Other.LabelShortCap));
+            }
+        }
+
+        private SkillLevel GetSkillLevel(float skillDifference)
+        {
+            if (skillDifference >= 15.0f)
+            {
+                return SkillLevel.MuchMuchMuchBetter;
+            }
+            if (skillDifference >= 10.0f)
+            {
+                return SkillLevel.MuchMuchBetter;
+            }
+            if (skillDifference >= 5.0f)
+            {
+                return SkillLevel.MuchBetter;
+            }
+            return SkillLevel.Better;
+        }
+
+        private float GetImpactMultiplier(SkillLevel skillLevel)
+        {
+            switch (skillLevel)
+            {
+                case SkillLevel.MuchMuchMuchBetter:
+                    return 1.0f;
+                case SkillLevel.MuchMuchBetter:
+                    return 0.8f;
+                case SkillLevel.MuchBetter:
+                    return 0.6f;
+                case SkillLevel.Better:
+                    return 0.4f;
+                default:
+                    return 0.4f;
+            }
+        }
+
+        private string GetMessageKey(SkillLevel skillLevel, bool isCurrentlyDoing)
+        {
+            string suffix = isCurrentlyDoing ? "IsDoing" : "AtDoing";
+            switch (skillLevel)
+            {
+                case SkillLevel.MuchMuchMuchBetter:
+                    return $"FreeWillPrioritySomeoneMuchMuchMuchBetter{suffix}";
+                case SkillLevel.MuchMuchBetter:
+                    return $"FreeWillPrioritySomeoneMuchMuchBetter{suffix}";
+                case SkillLevel.MuchBetter:
+                    return $"FreeWillPrioritySomeoneMuchBetter{suffix}";
+                case SkillLevel.Better:
+                    return $"FreeWillPrioritySomeoneBetter{suffix}";
+                default:
+                    return $"FreeWillPrioritySomeoneBetter{suffix}";
+            }
+        }
+
+        private Priority HandleExceptionWrapper(Func<Priority> action, string errorMessage)
+        {
+            try
+            {
+                return action();
             }
             catch
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error("Free Will: could not consider best at doing");
+                    Log.Error($"Free Will: {errorMessage}");
                 }
                 throw;
             }
@@ -2496,5 +2572,33 @@ namespace FreeWill
                         }
                 },
             };
+    }
+
+    public enum SkillLevel
+    {
+        Better,
+        MuchBetter,
+        MuchMuchBetter,
+        MuchMuchMuchBetter
+    }
+
+    public class SkillComparisonData
+    {
+        public bool IsBestAtDoing { get; set; }
+        public float PawnSkill { get; set; }
+        public float ImpactPerPawn { get; set; }
+        public List<PawnSkillComparison> SkillComparisons { get; set; } = new List<PawnSkillComparison>();
+    }
+
+    public class PawnSkillComparison
+    {
+        public Pawn Other { get; set; }
+        public float SkillDifference { get; set; }
+        public bool IsCurrentlyDoing { get; set; }
+    }
+
+    public class OtherPawnSkillInfo
+    {
+        public float Skill { get; set; }
     }
 }
