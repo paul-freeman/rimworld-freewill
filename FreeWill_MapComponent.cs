@@ -346,11 +346,22 @@ namespace FreeWill
                 {
                     priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
                 }
-
                 if (worldComp.HasFreeWill(pawn, pawnKey))
                 {
-                    priorities[pawn][workTypeDef].Compute();
-                    priorities[pawn][workTypeDef].ApplyPriorityToGame();
+                    try
+                    {
+                        priorities[pawn][workTypeDef].Compute();
+                        priorities[pawn][workTypeDef].ApplyPriorityToGame();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        if (Prefs.DevMode)
+                        {
+                            Log.Error($"Free Will: could not compute/apply priority {workTypeDef.defName} for {pawn.Name}: {ex.Message}");
+                        }
+                        // Don't remove free will - just skip this computation
+                        // The Priority.Compute method should handle errors gracefully
+                    }
                 }
                 return msg;
             }
@@ -358,27 +369,11 @@ namespace FreeWill
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error($"Free Will: could not set priorities for {pawn.Name}: {ex.Message}");
+                    Log.Error($"Free Will: unexpected error in SetPriorityAction for {pawn.Name}: {ex.Message}");
                 }
 
-                // Try to remove free will to prevent further errors
-                try
-                {
-                    if (worldComp.TryRemoveFreeWill(pawn))
-                    {
-                        Log.Warning($"Free Will: removed free will from {pawn.Name} due to an error");
-                        return msg;
-                    }
-                }
-                catch (System.Exception ex2)
-                {
-                    if (Prefs.DevMode)
-                    {
-                        Log.Error($"Free Will: could not remove free will from {pawn.Name}: {ex2.Message}");
-                    }
-                }
-
-                throw;
+                // Only remove free will in extreme cases, not for computation errors
+                return msg;
             }
         }
 
