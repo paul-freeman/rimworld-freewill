@@ -24,8 +24,5 @@ if %ERRORLEVEL% EQU 0 (
         echo Test executable not found at: FreeWill.Tests/bin/Testing/FreeWill.Tests.exe
         echo Please ensure the build completed successfully.
     )
-) else (
-    echo Build failed with exit code: %ERRORLEVEL%
+) else (    echo Build failed with exit code: %ERRORLEVEL%
 )
-
-pause

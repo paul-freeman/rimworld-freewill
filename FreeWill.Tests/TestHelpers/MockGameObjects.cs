@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using RimWorld;
-using UnityEngine;
 using Verse;
 
 namespace FreeWill.Tests.TestHelpers
@@ -34,10 +30,12 @@ namespace FreeWill.Tests.TestHelpers
         /// </summary>
         public static WorkTypeDef CreateTestWorkTypeDef(string defName)
         {
-            var workTypeDef = new WorkTypeDef();
-            workTypeDef.defName = defName;
-            workTypeDef.label = defName.ToLower();
-            workTypeDef.description = $"Test work type: {defName}";
+            WorkTypeDef workTypeDef = new WorkTypeDef
+            {
+                defName = defName,
+                label = defName.ToLower(),
+                description = $"Test work type: {defName}"
+            };
             return workTypeDef;
         }
     }
