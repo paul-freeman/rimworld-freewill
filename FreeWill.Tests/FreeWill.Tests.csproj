@@ -7,7 +7,7 @@
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
         <ProjectGuid>{F8A2A396-83F8-4E89-B3F5-8C3B5F8B99CC}</ProjectGuid>
-        <OutputType>Library</OutputType>
+        <OutputType>Exe</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>FreeWill.Tests</RootNamespace>
         <AssemblyName>FreeWill.Tests</AssemblyName>
@@ -57,8 +57,8 @@
             <Private>False</Private>
         </Reference>
     </ItemGroup>
-
     <ItemGroup>
+        <Compile Include="Program.cs" />
         <Compile Include="PriorityTests.cs" />
         <Compile Include="TestHelpers\MockGameObjects.cs" />
         <Compile Include="TestHelpers\TestDataBuilders.cs" />
