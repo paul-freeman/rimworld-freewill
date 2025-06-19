@@ -1,4 +1,3 @@
-using RimWorld;
 using Verse;
 
 namespace FreeWill
@@ -55,7 +54,7 @@ namespace FreeWill
                 .ConsiderThoughts()
                 .ConsiderInspiration()
                 .ConsiderAnimalPen();
-            priority.ConsiderLowFood(-0.3f)
+            _ = priority.ConsiderLowFood(-0.3f)
                 .ConsiderColonistLeftUnburied()
                 .ConsiderHealth()
                 .ConsiderAteRawFood()

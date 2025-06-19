@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using RimWorld;
 using Verse;
 
 namespace FreeWill
@@ -20,7 +19,10 @@ namespace FreeWill
         /// </summary>
         private static void Initialize()
         {
-            if (initialized) return;
+            if (initialized)
+            {
+                return;
+            }
 
             // Register all strategy implementations
             RegisterStrategy(new FirefighterStrategy());

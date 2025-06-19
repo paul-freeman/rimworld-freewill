@@ -33,15 +33,9 @@ namespace FreeWill
         private const string PATIENT = "Patient";
         private const string DOCTOR = "Doctor";
         private const string PATIENT_BED_REST = "PatientBedRest";
-        private const string CHILDCARE = "Childcare";
-        private const string BASIC_WORKER = "BasicWorker";
-        private const string WARDEN = "Warden";
-        private const string HANDLING = "Handling";
         private const string COOKING = "Cooking";
         private const string HUNTING = "Hunting";
         private const string CONSTRUCTION = "Construction";
-        private const string GROWING = "Growing";
-        private const string MINING = "Mining";
         private const string PLANT_CUTTING = "PlantCutting";
         private const string SMITHING = "Smithing";
         private const string TAILORING = "Tailoring";
@@ -112,7 +106,7 @@ namespace FreeWill
             }
 
             // Use strategy pattern instead of large switch statement
-            var strategy = WorkTypeStrategyRegistry.GetStrategy(WorkTypeDef);
+            IWorkTypeStrategy strategy = WorkTypeStrategyRegistry.GetStrategy(WorkTypeDef);
             return strategy.CalculatePriority(this);
         }
 
@@ -1470,11 +1464,7 @@ namespace FreeWill
             {
                 return SkillLevel.MuchMuchBetter;
             }
-            if (skillDifference >= 5.0f)
-            {
-                return SkillLevel.MuchBetter;
-            }
-            return SkillLevel.Better;
+            return skillDifference >= 5.0f ? SkillLevel.MuchBetter : SkillLevel.Better;
         }
 
         private float GetImpactMultiplier(SkillLevel skillLevel)

@@ -1,6 +1,5 @@
 using System;
 using FreeWill.Tests.TestHelpers;
-using RimWorld;
 using Verse;
 
 namespace FreeWill.Tests
@@ -19,13 +18,13 @@ namespace FreeWill.Tests
         public static void TestConstructorBasics()
         {
             // Arrange
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             // Act & Assert - Test constructor with null pawn
             // This documents the current behavior
             try
             {
-                var priority = new Priority(null, workTypeDef);
+                Priority priority = new Priority(null, workTypeDef);
 
                 // Verify basic properties are accessible
                 if (priority.WorkTypeDef == null)
@@ -58,7 +57,7 @@ namespace FreeWill.Tests
         {
             try
             {
-                var priority = new Priority(null, null);
+                Priority priority = new Priority(null, null);
 
                 // If we get here, verify the state
                 if (priority.WorkTypeDef != null)
@@ -82,22 +81,22 @@ namespace FreeWill.Tests
             // We can't easily test this without creating valid Priority instances
             // that have computed values, so for now just document the interface
 
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority1 = new Priority(null, workTypeDef);
-                var priority2 = new Priority(null, workTypeDef);
+                Priority priority1 = new Priority(null, workTypeDef);
+                Priority priority2 = new Priority(null, workTypeDef);
 
                 // Test CompareTo with null
-                var result = ((IComparable)priority1).CompareTo(null);
+                int result = ((IComparable)priority1).CompareTo(null);
                 if (result <= 0)
                 {
                     throw new Exception("CompareTo(null) should return positive value");
                 }
 
                 // Test CompareTo with non-Priority object
-                var result2 = ((IComparable)priority1).CompareTo("not a priority");
+                int result2 = ((IComparable)priority1).CompareTo("not a priority");
                 if (result2 <= 0)
                 {
                     throw new Exception("CompareTo(non-Priority) should return positive value");
@@ -116,33 +115,49 @@ namespace FreeWill.Tests
         {
             try
             {
-                var firefighter = TestDataBuilders.WorkTypeDefs.Firefighter;
-                var patient = TestDataBuilders.WorkTypeDefs.Patient;
-                var doctor = TestDataBuilders.WorkTypeDefs.Doctor;
-                var cooking = TestDataBuilders.WorkTypeDefs.Cooking;
-                var hauling = TestDataBuilders.WorkTypeDefs.Hauling;
-                var cleaning = TestDataBuilders.WorkTypeDefs.Cleaning;
-                var research = TestDataBuilders.WorkTypeDefs.Research;
+                WorkTypeDef firefighter = TestDataBuilders.WorkTypeDefs.Firefighter;
+                WorkTypeDef patient = TestDataBuilders.WorkTypeDefs.Patient;
+                WorkTypeDef doctor = TestDataBuilders.WorkTypeDefs.Doctor;
+                WorkTypeDef cooking = TestDataBuilders.WorkTypeDefs.Cooking;
+                WorkTypeDef hauling = TestDataBuilders.WorkTypeDefs.Hauling;
+                WorkTypeDef cleaning = TestDataBuilders.WorkTypeDefs.Cleaning;
+                WorkTypeDef research = TestDataBuilders.WorkTypeDefs.Research;
 
                 // Test each work type
                 if (firefighter?.defName != MockGameObjects.WorkTypes.Firefighter)
+                {
                     throw new Exception($"Firefighter defName mismatch: expected '{MockGameObjects.WorkTypes.Firefighter}', got '{firefighter?.defName}'");
+                }
 
                 if (patient?.defName != MockGameObjects.WorkTypes.Patient)
+                {
                     throw new Exception($"Patient defName mismatch: expected '{MockGameObjects.WorkTypes.Patient}', got '{patient?.defName}'");
+                }
 
                 if (doctor?.defName != MockGameObjects.WorkTypes.Doctor)
+                {
                     throw new Exception($"Doctor defName mismatch: expected '{MockGameObjects.WorkTypes.Doctor}', got '{doctor?.defName}'");
+                }
 
                 if (cooking?.defName != MockGameObjects.WorkTypes.Cooking)
-                    throw new Exception($"Cooking defName mismatch: expected '{MockGameObjects.WorkTypes.Cooking}', got '{cooking?.defName}'"); if (hauling?.defName != MockGameObjects.WorkTypes.Hauling)
+                {
+                    throw new Exception($"Cooking defName mismatch: expected '{MockGameObjects.WorkTypes.Cooking}', got '{cooking?.defName}'");
+                }
+
+                if (hauling?.defName != MockGameObjects.WorkTypes.Hauling)
+                {
                     throw new Exception($"Hauling defName mismatch: expected '{MockGameObjects.WorkTypes.Hauling}', got '{hauling?.defName}'");
+                }
 
                 if (cleaning?.defName != MockGameObjects.WorkTypes.Cleaning)
+                {
                     throw new Exception($"Cleaning defName mismatch: expected '{MockGameObjects.WorkTypes.Cleaning}', got '{cleaning?.defName}'");
+                }
 
                 if (research?.defName != MockGameObjects.WorkTypes.Research)
+                {
                     throw new Exception($"Research defName mismatch: expected '{MockGameObjects.WorkTypes.Research}', got '{research?.defName}'");
+                }
 
                 Console.WriteLine("WorkTypeDef creation - PASSED");
             }
@@ -160,19 +175,29 @@ namespace FreeWill.Tests
         {
             // Test our test data builder constants
             if (TestDataBuilders.Values.DefaultPriority != 0.2f)
+            {
                 throw new Exception($"DefaultPriority should be 0.2f, got {TestDataBuilders.Values.DefaultPriority}");
+            }
 
             if (TestDataBuilders.Values.HighPriority != 0.8f)
+            {
                 throw new Exception($"HighPriority should be 0.8f, got {TestDataBuilders.Values.HighPriority}");
+            }
 
             if (TestDataBuilders.Values.LowPriority != 0.1f)
+            {
                 throw new Exception($"LowPriority should be 0.1f, got {TestDataBuilders.Values.LowPriority}");
+            }
 
             if (TestDataBuilders.Values.DisabledPriority != 0.0f)
+            {
                 throw new Exception($"DisabledPriority should be 0.0f, got {TestDataBuilders.Values.DisabledPriority}");
+            }
 
             if (TestDataBuilders.Values.FloatTolerance != 0.001f)
+            {
                 throw new Exception($"FloatTolerance should be 0.001f, got {TestDataBuilders.Values.FloatTolerance}");
+            }
 
             Console.WriteLine("Test constants - PASSED");
         }        /// <summary>
@@ -283,15 +308,15 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestToGamePriorityConversion()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
+                Priority priority = new Priority(null, workTypeDef);
 
                 // Test direct value setting to test conversion without game state
                 // Using reflection to set Value directly for testing
-                var valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.FieldInfo valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (valueField == null)
                 {
                     Console.WriteLine("ToGamePriority test skipped - cannot access Value field directly");
@@ -341,11 +366,11 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestFromGamePriorityConversion()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
+                Priority priority = new Priority(null, workTypeDef);
 
                 // Test game priority 0 (disabled)
                 priority.FromGamePriority(0);
@@ -388,12 +413,12 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestRoundTripConversion()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority1 = new Priority(null, workTypeDef);
-                var priority2 = new Priority(null, workTypeDef);
+                Priority priority1 = new Priority(null, workTypeDef);
+                Priority priority2 = new Priority(null, workTypeDef);
 
                 // Test various game priority values
                 for (int gamePriority = 0; gamePriority <= 4; gamePriority++)
@@ -427,12 +452,12 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestToGamePriorityEdgeCases()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
-                var valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Priority priority = new Priority(null, workTypeDef);
+                System.Reflection.FieldInfo valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
                 if (valueField == null)
                 {
@@ -474,11 +499,11 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestFromGamePriorityEdgeCases()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
+                Priority priority = new Priority(null, workTypeDef);
 
                 // Test negative game priority
                 priority.FromGamePriority(-1);
@@ -508,12 +533,12 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestComputeErrorHandling()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
                 // Test with null pawn (should trigger error handling)
-                var priority = new Priority(null, workTypeDef);
+                Priority priority = new Priority(null, workTypeDef);
 
                 try
                 {
@@ -530,7 +555,7 @@ namespace FreeWill.Tests
                 }
 
                 // Test with null WorkTypeDef
-                var priority2 = new Priority(null, null);
+                Priority priority2 = new Priority(null, null);
                 try
                 {
                     priority2.Compute();
@@ -554,16 +579,16 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestPriorityAdjustmentMethods()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
+                Priority priority = new Priority(null, workTypeDef);
 
                 // We need to use reflection to test private methods or test through public interface
-                var valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var setMethod = typeof(Priority).GetMethod("Set", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var addMethod = typeof(Priority).GetMethod("Add", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.FieldInfo valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo setMethod = typeof(Priority).GetMethod("Set", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo addMethod = typeof(Priority).GetMethod("Add", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
                 if (valueField == null || setMethod == null || addMethod == null)
                 {
@@ -609,13 +634,13 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestMultiplyMethod()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
-                var valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var multiplyMethod = typeof(Priority).GetMethod("Multiply", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Priority priority = new Priority(null, workTypeDef);
+                System.Reflection.FieldInfo valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo multiplyMethod = typeof(Priority).GetMethod("Multiply", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
                 if (valueField == null || multiplyMethod == null)
                 {
@@ -671,7 +696,7 @@ namespace FreeWill.Tests
                 }
 
                 // Test with disabled priority (should not change)
-                var disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.FieldInfo disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (disabledField != null)
                 {
                     valueField.SetValue(priority, 0.5f);
@@ -698,15 +723,15 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestAlwaysDoMethods()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
-                var enabledField = typeof(Priority).GetField("Enabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var alwaysDoMethod = typeof(Priority).GetMethod("AlwaysDo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var alwaysDoIfMethod = typeof(Priority).GetMethod("AlwaysDoIf", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Priority priority = new Priority(null, workTypeDef);
+                System.Reflection.FieldInfo enabledField = typeof(Priority).GetField("Enabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.FieldInfo disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo alwaysDoMethod = typeof(Priority).GetMethod("AlwaysDo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo alwaysDoIfMethod = typeof(Priority).GetMethod("AlwaysDoIf", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
                 if (enabledField == null || disabledField == null || alwaysDoMethod == null || alwaysDoIfMethod == null)
                 {
@@ -798,15 +823,15 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestNeverDoMethods()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
-                var enabledField = typeof(Priority).GetField("Enabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var neverDoMethod = typeof(Priority).GetMethod("NeverDo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var neverDoIfMethod = typeof(Priority).GetMethod("NeverDoIf", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Priority priority = new Priority(null, workTypeDef);
+                System.Reflection.FieldInfo enabledField = typeof(Priority).GetField("Enabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.FieldInfo disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo neverDoMethod = typeof(Priority).GetMethod("NeverDo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo neverDoIfMethod = typeof(Priority).GetMethod("NeverDoIf", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
                 if (enabledField == null || disabledField == null || neverDoMethod == null || neverDoIfMethod == null)
                 {
@@ -898,15 +923,15 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestDisabledFlagBehavior()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                var priority = new Priority(null, workTypeDef);
-                var valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var enabledField = typeof(Priority).GetField("Enabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                var multiplyMethod = typeof(Priority).GetMethod("Multiply", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Priority priority = new Priority(null, workTypeDef);
+                System.Reflection.FieldInfo valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.FieldInfo disabledField = typeof(Priority).GetField("Disabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.FieldInfo enabledField = typeof(Priority).GetField("Enabled", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                System.Reflection.MethodInfo multiplyMethod = typeof(Priority).GetMethod("Multiply", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
                 if (valueField == null || disabledField == null || enabledField == null || multiplyMethod == null)
                 {
@@ -977,7 +1002,7 @@ namespace FreeWill.Tests
         /// </summary>
         public static void TestComputeWithValidGameState()
         {
-            var workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
+            WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
@@ -987,7 +1012,7 @@ namespace FreeWill.Tests
                 // - World with FreeWill_WorldComponent
                 // These are difficult to mock without full RimWorld context
 
-                var priority = new Priority(null, workTypeDef);
+                Priority priority = new Priority(null, workTypeDef);
 
                 // For now, we'll test that we can at least call Compute() and handle the expected exception
                 bool threwExpectedException = false;

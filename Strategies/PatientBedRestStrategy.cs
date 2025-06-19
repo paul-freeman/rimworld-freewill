@@ -1,4 +1,3 @@
-using RimWorld;
 using Verse;
 
 namespace FreeWill
@@ -21,7 +20,7 @@ namespace FreeWill
                 .ConsiderCompletingTask()
                 .ConsiderBored()
                 .ConsiderHavingFoodPoisoning();
-            priority.ConsiderColonistsNeedingTreatment()
+            _ = priority.ConsiderColonistsNeedingTreatment()
                 .ConsiderDownedColonists()
                 .ConsiderOperation()
                 .ConsiderColonyPolicy();

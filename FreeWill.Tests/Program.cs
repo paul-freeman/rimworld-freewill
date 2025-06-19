@@ -6,9 +6,9 @@ namespace FreeWill.Tests
     /// <summary>
     /// Test runner program for FreeWill Priority tests.
     /// </summary>
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("=== Simple FreeWill Smoke Test ===");
 
