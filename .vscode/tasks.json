@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "stable",
+            "label": "build-stable-mod",
             "command": "dotnet",
             "type": "shell",
             "args": [
@@ -23,7 +23,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "unstable",
+            "label": "build-unstable-mod",
             "command": "dotnet",
             "type": "shell",
             "args": [
