@@ -26,6 +26,7 @@ The `Priority.cs` file shows several areas of technical debt that should be addr
 - [x] Add necessary RimWorld references for testing
 - [x] Create mock objects/test data for `Pawn`, `WorkTypeDef`, etc.
 - [x] Setup test data builders for common scenarios
+- [x] **Update tests to use full RimWorld DLLs** - Ensure test project has access to complete RimWorld assemblies as defined in Directory.Build.props to enable comprehensive testing without limitations
 
 **COMPLETED**: Basic test infrastructure has been established. Created `FreeWill.Tests` project with:
 - Basic project structure targeting .NET Framework 4.7.2 (matching RimWorld requirements)
@@ -33,11 +34,13 @@ The `Priority.cs` file shows several areas of technical debt that should be addr
 - Test helper classes for creating mock game objects and test data
 - Simplified initial tests that compile and can verify basic functionality
 - Note: Full MSTest integration is prepared but simplified for initial setup
+- **UPDATED**: Test project now has access to complete RimWorld assemblies including 0Harmony, UnityEngine.IMGUIModule, and UnityEngine.TextRenderingModule, matching the main project's references for comprehensive testing capabilities
 
 **TECHNICAL NOTES**: Due to RimWorld's sealed classes and complex game state dependencies, the testing approach uses:
 - Simple test helper classes instead of complex mocking frameworks initially
 - Basic test methods that can be run manually to verify functionality
 - Foundation for expanding to full MSTest framework once core functionality is verified
+- Full RimWorld DLL access enables testing of Harmony patches and Unity-dependent code paths
 
 ### 2. Core Priority Calculation Tests (Priority: HIGH)
 **Location**: `Priority.cs` - Core methods
