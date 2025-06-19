@@ -598,7 +598,7 @@ namespace FreeWill.Tests
 
                 // Test Set method
                 Func<string> testDesc = () => "Test description";
-                setMethod.Invoke(priority, new object[] { 0.7f, testDesc });
+                _ = setMethod.Invoke(priority, new object[] { 0.7f, testDesc });
                 float value = (float)valueField.GetValue(priority);
                 if (Math.Abs(value - 0.7f) > 0.001f)
                 {
@@ -606,7 +606,7 @@ namespace FreeWill.Tests
                 }
 
                 // Test Add method - should add to existing value
-                addMethod.Invoke(priority, new object[] { 0.2f, testDesc });
+                _ = addMethod.Invoke(priority, new object[] { 0.2f, testDesc });
                 value = (float)valueField.GetValue(priority);
                 if (Math.Abs(value - 0.9f) > 0.001f)
                 {
@@ -614,7 +614,7 @@ namespace FreeWill.Tests
                 }
 
                 // Test clamping - adding beyond 1.0 should clamp
-                addMethod.Invoke(priority, new object[] { 0.5f, testDesc });
+                _ = addMethod.Invoke(priority, new object[] { 0.5f, testDesc });
                 value = (float)valueField.GetValue(priority);
                 if (value > 1.0f)
                 {
@@ -652,7 +652,7 @@ namespace FreeWill.Tests
 
                 // Test normal multiplication
                 valueField.SetValue(priority, 0.5f);
-                multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
+                _ = multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
                 float value = (float)valueField.GetValue(priority);
                 if (Math.Abs(value - 1.0f) > 0.001f)
                 {
@@ -661,7 +661,7 @@ namespace FreeWill.Tests
 
                 // Test multiplication with clamping to 1.0
                 valueField.SetValue(priority, 0.8f);
-                multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
+                _ = multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
                 value = (float)valueField.GetValue(priority);
                 if (value > 1.0f)
                 {
@@ -670,7 +670,7 @@ namespace FreeWill.Tests
 
                 // Test multiplication that reduces value
                 valueField.SetValue(priority, 0.6f);
-                multiplyMethod.Invoke(priority, new object[] { 0.5f, testDesc });
+                _ = multiplyMethod.Invoke(priority, new object[] { 0.5f, testDesc });
                 value = (float)valueField.GetValue(priority);
                 if (Math.Abs(value - 0.3f) > 0.001f)
                 {
@@ -679,7 +679,7 @@ namespace FreeWill.Tests
 
                 // Test multiplication by zero
                 valueField.SetValue(priority, 0.5f);
-                multiplyMethod.Invoke(priority, new object[] { 0.0f, testDesc });
+                _ = multiplyMethod.Invoke(priority, new object[] { 0.0f, testDesc });
                 value = (float)valueField.GetValue(priority);
                 if (value != 0.0f)
                 {
@@ -688,7 +688,7 @@ namespace FreeWill.Tests
 
                 // Test multiplication by 1.0 (no change)
                 valueField.SetValue(priority, 0.5f);
-                multiplyMethod.Invoke(priority, new object[] { 1.0f, testDesc });
+                _ = multiplyMethod.Invoke(priority, new object[] { 1.0f, testDesc });
                 value = (float)valueField.GetValue(priority);
                 if (Math.Abs(value - 0.5f) > 0.001f)
                 {
@@ -701,7 +701,7 @@ namespace FreeWill.Tests
                 {
                     valueField.SetValue(priority, 0.5f);
                     disabledField.SetValue(priority, true);
-                    multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
+                    _ = multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
                     value = (float)valueField.GetValue(priority);
                     if (Math.Abs(value - 0.5f) > 0.001f)
                     {
@@ -746,7 +746,7 @@ namespace FreeWill.Tests
                 disabledField.SetValue(priority, false);
 
                 // Test AlwaysDo (should set Enabled = true, Disabled = false)
-                alwaysDoMethod.Invoke(priority, new object[] { testDesc });
+                _ = alwaysDoMethod.Invoke(priority, new object[] { testDesc });
                 bool enabled = (bool)enabledField.GetValue(priority);
                 bool disabled = (bool)disabledField.GetValue(priority);
 
@@ -763,7 +763,7 @@ namespace FreeWill.Tests
                 enabledField.SetValue(priority, false);
                 disabledField.SetValue(priority, false);
 
-                alwaysDoIfMethod.Invoke(priority, new object[] { true, testDesc });
+                _ = alwaysDoIfMethod.Invoke(priority, new object[] { true, testDesc });
                 enabled = (bool)enabledField.GetValue(priority);
                 disabled = (bool)disabledField.GetValue(priority);
 
@@ -780,7 +780,7 @@ namespace FreeWill.Tests
                 enabledField.SetValue(priority, false);
                 disabledField.SetValue(priority, false);
 
-                alwaysDoIfMethod.Invoke(priority, new object[] { false, testDesc });
+                _ = alwaysDoIfMethod.Invoke(priority, new object[] { false, testDesc });
                 enabled = (bool)enabledField.GetValue(priority);
                 disabled = (bool)disabledField.GetValue(priority);
 
@@ -797,7 +797,7 @@ namespace FreeWill.Tests
                 enabledField.SetValue(priority, true);
                 disabledField.SetValue(priority, false);
 
-                alwaysDoIfMethod.Invoke(priority, new object[] { true, testDesc });
+                _ = alwaysDoIfMethod.Invoke(priority, new object[] { true, testDesc });
                 enabled = (bool)enabledField.GetValue(priority);
                 disabled = (bool)disabledField.GetValue(priority);
 
@@ -846,7 +846,7 @@ namespace FreeWill.Tests
                 disabledField.SetValue(priority, false);
 
                 // Test NeverDo (should set Disabled = true, Enabled = false)
-                neverDoMethod.Invoke(priority, new object[] { testDesc });
+                _ = neverDoMethod.Invoke(priority, new object[] { testDesc });
                 bool enabled = (bool)enabledField.GetValue(priority);
                 bool disabled = (bool)disabledField.GetValue(priority);
 
@@ -863,7 +863,7 @@ namespace FreeWill.Tests
                 enabledField.SetValue(priority, false);
                 disabledField.SetValue(priority, false);
 
-                neverDoIfMethod.Invoke(priority, new object[] { true, testDesc });
+                _ = neverDoIfMethod.Invoke(priority, new object[] { true, testDesc });
                 enabled = (bool)enabledField.GetValue(priority);
                 disabled = (bool)disabledField.GetValue(priority);
 
@@ -880,7 +880,7 @@ namespace FreeWill.Tests
                 enabledField.SetValue(priority, false);
                 disabledField.SetValue(priority, false);
 
-                neverDoIfMethod.Invoke(priority, new object[] { false, testDesc });
+                _ = neverDoIfMethod.Invoke(priority, new object[] { false, testDesc });
                 enabled = (bool)enabledField.GetValue(priority);
                 disabled = (bool)disabledField.GetValue(priority);
 
@@ -897,7 +897,7 @@ namespace FreeWill.Tests
                 enabledField.SetValue(priority, false);
                 disabledField.SetValue(priority, true);
 
-                neverDoIfMethod.Invoke(priority, new object[] { true, testDesc });
+                _ = neverDoIfMethod.Invoke(priority, new object[] { true, testDesc });
                 enabled = (bool)enabledField.GetValue(priority);
                 disabled = (bool)disabledField.GetValue(priority);
 
@@ -957,7 +957,7 @@ namespace FreeWill.Tests
                 valueField.SetValue(priority, originalValue);
                 disabledField.SetValue(priority, true);
 
-                multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
+                _ = multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
                 float newValue = (float)valueField.GetValue(priority);
 
                 if (Math.Abs(newValue - originalValue) > 0.001f)
@@ -969,7 +969,7 @@ namespace FreeWill.Tests
                 disabledField.SetValue(priority, false);
                 valueField.SetValue(priority, 0.5f);
 
-                multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
+                _ = multiplyMethod.Invoke(priority, new object[] { 2.0f, testDesc });
                 newValue = (float)valueField.GetValue(priority);
 
                 if (Math.Abs(newValue - 1.0f) > 0.001f)
