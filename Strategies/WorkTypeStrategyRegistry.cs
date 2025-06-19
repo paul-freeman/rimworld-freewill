@@ -11,10 +11,12 @@ namespace FreeWill
     {
         private static readonly Dictionary<string, IWorkTypeStrategy> strategies = new Dictionary<string, IWorkTypeStrategy>();
         private static IWorkTypeStrategy defaultStrategy;
-        private static bool initialized = false;        /// <summary>
-                                                        /// Initializes the registry with all available strategies.
-                                                        /// This is called automatically when first accessed.
-                                                        /// </summary>
+        private static bool initialized = false;
+
+        /// <summary>
+        /// Initializes the registry with all available strategies.
+        /// This is called automatically when first accessed.
+        /// </summary>
         private static void Initialize()
         {
             if (initialized)

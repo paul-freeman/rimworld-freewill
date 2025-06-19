@@ -59,9 +59,11 @@ namespace FreeWill
             this.pawn = pawn;
             WorkTypeDef = workTypeDef;
             AdjustmentStrings = new List<Func<string>> { };
-        }        /// <summary>
-                 /// Calculates the priority value using numerous heuristics.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Calculates the priority value using numerous heuristics.
+        /// </summary>
         public void Compute()
         {
             try
@@ -167,9 +169,11 @@ namespace FreeWill
                 }
                 return this;
             }
-        }        /// <summary>
-                 /// Writes the computed priority back to the pawn's work settings.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Writes the computed priority back to the pawn's work settings.
+        /// </summary>
         public void ApplyPriorityToGame()
         {
             try

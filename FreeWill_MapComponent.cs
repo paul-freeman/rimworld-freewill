@@ -76,7 +76,6 @@ namespace FreeWill
         }
 
         /// <summary>
-        /// Finalizes initialization and updates the utility cache.        /// <summary>
         /// Finalizes initialization and updates the utility cache.
         /// </summary>
         public override void FinalizeInit()
