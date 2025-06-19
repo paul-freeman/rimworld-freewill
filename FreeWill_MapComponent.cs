@@ -280,7 +280,7 @@ namespace FreeWill
         }
         private string SetPriorityAction(Pawn pawn, string pawnKey, WorkTypeDef workTypeDef)
         {
-            string msg = pawn?.Name?.ToStringShort ?? "unknown pawn" + " " + (workTypeDef?.defName ?? "unknown work");
+            string msg = (pawn?.Name?.ToStringShort ?? "unknown pawn") + " " + (workTypeDef?.defName ?? "unknown work");
 
             // Basic validation
             if (pawn == null)
