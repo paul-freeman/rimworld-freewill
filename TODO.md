@@ -19,7 +19,13 @@ This document outlines the development and testing plan for the FreeWill mod. Th
 **Location**: `Priority.cs`
 **Goal**: Address significant technical debt to make the class easier to test and maintain.
 - [x] **Refactor `ConsiderBestAtDoing()`**: Break down this complex method into smaller, more testable units.
-- [ ] **Refactor `InnerCompute()`**: Extract the logic for each work type from the large `switch` statement into separate, strategy-based classes.
+- [x] **Refactor `InnerCompute()`**: Extract the logic for each work type from the large `switch` statement into separate, strategy-based classes.
+  - Created `IWorkTypeStrategy` interface and `BaseWorkTypeStrategy` abstract class
+  - Implemented specific strategy classes for each work type (Firefighter, Doctor, Cooking, etc.)
+  - Created `WorkTypeStrategyRegistry` for centralized strategy management
+  - Replaced the massive switch statement with a clean strategy pattern implementation
+  - Made relevant helper methods public to support the strategy pattern
+  - All existing functionality preserved while dramatically improving maintainability
 - [ ] **Abstract Exception Handling**: Create a common pattern for the repetitive `try-catch` blocks.
 - [ ] **Implement Dependency Injection**: Decouple components for better testability.
 

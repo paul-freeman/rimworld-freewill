@@ -14,7 +14,6 @@
     <FileAlignment>512</FileAlignment>
     <RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="FreeWill_Mod.cs" />
     <Compile Include="FreeWill_ModSettings.cs" />
@@ -27,6 +26,21 @@
     <Compile Include="ThoughtWorkers\NoWorkSchedule.cs" />
     <Compile Include="ThoughtWorkers\ThoughtWorker_Precept_FreeWillStreak.cs" />
     <Compile Include="Priority.cs" />
+    <Compile Include="Strategies\IWorkTypeStrategy.cs" />
+    <Compile Include="Strategies\BaseWorkTypeStrategy.cs" />
+    <Compile Include="Strategies\WorkTypeStrategyRegistry.cs" />
+    <Compile Include="Strategies\FirefighterStrategy.cs" />
+    <Compile Include="Strategies\PatientStrategy.cs" />
+    <Compile Include="Strategies\PatientBedRestStrategy.cs" />
+    <Compile Include="Strategies\BasicWorkerStrategy.cs" />
+    <Compile Include="Strategies\DoctorStrategy.cs" />
+    <Compile Include="Strategies\CookingStrategy.cs" />
+    <Compile Include="Strategies\DefaultWorkTypeStrategy.cs" />
+    <Compile Include="Strategies\VariousStrategies.cs" />
+    <Compile Include="Strategies\CombatAndProductionStrategies.cs" />
+    <Compile Include="Strategies\IndustrialStrategies.cs" />
+    <Compile Include="Strategies\CreativeStrategies.cs" />
+    <Compile Include="Strategies\MaintenanceStrategies.cs" />
     <Folder Include="About\" />
     <Folder Include="Assemblies\" />
     <Folder Include="Defs\" />
