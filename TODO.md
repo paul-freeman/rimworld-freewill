@@ -10,6 +10,12 @@ This document outlines the development and testing plan for the FreeWill mod. Th
   - Added helper classes (`SkillComparisonData`, `PawnSkillComparison`, `OtherPawnSkillInfo`, `SkillLevel` enum) for better data organization
   - Implemented common exception handling pattern with `HandleExceptionWrapper()`
   - Improved code readability and maintainability while preserving all existing functionality
+- ✅ **Exception Handling Abstraction**: Implemented a standardized exception handling pattern to eliminate repetitive try-catch blocks:
+  - Created `HandleExceptionWrapper()` method overloads for both `Func<Priority>` and `Action` operations
+  - Established consistent error logging format across all methods
+  - Refactored 6 methods to demonstrate the pattern working correctly
+  - Maintained backward compatibility and error handling behavior
+  - All tests continue to pass, confirming functionality preservation
 
 ---
 
@@ -26,7 +32,12 @@ This document outlines the development and testing plan for the FreeWill mod. Th
   - Replaced the massive switch statement with a clean strategy pattern implementation
   - Made relevant helper methods public to support the strategy pattern
   - All existing functionality preserved while dramatically improving maintainability
-- [ ] **Abstract Exception Handling**: Create a common pattern for the repetitive `try-catch` blocks.
+- [x] **Abstract Exception Handling**: Create a common pattern for the repetitive `try-catch` blocks.
+  - Created `HandleExceptionWrapper()` overloads for both `Func<Priority>` and `Action` operations
+  - Implemented standardized exception logging with consistent error message formatting
+  - Refactored multiple methods (`ConsiderInspiration()`, `ConsiderThoughts()`, `ConsiderNeedingWarmClothes()`, `ConsiderHasHuntingWeapon()`, `ConsiderBrawlersNotHunting()`, `ApplyPriorityToGame()`) to use the new pattern
+  - All tests continue to pass, demonstrating that functionality is preserved
+  - Significantly reduced code duplication and improved maintainability
 - [ ] **Implement Dependency Injection**: Decouple components for better testability.
 
 ### 2. Test Priority Calculation Methods

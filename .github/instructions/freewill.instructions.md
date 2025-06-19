@@ -8,3 +8,5 @@ The following guidelines should be followed when working on the Free Will mod fo
  - the RimWorld DLLs should be available (see Directory.Build.props for the paths)
  - tests are executed using the build-and-test.bat script (you need to wait a bit for the output to appear)
  - always run `dotnet format --verify-no-changes --severity info | Select-String "diagnostic"` (wait a bit for it to finish) and fix any issues to ensure code style consistency
+ - it seems that your code patches frequently lack a trailing newline, which breaks the formatting, so please ensure that you always add a trailing newline to the end of your code patches
+ 

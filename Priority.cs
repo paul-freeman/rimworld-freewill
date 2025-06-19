@@ -169,14 +169,12 @@ namespace FreeWill
                 }
                 return this;
             }
-        }
-
-        /// <summary>
-        /// Writes the computed priority back to the pawn's work settings.
-        /// </summary>
+        }        /// <summary>
+                 /// Writes the computed priority back to the pawn's work settings.
+                 /// </summary>
         public void ApplyPriorityToGame()
         {
-            try
+            HandleExceptionWrapper(() =>
             {
                 if (pawn?.workSettings == null || WorkTypeDef == null)
                 {
@@ -197,14 +195,7 @@ namespace FreeWill
                 {
                     pawn.workSettings.SetPriority(WorkTypeDef, priority);
                 }
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: error applying priority to game for {pawn?.Name?.ToStringShort ?? "unknown"}: {ex.Message}");
-                }
-            }
+            }, "apply priority to game");
         }
 
         /// <summary>
@@ -251,6 +242,51 @@ namespace FreeWill
             float valueInt = DISABLED_CUTOFF_ACTIVE_WORK_AREA - invertedValueRange + DISABLED_CUTOFF;
             float finalValue = Mathf.Clamp(valueInt, 0, 100) / 100;
             Set(finalValue, "FreeWillPriorityFromGame".TranslateSimple);
+        }
+
+        /// <summary>
+        /// Wraps an operation with standardized exception handling.
+        /// Logs errors in dev mode and returns this instance for graceful continuation.
+        /// </summary>
+        /// <param name="operation">The operation to execute</param>
+        /// <param name="operationName">The name of the operation for error logging</param>
+        /// <returns>The result of the operation, or this instance if an exception occurs</returns>
+        private Priority HandleExceptionWrapper(Func<Priority> operation, string operationName)
+        {
+            try
+            {
+                return operation();
+            }
+            catch (Exception ex)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: could not {operationName}: {ex.Message}");
+                }
+                return this;
+            }
+        }
+
+        /// <summary>
+        /// Wraps a void operation with standardized exception handling.
+        /// Logs errors in dev mode and continues gracefully.
+        /// </summary>
+        /// <param name="operation">The operation to execute</param>
+        /// <param name="operationName">The name of the operation for error logging</param>
+        private void HandleExceptionWrapper(Action operation, string operationName)
+        {
+            try
+            {
+                operation();
+            }
+            catch (Exception ex)
+            {
+                if (Prefs.DevMode)
+                {
+                    Log.Error($"Free Will: could not {operationName}: {ex.Message}");
+                }
+                // Continue gracefully - don't re-throw
+            }
         }
 
         public void Set(float x, Func<string> description)
@@ -432,7 +468,7 @@ namespace FreeWill
 
         public Priority ConsiderInspiration()
         {
-            try
+            return HandleExceptionWrapper(() =>
             {
                 if (pawn?.mindState?.inspirationHandler?.Inspired != true)
                 {
@@ -461,19 +497,12 @@ namespace FreeWill
                     }
                 }
                 return this;
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: could not consider inspiration: {ex.Message}");
-                }
-                return this;
-            }
+            }, "consider inspiration");
         }
+
         public Priority ConsiderThoughts()
         {
-            try
+            return HandleExceptionWrapper(() =>
             {
                 if (pawn?.Map == null)
                 {
@@ -503,15 +532,7 @@ namespace FreeWill
                     }
                 }
                 return this;
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: could not consider thoughts: {ex.Message}");
-                }
-                return this;
-            }
+            }, "consider thoughts");
         }
 
         private static float GetMoodEffect(Thought thought)
@@ -535,7 +556,7 @@ namespace FreeWill
 
         public Priority ConsiderNeedingWarmClothes()
         {
-            try
+            return HandleExceptionWrapper(() =>
             {
                 if (!EnsureMapComp())
                 {
@@ -547,15 +568,7 @@ namespace FreeWill
                     return this;
                 }
                 return this;
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: could not consider needing warm clothes: {ex.Message}");
-                }
-                return this;
-            }
+            }, "consider needing warm clothes");
         }
 
         public Priority ConsiderAnimalsRoaming()
@@ -663,38 +676,22 @@ namespace FreeWill
 
         public Priority ConsiderHasHuntingWeapon()
         {
-            try
+            return HandleExceptionWrapper(() =>
             {
                 return (worldComp?.Settings.ConsiderHasHuntingWeapon ?? false)
                     ? NeverDoIf(!WorkGiver_HunterHunt.HasHuntingWeapon(pawn), "FreeWillPriorityNoHuntingWeapon".TranslateSimple)
                     : this;
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: could not consider has hunting weapon: {ex.Message}");
-                }
-                return this;
-            }
+            }, "consider has hunting weapon");
         }
 
         public Priority ConsiderBrawlersNotHunting()
         {
-            try
+            return HandleExceptionWrapper(() =>
             {
                 return (worldComp?.Settings.ConsiderBrawlersNotHunting ?? false) && WorkTypeDef.defName == HUNTING
                     ? NeverDoIf(pawn.story.traits.HasTrait(DefDatabase<TraitDef>.GetNamed("Brawler")), "FreeWillPriorityBrawler".TranslateSimple)
                     : this;
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: could not consider brawlers not hunting: {ex.Message}");
-                }
-                return this;
-            }
+            }, "consider brawlers not hunting");
         }
 
         public Priority ConsiderCompletingTask()
