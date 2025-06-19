@@ -34,6 +34,17 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Testing|AnyCPU' ">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Testing\</OutputPath>
+        <DefineConstants>DEBUG;TRACE;TESTING</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <CopyRimWorldDLLs>true</CopyRimWorldDLLs>
+    </PropertyGroup>
+
     <ItemGroup>
         <Reference Include="System" />
         <Reference Include="System.Core" />
@@ -42,31 +53,36 @@
     <PropertyGroup>
         <RimWorldManaged>$(RimWorldDir)\RimWorldWin64_Data\Managed</RimWorldManaged>
     </PropertyGroup>
-
     <ItemGroup>
         <Reference Include="Assembly-CSharp">
             <HintPath>$(RimWorldManaged)\Assembly-CSharp.dll</HintPath>
-            <Private>False</Private>
+            <Private Condition="'$(Configuration)' == 'Testing'">True</Private>
+            <Private Condition="'$(Configuration)' != 'Testing'">False</Private>
         </Reference>
         <Reference Include="UnityEngine">
             <HintPath>$(RimWorldManaged)\UnityEngine.dll</HintPath>
-            <Private>False</Private>
+            <Private Condition="'$(Configuration)' == 'Testing'">True</Private>
+            <Private Condition="'$(Configuration)' != 'Testing'">False</Private>
         </Reference>
         <Reference Include="UnityEngine.CoreModule">
             <HintPath>$(RimWorldManaged)\UnityEngine.CoreModule.dll</HintPath>
-            <Private>False</Private>
+            <Private Condition="'$(Configuration)' == 'Testing'">True</Private>
+            <Private Condition="'$(Configuration)' != 'Testing'">False</Private>
         </Reference>
         <Reference Include="UnityEngine.IMGUIModule">
             <HintPath>$(RimWorldManaged)\UnityEngine.IMGUIModule.dll</HintPath>
-            <Private>False</Private>
+            <Private Condition="'$(Configuration)' == 'Testing'">True</Private>
+            <Private Condition="'$(Configuration)' != 'Testing'">False</Private>
         </Reference>
         <Reference Include="UnityEngine.TextRenderingModule">
             <HintPath>$(RimWorldManaged)\UnityEngine.TextRenderingModule.dll</HintPath>
-            <Private>False</Private>
+            <Private Condition="'$(Configuration)' == 'Testing'">True</Private>
+            <Private Condition="'$(Configuration)' != 'Testing'">False</Private>
         </Reference>
         <Reference Include="0Harmony">
             <HintPath>$(RimWorldDir)\..\..\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
-            <Private>False</Private>
+            <Private Condition="'$(Configuration)' == 'Testing'">True</Private>
+            <Private Condition="'$(Configuration)' != 'Testing'">False</Private>
         </Reference>
     </ItemGroup>
     <ItemGroup>
@@ -85,4 +101,12 @@
     </ItemGroup>
 
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+    <!-- Verification target for Testing configuration -->
+    <Target Name="VerifyRimWorldDLLs" AfterTargets="Build" Condition="'$(Configuration)' == 'Testing'">
+        <Message Text="RimWorld DLLs copied to: $(OutputPath)" Importance="high" />
+        <Message Text="Assembly-CSharp.dll exists: $([System.IO.File]::Exists('$(OutputPath)Assembly-CSharp.dll'))" Importance="high" />
+        <Message Text="UnityEngine.dll exists: $([System.IO.File]::Exists('$(OutputPath)UnityEngine.dll'))" Importance="high" />
+        <Message Text="0Harmony.dll exists: $([System.IO.File]::Exists('$(OutputPath)0Harmony.dll'))" Importance="high" />
+    </Target>
 </Project>

@@ -35,16 +35,14 @@ namespace FreeWill.Tests
                     Console.WriteLine("✗ Mock work types failed");
                     return;
                 }
+                Console.WriteLine();
+                Console.WriteLine("=== Running Full Priority Tests ===");
+                Console.WriteLine("Note: Some tests may fail or be skipped due to RimWorld dependencies");
+                Console.WriteLine();
 
-                Console.WriteLine();
-                Console.WriteLine("=== Step 2 Status ===");
-                Console.WriteLine("✓ Core Priority Calculation Tests framework is ready");
-                Console.WriteLine("✓ ToGamePriority() and FromGamePriority() test structure implemented");
-                Console.WriteLine("✓ Error handling tests implemented");
-                Console.WriteLine("✓ Test infrastructure supports RimWorld dependencies");
-                Console.WriteLine();
-                Console.WriteLine("Note: Full tests require RimWorld runtime environment");
-                Console.WriteLine("The tests are implemented and will run properly within RimWorld");
+                // Run the full test suite
+                PriorityTests.RunAllTests();
+
                 Console.WriteLine();
                 Console.WriteLine("=== SMOKE TEST PASSED ===");
             }
