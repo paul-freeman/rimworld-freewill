@@ -59,19 +59,48 @@ namespace FreeWill
             this.pawn = pawn;
             WorkTypeDef = workTypeDef;
             AdjustmentStrings = new List<Func<string>> { };
-        }
-
-        /// <summary>
-        /// Calculates the priority value using numerous heuristics.
-        /// </summary>
+        }        /// <summary>
+                 /// Calculates the priority value using numerous heuristics.
+                 /// </summary>
         public void Compute()
         {
             try
             {
                 AdjustmentStrings = new List<Func<string>> { };
 
+                // Validate pawn state before computation
+                if (pawn?.Map == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: pawn {pawn?.Name?.ToStringShort ?? "null"} has no map, using default priority for {WorkTypeDef?.defName ?? "null"}");
+                    }
+                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    return;
+                }
+
                 mapComp = pawn.Map.GetComponent<FreeWill_MapComponent>();
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+                worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
+
+                if (mapComp == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: no map component found for pawn {pawn.Name}, using default priority");
+                    }
+                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    return;
+                }
+
+                if (worldComp == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: no world component found for pawn {pawn.Name}, using default priority");
+                    }
+                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    return;
+                }
 
                 // start priority at the global default and compute the priority
                 // using the AI in this file
@@ -391,12 +420,19 @@ namespace FreeWill
                 throw;
             }
         }
-
         public Priority ConsiderThoughts()
         {
             try
             {
+                if (pawn?.Map == null)
+                {
+                    return this;
+                }
                 mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
+                if (mapComp == null)
+                {
+                    return this;
+                }
                 foreach (Thought thought in mapComp.AllThoughts)
                 {
                     if (thought.def.defName == "NeedFood")
@@ -1276,11 +1312,15 @@ namespace FreeWill
                 throw;
             }
         }
-
         public Priority ConsiderIsAnyoneElseDoing()
         {
             try
             {
+                if (pawn?.Map?.mapPawns == null)
+                {
+                    return this;
+                }
+
                 foreach (Pawn other in pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer))
                 {
                     if (IsDoing(other))
@@ -1363,10 +1403,9 @@ namespace FreeWill
                 ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple)
                 : this;
         }
-
         private List<Pawn> GetEligiblePawns()
         {
-            return pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
+            return pawn?.Map?.mapPawns == null ? new List<Pawn>() : pawn.Map.mapPawns.PawnsInFaction(Faction.OfPlayer);
         }
         private SkillComparisonData CalculatePawnSkillComparison(List<Pawn> allPawns)
         {
@@ -1456,11 +1495,9 @@ namespace FreeWill
 
         private SkillLevel GetSkillLevel(float skillDifference)
         {
-            if (skillDifference >= 15.0f)
-            {
-                return SkillLevel.MuchMuchMuchBetter;
-            }
-            return skillDifference >= 10.0f ? SkillLevel.MuchMuchBetter : skillDifference >= 5.0f ? SkillLevel.MuchBetter : SkillLevel.Better;
+            return skillDifference >= 15.0f
+                ? SkillLevel.MuchMuchMuchBetter
+                : skillDifference >= 10.0f ? SkillLevel.MuchMuchBetter : skillDifference >= 5.0f ? SkillLevel.MuchBetter : SkillLevel.Better;
         }
 
         private float GetImpactMultiplier(SkillLevel skillLevel)
@@ -1953,12 +1990,11 @@ namespace FreeWill
                 throw;
             }
         }
-
         public bool NotInHomeArea(Pawn pawn)
         {
             try
             {
-                return !this.pawn.Map.areaManager.Home[pawn.Position];
+                return this.pawn?.Map?.areaManager?.Home != null && !this.pawn.Map.areaManager.Home[pawn.Position];
             }
             catch
             {

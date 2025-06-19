@@ -76,6 +76,7 @@ namespace FreeWill
         }
 
         /// <summary>
+        /// Finalizes initialization and updates the utility cache.        /// <summary>
         /// Finalizes initialization and updates the utility cache.
         /// </summary>
         public override void FinalizeInit()
@@ -94,16 +95,30 @@ namespace FreeWill
 
             try
             {
-                worldComp = Find.World.GetComponent<FreeWill_WorldComponent>();
+                worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
+                if (worldComp == null)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.ErrorOnce("Free Will: worldComp is null in MapComponentTick", 584627);
+                    }
+                    return;
+                }
 
                 GetMapComponentTickAction();
                 actionCounter++;
+
+                // Clean up invalid pawns periodically (every ~10 seconds)
+                if (actionCounter % 600 == 0)
+                {
+                    CleanupInvalidPawns();
+                }
             }
-            catch
+            catch (System.Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error($"Free Will: could not perform tick action: mapTickCounter = {actionCounter}");
+                    Log.Error($"Free Will: could not perform tick action: mapTickCounter = {actionCounter}, error: {ex.Message}");
                 }
                 throw;
             }
@@ -154,29 +169,74 @@ namespace FreeWill
             int i = actionCounter - mapComponentCheckActions.Length;
             List<WorkTypeDef> workTypeDefs = DefDatabase<WorkTypeDef>.AllDefsListForReading;
             List<Pawn> pawns = map.mapPawns.FreeColonistsSpawned;
+
+            if (pawns == null || workTypeDefs == null)
+            {
+                actionCounter = 0;
+                return;
+            }
+
             if (i >= workTypeDefs.Count * pawns.Count)
             {
                 actionCounter = 0;
                 _ = CheckPrisonerHealth();
                 return;
             }
+
             int pawnIndex = i / workTypeDefs.Count;
             int worktypeIndex = i % workTypeDefs.Count;
-            Pawn pawn = pawns[pawnIndex];
-            if (pawn.GetUniqueLoadID() != pawnIndexCache)
-            {
-                // new pawn, so check their area
-                BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
-                AreaHasHaulables = CheckIfAreaHasHaulables(pawn, BeautyUtility.beautyRelevantCells);
-                AreaHasFilth = CheckIfAreaHasFilth(pawn, BeautyUtility.beautyRelevantCells);
-                pawnIndexCache = pawn.GetUniqueLoadID();
-                // update their thoughts
-                pawn.needs.mood.thoughts.GetAllMoodThoughts(AllThoughts);
-                // update their disabled work types
-                DisabledWorkTypes = pawn.GetDisabledWorkTypes(permanentOnly: true);
 
+            // Validate indices
+            if (pawnIndex >= pawns.Count || worktypeIndex >= workTypeDefs.Count)
+            {
+                actionCounter = 0;
+                return;
             }
+
+            Pawn pawn = pawns[pawnIndex];
+
+            // Validate pawn
+            if (pawn == null || pawn.Dead || pawn.Destroyed)
+            {
+                return;
+            }
+
+            // Validate pawn has required components
+            if (pawn.Map == null || pawn.needs?.mood?.thoughts == null)
+            {
+                return;
+            }
+
             string pawnKey = pawn.GetUniqueLoadID();
+            if (string.IsNullOrEmpty(pawnKey))
+            {
+                return;
+            }
+
+            if (pawnKey != pawnIndexCache)
+            {
+                try
+                {
+                    // new pawn, so check their area
+                    BeautyUtility.FillBeautyRelevantCells(pawn.Position, pawn.Map);
+                    AreaHasHaulables = CheckIfAreaHasHaulables(pawn, BeautyUtility.beautyRelevantCells);
+                    AreaHasFilth = CheckIfAreaHasFilth(pawn, BeautyUtility.beautyRelevantCells);
+                    pawnIndexCache = pawnKey;
+                    // update their thoughts
+                    pawn.needs.mood.thoughts.GetAllMoodThoughts(AllThoughts);
+                    // update their disabled work types
+                    DisabledWorkTypes = pawn.GetDisabledWorkTypes(permanentOnly: true);
+                }
+                catch (System.Exception ex)
+                {
+                    if (Prefs.DevMode)
+                    {
+                        Log.Warning($"Free Will: could not update pawn area/thoughts for {pawn.Name}: {ex.Message}");
+                    }
+                    return;
+                }
+            }
+
             WorkTypeDef workTypeDef = workTypeDefs[worktypeIndex];
             _ = SetPriorityAction(pawn, pawnKey, workTypeDef);
         }
@@ -219,23 +279,41 @@ namespace FreeWill
             }
             return priorities[pawn][workTypeDef];
         }
-
         private string SetPriorityAction(Pawn pawn, string pawnKey, WorkTypeDef workTypeDef)
         {
-            string msg = pawn.Name.ToStringShort + " " + workTypeDef.defName;
+            string msg = pawn?.Name?.ToStringShort ?? "unknown pawn" + " " + (workTypeDef?.defName ?? "unknown work");
+
+            // Basic validation
             if (pawn == null)
             {
                 Log.ErrorOnce($"Free Will: pawn is null: mapTickCounter = {actionCounter}", 584624);
                 return msg;
             }
+
+            if (workTypeDef == null)
+            {
+                Log.ErrorOnce($"Free Will: workTypeDef is null for pawn {pawn.Name}: mapTickCounter = {actionCounter}", 584625);
+                return msg;
+            }
+
             if (pawn.WorkTypeIsDisabled(workTypeDef))
             {
                 return msg;
             }
+
             if (!pawn.Awake() || pawn.Downed || pawn.Dead)
             {
                 return msg;
             }
+
+            // Validate world component
+            if (worldComp == null)
+            {
+                Log.ErrorOnce($"Free Will: worldComp is null for pawn {pawn.Name}: mapTickCounter = {actionCounter}", 584626);
+                return msg;
+            }
+
+            // Handle slaves
             if (pawn.IsSlaveOfColony)
             {
                 if (worldComp.HasFreeWill(pawn, pawnKey))
@@ -248,7 +326,9 @@ namespace FreeWill
                     return msg;
                 }
             }
+
             worldComp.EnsureFreeWillStatusIsCorrect(pawn, pawnKey);
+
             try
             {
                 if (priorities == null)
@@ -256,14 +336,17 @@ namespace FreeWill
                     Log.ErrorOnce("Free Will: priorities is null", 2274889);
                     priorities = new Dictionary<Pawn, Dictionary<WorkTypeDef, Priority>>();
                 }
+
                 if (!priorities.ContainsKey(pawn))
                 {
                     priorities[pawn] = new Dictionary<WorkTypeDef, Priority>();
                 }
+
                 if (!priorities[pawn].ContainsKey(workTypeDef))
                 {
                     priorities[pawn][workTypeDef] = new Priority(pawn, workTypeDef);
                 }
+
                 if (worldComp.HasFreeWill(pawn, pawnKey))
                 {
                     priorities[pawn][workTypeDef].Compute();
@@ -271,21 +354,30 @@ namespace FreeWill
                 }
                 return msg;
             }
-            catch
+            catch (System.Exception ex)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Error($"Free Will: could not set priorities for {pawn.Name}");
+                    Log.Error($"Free Will: could not set priorities for {pawn.Name}: {ex.Message}");
                 }
-                if (worldComp.TryRemoveFreeWill(pawn))
+
+                // Try to remove free will to prevent further errors
+                try
                 {
-                    Log.Warning($"Free Will: removed free will from {pawn.Name} due to an error");
-                    return msg;
+                    if (worldComp.TryRemoveFreeWill(pawn))
+                    {
+                        Log.Warning($"Free Will: removed free will from {pawn.Name} due to an error");
+                        return msg;
+                    }
                 }
-                if (Prefs.DevMode)
+                catch (System.Exception ex2)
                 {
-                    Log.Error($"Free Will: could not remove free will from {pawn.Name}");
+                    if (Prefs.DevMode)
+                    {
+                        Log.Error($"Free Will: could not remove free will from {pawn.Name}: {ex2.Message}");
+                    }
                 }
+
                 throw;
             }
         }
@@ -645,6 +737,36 @@ namespace FreeWill
             }
             return areaHasCleaningJobToDo;
 
+        }
+
+        /// <summary>
+        /// Cleans up dead or invalid pawns from the priorities dictionary to prevent memory leaks and errors.
+        /// </summary>
+        private void CleanupInvalidPawns()
+        {
+            if (priorities == null)
+            {
+                return;
+            }
+
+            List<Pawn> pawnsToRemove = new List<Pawn>();
+
+            foreach (Pawn pawn in priorities.Keys)
+            {
+                if (pawn == null || pawn.Dead || pawn.Destroyed || pawn.Map == null)
+                {
+                    pawnsToRemove.Add(pawn);
+                }
+            }
+
+            foreach (Pawn pawn in pawnsToRemove)
+            {
+                _ = priorities.Remove(pawn);
+                if (lastBored.ContainsKey(pawn))
+                {
+                    _ = lastBored.Remove(pawn);
+                }
+            }
         }
     }
 }

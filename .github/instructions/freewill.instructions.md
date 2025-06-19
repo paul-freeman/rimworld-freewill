@@ -7,4 +7,4 @@ The following guidelines should be followed when working on the Free Will mod fo
  - our development is "local only", meaning we don't use any cloud services or CI/CD pipelines
  - the RimWorld DLLs should be available (see Directory.Build.props for the paths)
  - tests are executed using the build-and-test.bat script (you need to wait a bit for the output to appear)
- - always run `dotnet format --verify-no-changes --severity info | Select-String "diagnostic"` and fix any issues to ensure code style consistency
+ - always run `dotnet format --verify-no-changes --severity info | Select-String "diagnostic"` (wait a bit for it to finish) and fix any issues to ensure code style consistency
