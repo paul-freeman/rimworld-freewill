@@ -1460,11 +1460,7 @@ namespace FreeWill
             {
                 return SkillLevel.MuchMuchMuchBetter;
             }
-            if (skillDifference >= 10.0f)
-            {
-                return SkillLevel.MuchMuchBetter;
-            }
-            return skillDifference >= 5.0f ? SkillLevel.MuchBetter : SkillLevel.Better;
+            return skillDifference >= 10.0f ? SkillLevel.MuchMuchBetter : skillDifference >= 5.0f ? SkillLevel.MuchBetter : SkillLevel.Better;
         }
 
         private float GetImpactMultiplier(SkillLevel skillLevel)
