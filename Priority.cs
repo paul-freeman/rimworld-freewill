@@ -19,8 +19,9 @@ namespace FreeWill
         private const float ONE_PRIORITY_WIDTH = DISABLED_CUTOFF_ACTIVE_WORK_AREA / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
 
         public readonly Pawn pawn;
-        private FreeWill_WorldComponent worldComp;
-        private FreeWill_MapComponent mapComp;
+        private readonly IPriorityDependencyProvider dependencyProvider;
+        private IWorldStateProvider worldStateProvider;
+        private IMapStateProvider mapStateProvider;
         public WorkTypeDef WorkTypeDef { get; }
         public float Value { get; private set; }
         public List<Func<string>> AdjustmentStrings { get; private set; }
@@ -46,24 +47,32 @@ namespace FreeWill
         private const string RESEARCHING = "Research";
 
         // supported modded work types
-        private const string HAULING_URGENT = "HaulingUrgent";
-
-
-        /// <summary>
-        /// Initializes a new priority instance for a pawn and work type.
-        /// </summary>
-        /// <param name="pawn">Pawn to evaluate.</param>
-        /// <param name="workTypeDef">Work type being processed.</param>
+        private const string HAULING_URGENT = "HaulingUrgent";        /// <summary>
+                                                                      /// Initializes a new priority instance for a pawn and work type.
+                                                                      /// </summary>
+                                                                      /// <param name="pawn">Pawn to evaluate.</param>
+                                                                      /// <param name="workTypeDef">Work type being processed.</param>
         public Priority(Pawn pawn, WorkTypeDef workTypeDef)
+            : this(pawn, workTypeDef, PriorityDependencyProviderFactory.Current)
         {
-            this.pawn = pawn;
-            WorkTypeDef = workTypeDef;
-            AdjustmentStrings = new List<Func<string>> { };
         }
 
         /// <summary>
-        /// Calculates the priority value using numerous heuristics.
+        /// Initializes a new priority instance for a pawn and work type with custom dependency provider.
+        /// This constructor is primarily used for testing and allows dependency injection.
         /// </summary>
+        /// <param name="pawn">Pawn to evaluate.</param>
+        /// <param name="workTypeDef">Work type being processed.</param>
+        /// <param name="dependencyProvider">Provider for dependencies.</param>
+        public Priority(Pawn pawn, WorkTypeDef workTypeDef, IPriorityDependencyProvider dependencyProvider)
+        {
+            this.pawn = pawn;
+            WorkTypeDef = workTypeDef;
+            this.dependencyProvider = dependencyProvider ?? throw new System.ArgumentNullException(nameof(dependencyProvider));
+            AdjustmentStrings = new List<Func<string>> { };
+        }        /// <summary>
+                 /// Calculates the priority value using numerous heuristics.
+                 /// </summary>
         public void Compute()
         {
             try
@@ -81,24 +90,25 @@ namespace FreeWill
                     return;
                 }
 
-                mapComp = pawn.Map.GetComponent<FreeWill_MapComponent>();
-                worldComp = Find.World?.GetComponent<FreeWill_WorldComponent>();
+                // Initialize dependencies
+                worldStateProvider = dependencyProvider.WorldStateProvider;
+                mapStateProvider = dependencyProvider.GetMapStateProvider(pawn);
 
-                if (mapComp == null)
+                if (mapStateProvider == null)
                 {
                     if (Prefs.DevMode)
                     {
-                        Log.Warning($"Free Will: no map component found for pawn {pawn.Name}, using default priority");
+                        Log.Warning($"Free Will: no map state provider found for pawn {pawn.Name}, using default priority");
                     }
                     Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
                     return;
                 }
 
-                if (worldComp == null)
+                if (worldStateProvider == null)
                 {
                     if (Prefs.DevMode)
                     {
-                        Log.Warning($"Free Will: no world component found for pawn {pawn.Name}, using default priority");
+                        Log.Warning($"Free Will: no world state provider found for pawn {pawn.Name}, using default priority");
                     }
                     Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
                     return;
@@ -133,16 +143,16 @@ namespace FreeWill
             Disabled = false;
 
             // Additional safety checks
-            if (mapComp?.DisabledWorkTypes == null)
+            if (mapStateProvider?.DisabledWorkTypes == null)
             {
                 if (Prefs.DevMode)
                 {
-                    Log.Warning($"Free Will: mapComp.DisabledWorkTypes is null for pawn {pawn?.Name?.ToStringShort ?? "unknown"}");
+                    Log.Warning($"Free Will: mapStateProvider.DisabledWorkTypes is null for pawn {pawn?.Name?.ToStringShort ?? "unknown"}");
                 }
                 return this;
             }
 
-            if (mapComp.DisabledWorkTypes.Contains(WorkTypeDef))
+            if (mapStateProvider.DisabledWorkTypes.Contains(WorkTypeDef))
             {
                 return NeverDo("FreeWillPriorityPermanentlyDisabled".TranslateSimple);
             }
@@ -150,7 +160,7 @@ namespace FreeWill
             try
             {
                 // Use strategy pattern instead of large switch statement
-                IWorkTypeStrategy strategy = WorkTypeStrategyRegistry.GetStrategy(WorkTypeDef);
+                IWorkTypeStrategy strategy = dependencyProvider.StrategyProvider.GetStrategy(WorkTypeDef);
                 if (strategy == null)
                 {
                     if (Prefs.DevMode)
@@ -501,21 +511,16 @@ namespace FreeWill
                 return this;
             }, "consider inspiration");
         }
-
         public Priority ConsiderThoughts()
         {
             return HandleExceptionWrapper(() =>
             {
-                if (pawn?.Map == null)
+                if (pawn?.Map == null || mapStateProvider == null)
                 {
                     return this;
                 }
-                mapComp = mapComp ?? pawn.Map.GetComponent<FreeWill_MapComponent>();
-                if (mapComp == null)
-                {
-                    return this;
-                }
-                foreach (Thought thought in mapComp.AllThoughts)
+
+                foreach (Thought thought in mapStateProvider.AllThoughts)
                 {
                     if (thought.def.defName == "NeedFood")
                     {
@@ -560,11 +565,11 @@ namespace FreeWill
         {
             return HandleExceptionWrapper(() =>
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                if (mapComp.AlertNeedWarmClothes)
+                if (mapStateProvider.AlertNeedWarmClothes)
                 {
                     Add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
                     return this;
@@ -577,11 +582,11 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                if (mapComp.AlertAnimalRoaming)
+                if (mapStateProvider.AlertAnimalRoaming)
                 {
                     Add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple);
                     return this;
@@ -602,13 +607,13 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                if (mapComp.SuppressionNeed != 0.0f)
+                if (mapStateProvider.SuppressionNeed != 0.0f)
                 {
-                    Add(mapComp.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple);
+                    Add(mapStateProvider.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -627,11 +632,11 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                if (mapComp.AlertColonistLeftUnburied && (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT))
+                if (mapStateProvider.AlertColonistLeftUnburied && (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT))
                 {
                     Add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple);
                     return this;
@@ -655,14 +660,14 @@ namespace FreeWill
                 const int boredomMemory = 2500; // 1 hour in game
                 if (pawn.mindState.IsIdle)
                 {
-                    mapComp?.UpdateLastBored(pawn);
+                    mapStateProvider?.UpdateLastBored(pawn);
                     return AlwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple);
                 }
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                int? lastBored = mapComp.GetLastBored(pawn);
+                int? lastBored = mapStateProvider.GetLastBored(pawn);
                 bool wasBored = lastBored != 0 && Find.TickManager.TicksGame - lastBored < boredomMemory;
                 return AlwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple);
             }
@@ -680,7 +685,7 @@ namespace FreeWill
         {
             return HandleExceptionWrapper(() =>
             {
-                return (worldComp?.Settings.ConsiderHasHuntingWeapon ?? false)
+                return (WorldCompSettings?.ConsiderHasHuntingWeapon ?? false)
                     ? NeverDoIf(!WorkGiver_HunterHunt.HasHuntingWeapon(pawn), "FreeWillPriorityNoHuntingWeapon".TranslateSimple)
                     : this;
             }, "consider has hunting weapon");
@@ -690,7 +695,7 @@ namespace FreeWill
         {
             return HandleExceptionWrapper(() =>
             {
-                return (worldComp?.Settings.ConsiderBrawlersNotHunting ?? false) && WorkTypeDef.defName == HUNTING
+                return (WorldCompSettings?.ConsiderBrawlersNotHunting ?? false) && WorkTypeDef.defName == HUNTING
                     ? NeverDoIf(pawn.story.traits.HasTrait(DefDatabase<TraitDef>.GetNamed("Brawler")), "FreeWillPriorityBrawler".TranslateSimple)
                     : this;
             }, "consider brawlers not hunting");
@@ -720,7 +725,7 @@ namespace FreeWill
         {
             try
             {
-                float setting = worldComp?.Settings?.ConsiderMovementSpeed ?? 0.0f;
+                float setting = WorldCompSettings?.ConsiderMovementSpeed ?? 0.0f;
                 return setting != 0.0f
                     ? Multiply(setting * (pawn.GetStatValue(StatDefOf.MoveSpeed, true) / 4.6f), "FreeWillPriorityMovementSpeed".TranslateSimple)
                     : this;
@@ -763,7 +768,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp?.Settings?.ConsiderPassions == 0f)
+                if (WorldCompSettings?.ConsiderPassions == 0f)
                 {
                     return this;
                 }
@@ -778,13 +783,13 @@ namespace FreeWill
                         case Passion.None:
                             continue;
                         case Passion.Minor:
-                            x = worldComp.Settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.25f / relevantSkills.Count;
+                            x = WorldCompSettings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.25f / relevantSkills.Count;
 
                             _ = AlwaysDo(() => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel));
                             Add(x, () => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel));
                             continue;
                         case Passion.Major:
-                            x = worldComp.Settings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
+                            x = WorldCompSettings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
 
                             _ = AlwaysDo(() => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
                             Add(x, () => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
@@ -805,12 +810,11 @@ namespace FreeWill
                 return this;
             }
         }
-
         public void ConsiderVanillaSkillsExpanded(Passion passion, SkillDef relevantSkill, int relevantSkillsCount)
         {
             try
             {
-                if (worldComp == null)
+                if (WorldCompSettings == null)
                 {
                     return;
                 }
@@ -838,7 +842,7 @@ namespace FreeWill
                             // There is a fifth passion from another mod, which we don't want to consider.
                             return;
                         }
-                        float x = worldComp.Settings.ConsiderPassions / relevantSkillsCount;
+                        float x = WorldCompSettings.ConsiderPassions / relevantSkillsCount;
                         _ = AlwaysDo(() => "FreeWillPriorityCritical".Translate(relevantSkill.skillLabel));
                         Add(x, () => "FreeWillPriorityCritical".Translate(relevantSkill.skillLabel));
                         break;
@@ -918,19 +922,18 @@ namespace FreeWill
                         return this;
                     }
                 }
-
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
 
-                if (mapComp.PercentPawnsDowned <= 0.0f)
+                if (mapStateProvider.PercentPawnsDowned <= 0.0f)
                 {
                     return this;
                 }
                 if (WorkTypeDef.defName == DOCTOR)
                 {
-                    Add(mapComp.PercentPawnsDowned, "FreeWillPriorityOtherPawnsDowned".TranslateSimple);
+                    Add(mapStateProvider.PercentPawnsDowned, "FreeWillPriorityOtherPawnsDowned".TranslateSimple);
                     return this;
                 }
                 if (WorkTypeDef.defName == SMITHING ||
@@ -959,15 +962,15 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp == null)
+                if (worldStateProvider == null)
                 {
                     return this;
                 }
-                if (!worldComp.Settings.globalWorkAdjustments.ContainsKey(WorkTypeDef.defName))
+                if (!worldStateProvider.Settings.globalWorkAdjustments.ContainsKey(WorkTypeDef.defName))
                 {
-                    worldComp.Settings.globalWorkAdjustments.Add(WorkTypeDef.defName, 0.0f);
+                    worldStateProvider.Settings.globalWorkAdjustments.Add(WorkTypeDef.defName, 0.0f);
                 }
-                float adj = worldComp.Settings.globalWorkAdjustments[WorkTypeDef.defName];
+                float adj = worldStateProvider.Settings.globalWorkAdjustments[WorkTypeDef.defName];
                 Add(adj, "FreeWillPriorityColonyPolicy".TranslateSimple);
                 return this;
             }
@@ -985,16 +988,16 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                if (mapComp.RefuelNeededNow)
+                if (mapStateProvider.RefuelNeededNow)
                 {
                     Add(0.35f, "FreeWillPriorityRefueling".TranslateSimple);
                     return this;
                 }
-                if (mapComp.RefuelNeeded)
+                if (mapStateProvider.RefuelNeeded)
                 {
                     Add(0.20f, "FreeWillPriorityRefueling".TranslateSimple);
                     return this;
@@ -1014,33 +1017,33 @@ namespace FreeWill
         {
             try
             {
-                if (mapComp == null)
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
 
                 if (WorkTypeDef.defName != FIREFIGHTER)
                 {
-                    if (mapComp.HomeFire)
+                    if (mapStateProvider.HomeFire)
                     {
                         Add(-0.2f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
                         return this;
                     }
-                    if (mapComp.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
+                    if (mapStateProvider.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
                     {
-                        Add(Mathf.Clamp01(mapComp.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
+                        Add(Mathf.Clamp01(mapStateProvider.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
                         return this;
                     }
                     return this;
                 }
-                if (mapComp.HomeFire)
+                if (mapStateProvider.HomeFire)
                 {
                     Set(1.0f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
                     return this;
                 }
-                if (mapComp.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
+                if (mapStateProvider.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
                 {
-                    Add(Mathf.Clamp01(mapComp.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
+                    Add(Mathf.Clamp01(mapStateProvider.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -1113,12 +1116,12 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
 
-                if (mapComp.PercentPawnsNeedingTreatment <= 0.0f)
+                if (mapStateProvider.PercentPawnsNeedingTreatment <= 0.0f)
                 {
                     return this;
                 }
@@ -1185,7 +1188,7 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
@@ -1205,7 +1208,7 @@ namespace FreeWill
                     //
                     // so if 25% of the colony is injured, doctoring for all
                     // non-injured pawns will increase by 25%
-                    Add(mapComp.PercentPawnsNeedingTreatment, "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                    Add(mapStateProvider.PercentPawnsNeedingTreatment, "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
                     return this;
                 }
 
@@ -1287,11 +1290,11 @@ namespace FreeWill
         {
             if (WorkTypeDef.defName == CONSTRUCTION)
             {
-                if (mapComp.AlertAnimalPenNeeded)
+                if (mapStateProvider.AlertAnimalPenNeeded)
                 {
                     Add(0.3f, "FreeWillPriorityAnimalPenNeeded".TranslateSimple);
                 }
-                if (mapComp.AlertAnimalPenNotEnclosed)
+                if (mapStateProvider.AlertAnimalPenNotEnclosed)
                 {
                     Add(0.3f, "FreeWillPriorityAnimalPenNotEnclosed".TranslateSimple);
                 }
@@ -1302,7 +1305,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp?.Settings?.ConsiderFoodPoisoning == 0.0f)
+                if (worldStateProvider?.Settings?.ConsiderFoodPoisoning == 0.0f)
                 {
                     return this;
                 }
@@ -1333,7 +1336,7 @@ namespace FreeWill
                     }
                     if (building.def.building.isMealSource)
                     {
-                        adjustment = worldComp.Settings.ConsiderFoodPoisoning * 20.0f * pawn.GetRoom().GetStat(RoomStatDefOf.FoodPoisonChance);
+                        adjustment = worldStateProvider.Settings.ConsiderFoodPoisoning * 20.0f * pawn.GetRoom().GetStat(RoomStatDefOf.FoodPoisonChance);
                         if (WorkTypeDef.defName == CLEANING)
                         {
                             Add(adjustment, "FreeWillPriorityFilthyCookingArea".TranslateSimple);
@@ -1362,7 +1365,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp?.Settings?.ConsiderOwnRoom == 0.0f)
+                if (worldStateProvider?.Settings?.ConsiderOwnRoom == 0.0f)
                 {
                     return this;
                 }
@@ -1380,7 +1383,7 @@ namespace FreeWill
                         break;
                     }
                 }
-                return !isPawnsRoom ? this : Multiply(worldComp.Settings.ConsiderOwnRoom * 2.0f, "FreeWillPriorityOwnRoom".TranslateSimple);
+                return !isPawnsRoom ? this : Multiply(worldStateProvider.Settings.ConsiderOwnRoom * 2.0f, "FreeWillPriorityOwnRoom".TranslateSimple);
             }
             catch (Exception ex)
             {
@@ -1396,11 +1399,11 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                if (mapComp.AlertMechDamaged)
+                if (mapStateProvider.AlertMechDamaged)
                 {
                     if (MechanitorUtility.IsMechanitor(pawn))
                     {
@@ -1504,7 +1507,7 @@ namespace FreeWill
         }
         public Priority ConsiderBestAtDoingCore()
         {
-            if (worldComp?.Settings?.ConsiderBestAtDoing == 0.0f)
+            if (worldStateProvider?.Settings?.ConsiderBestAtDoing == 0.0f)
             {
                 return this;
             }
@@ -1519,7 +1522,7 @@ namespace FreeWill
             ApplySkillBasedAdjustments(comparisonData);
 
             return comparisonData.IsBestAtDoing
-                ? Multiply(1.5f * worldComp.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple)
+                ? Multiply(1.5f * worldStateProvider.Settings.ConsiderBestAtDoing, "FreeWillPriorityBestAtDoing".TranslateSimple)
                 : this;
         }
         private List<Pawn> GetEligiblePawns()
@@ -1532,7 +1535,7 @@ namespace FreeWill
             {
                 IsBestAtDoing = true,
                 PawnSkill = pawn.skills.AverageOfRelevantSkillsFor(WorkTypeDef),
-                ImpactPerPawn = worldComp.Settings.ConsiderBestAtDoing / allPawns.Count
+                ImpactPerPawn = worldStateProvider.Settings.ConsiderBestAtDoing / allPawns.Count
             };
 
             foreach (Pawn other in allPawns)
@@ -1658,7 +1661,7 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
@@ -1666,12 +1669,12 @@ namespace FreeWill
                 {
                     return this;
                 }
-                int n = mapComp.NumPawns;
+                int n = mapStateProvider.NumPawns;
                 if (n == 0)
                 {
                     return this;
                 }
-                float numPetsNeedingTreatment = mapComp.NumPetsNeedingTreatment;
+                float numPetsNeedingTreatment = mapStateProvider.NumPetsNeedingTreatment;
                 Add(Mathf.Clamp01(numPetsNeedingTreatment / n) * 0.5f, "FreeWillPriorityPetsInjured".TranslateSimple);
                 return this;
             }
@@ -1689,11 +1692,11 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                float percentPawnsMechHaulers = mapComp.PercentPawnsMechHaulers;
+                float percentPawnsMechHaulers = mapStateProvider.PercentPawnsMechHaulers;
                 Add(-percentPawnsMechHaulers, "FreeWillPriorityMechHaulers".TranslateSimple);
                 return this;
             }
@@ -1711,7 +1714,7 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
@@ -1719,12 +1722,12 @@ namespace FreeWill
                 {
                     return this;
                 }
-                int n = mapComp.NumPawns;
+                int n = mapStateProvider.NumPawns;
                 if (n == 0)
                 {
                     return this;
                 }
-                float numPrisonersNeedingTreatment = mapComp.NumPrisonersNeedingTreatment;
+                float numPrisonersNeedingTreatment = mapStateProvider.NumPrisonersNeedingTreatment;
                 Add(Mathf.Clamp01(numPrisonersNeedingTreatment / n) * 0.5f, "FreeWillPriorityPrisonersInjured".TranslateSimple);
                 return this;
             }
@@ -1742,15 +1745,15 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp?.Settings?.ConsiderLowFood == 0.0f || !mapComp.AlertLowFood)
+                if (worldStateProvider?.Settings?.ConsiderLowFood == 0.0f || !mapStateProvider.AlertLowFood)
                 {
                     return this;
                 }
 
                 // don't adjust hauling if nothing deteriorating (i.e. food in the field)
-                if ((WorkTypeDef.defName != HAULING && WorkTypeDef.defName != HAULING_URGENT) || mapComp.ThingsDeteriorating != null)
+                if ((WorkTypeDef.defName != HAULING && WorkTypeDef.defName != HAULING_URGENT) || mapStateProvider.ThingsDeteriorating != null)
                 {
-                    Add(adjustment * worldComp.Settings.ConsiderLowFood, "FreeWillPriorityLowFood".TranslateSimple);
+                    Add(adjustment * worldStateProvider.Settings.ConsiderLowFood, "FreeWillPriorityLowFood".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -1769,7 +1772,7 @@ namespace FreeWill
         {
             try
             {
-                if ((worldComp?.Settings?.ConsiderWeaponRange ?? 0.0f) == 0.0f)
+                if ((worldStateProvider?.Settings?.ConsiderWeaponRange ?? 0.0f) == 0.0f)
                 {
                     return this;
                 }
@@ -1780,7 +1783,7 @@ namespace FreeWill
                 const float boltActionRifleRange = 37.0f;
                 float range = pawn.equipment.PrimaryEq.PrimaryVerb.verbProps.range;
                 float relativeRange = range / boltActionRifleRange;
-                return Multiply(relativeRange * worldComp.Settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple);
+                return Multiply(relativeRange * worldStateProvider.Settings.ConsiderWeaponRange, "FreeWillPriorityWeaponRange".TranslateSimple);
             }
             catch (Exception e)
             {
@@ -1797,7 +1800,7 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
@@ -1806,7 +1809,7 @@ namespace FreeWill
                     return this;
                 }
 
-                foreach (Thought thought in mapComp.AllThoughts)
+                foreach (Thought thought in mapStateProvider.AllThoughts)
                 {
                     if (thought.def.defName == "AteRawFood" && 0.6f > Value)
                     {
@@ -1830,17 +1833,17 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
                 if (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT)
                 {
-                    if (mapComp.ThingsDeteriorating != null)
+                    if (mapStateProvider.ThingsDeteriorating != null)
                     {
                         if (Prefs.DevMode)
                         {
-                            string name = mapComp.ThingsDeteriorating.def.defName;
+                            string name = mapStateProvider.ThingsDeteriorating.def.defName;
                             string adjustmentString()
                             {
                                 return new StringBuilder()
@@ -1870,18 +1873,18 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp?.Settings?.ConsiderPlantsBlighted == 0.0f)
+                if (worldStateProvider?.Settings?.ConsiderPlantsBlighted == 0.0f)
                 {
                     // no point checking if it is disabled
                     return this;
                 }
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                if (mapComp.PlantsBlighted)
+                if (mapStateProvider.PlantsBlighted)
                 {
-                    Add(0.4f * worldComp.Settings.ConsiderPlantsBlighted, "FreeWillPriorityBlight".TranslateSimple);
+                    Add(0.4f * worldStateProvider.Settings.ConsiderPlantsBlighted, "FreeWillPriorityBlight".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -1900,7 +1903,7 @@ namespace FreeWill
         {
             try
             {
-                if (worldComp == null)
+                if (worldStateProvider == null)
                 {
                     return this;
                 }
@@ -1915,7 +1918,7 @@ namespace FreeWill
                     {
                         return !compTreeConnection.ShouldBePrunedNow(false)
                             ? this
-                            : Multiply(2.0f * worldComp.Settings.ConsiderGauranlenPruning, "FreeWillPriorityPruneGauranlenTree".TranslateSimple);
+                            : Multiply(2.0f * worldStateProvider.Settings.ConsiderGauranlenPruning, "FreeWillPriorityPruneGauranlenTree".TranslateSimple);
                         {
                         }
                     }
@@ -1936,21 +1939,21 @@ namespace FreeWill
         {
             try
             {
-                if ((worldComp?.Settings?.ConsiderBeauty ?? 0.0f) == 0.0f)
+                if ((worldStateProvider?.Settings?.ConsiderBeauty ?? 0.0f) == 0.0f)
                 {
                     return this;
                 }
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                float expectations = worldComp.Settings.ConsiderBeauty * expectationGrid[ExpectationsUtility.CurrentExpectationFor(pawn).defName][pawn.needs.beauty.CurCategory];
+                float expectations = worldStateProvider.Settings.ConsiderBeauty * expectationGrid[ExpectationsUtility.CurrentExpectationFor(pawn).defName][pawn.needs.beauty.CurCategory];
                 switch (WorkTypeDef.defName)
                 {
                     case HAULING:
                     case HAULING_URGENT:
                         // check for haulable
-                        if (!mapComp.AreaHasHaulables)
+                        if (!mapStateProvider.AreaHasHaulables)
                         {
                             // no hauling job
                             return this;
@@ -1979,7 +1982,7 @@ namespace FreeWill
                         return this;
                     case CLEANING:
                         // check for cleanable
-                        if (!mapComp.AreaHasFilth)
+                        if (!mapStateProvider.AreaHasFilth)
                         {
                             // no cleaning job
                             return this;
@@ -2014,7 +2017,7 @@ namespace FreeWill
                             // mechanitor smithing is not affected by beauty
                             return this;
                         }
-                        if (!mapComp.AreaHasFilth && !mapComp.AreaHasHaulables)
+                        if (!mapStateProvider.AreaHasFilth && !mapStateProvider.AreaHasHaulables)
                         {
                             // nothing to do
                             return this;
@@ -2055,11 +2058,11 @@ namespace FreeWill
         {
             try
             {
-                if (!EnsureMapComp())
+                if (!EnsureMapStateProvider())
                 {
                     return this;
                 }
-                float badSkillCutoff = Mathf.Min(3f, mapComp.NumPawns);
+                float badSkillCutoff = Mathf.Min(3f, mapStateProvider.NumPawns);
                 float goodSkillCutoff = badSkillCutoff + ((20f - badSkillCutoff) / 2f);
                 float greatSkillCutoff = goodSkillCutoff + ((20f - goodSkillCutoff) / 2f);
                 float excellentSkillCutoff = greatSkillCutoff + ((20f - greatSkillCutoff) / 2f);
@@ -2146,24 +2149,36 @@ namespace FreeWill
         }
 
         /// <summary>
-        /// Ensures mapComp is available and not null.
+        /// Ensures that map state provider is available.
         /// </summary>
-        /// <returns>True if mapComp is available, false otherwise</returns>
+        /// <returns>True if available, false otherwise.</returns>
+        private bool EnsureMapStateProvider()
+        {
+            return mapStateProvider != null;
+        }
+
+        /// <summary>
+        /// Ensures that world state provider is available.
+        /// </summary>
+        /// <returns>True if available, false otherwise.</returns>
+        private bool EnsureWorldStateProvider()
+        {
+            return worldStateProvider != null;
+        }
+
+        /// <summary>
+        /// Legacy compatibility method for EnsureMapComp calls.
+        /// </summary>
+        /// <returns>True if map state provider is available, false otherwise.</returns>
         private bool EnsureMapComp()
         {
-            if (mapComp != null)
-            {
-                return true;
-            }
-
-            if (pawn?.Map == null)
-            {
-                return false;
-            }
-
-            mapComp = pawn.Map.GetComponent<FreeWill_MapComponent>();
-            return mapComp != null;
+            return EnsureMapStateProvider();
         }
+
+        /// <summary>
+        /// Legacy compatibility property for worldComp access.
+        /// </summary>
+        private FreeWill_ModSettings WorldCompSettings => worldStateProvider?.Settings;
 
         private static readonly Dictionary<string, Dictionary<BeautyCategory, float>> expectationGrid =
             new Dictionary<string, Dictionary<BeautyCategory, float>>
