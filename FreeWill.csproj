@@ -26,6 +26,8 @@
     <Compile Include="ThoughtWorkers\NoWorkSchedule.cs" />
     <Compile Include="ThoughtWorkers\ThoughtWorker_Precept_FreeWillStreak.cs" />
     <Compile Include="Priority.cs" />
+    <Compile Include="DependencyInterfaces.cs" />
+    <Compile Include="DependencyProviders.cs" />
     <Compile Include="Strategies\IWorkTypeStrategy.cs" />
     <Compile Include="Strategies\BaseWorkTypeStrategy.cs" />
     <Compile Include="Strategies\WorkTypeStrategyRegistry.cs" />
