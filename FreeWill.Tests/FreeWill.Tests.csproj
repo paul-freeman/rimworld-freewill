@@ -88,11 +88,15 @@
     <ItemGroup>
         <Compile Include="Program.cs" />
         <Compile Include="PriorityTests.cs" />
-        <Compile Include="TestHelpers\MockDependencyProviders.cs" />
-        <Compile Include="TestHelpers\MockGameObjects.cs" />
-        <Compile Include="TestHelpers\MockPawnBuilder.cs" />
-        <Compile Include="TestHelpers\TestDataBuilders.cs" />
-        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="BasicPriorityTests.cs" />
+        <Compile Include="ConsiderMethodTests.cs" />
+        <Compile Include="StrategyTests/FirefighterStrategyTests.cs" />
+        <Compile Include="StrategyTests/DoctorStrategyTests.cs" />
+        <Compile Include="TestHelpers/MockDependencyProviders.cs" />
+        <Compile Include="TestHelpers/MockGameObjects.cs" />
+        <Compile Include="TestHelpers/MockPawnBuilder.cs" />
+        <Compile Include="TestHelpers/TestDataBuilders.cs" />
+        <Compile Include="Properties/AssemblyInfo.cs" />
     </ItemGroup>
 
     <!-- Reference to main FreeWill project -->
