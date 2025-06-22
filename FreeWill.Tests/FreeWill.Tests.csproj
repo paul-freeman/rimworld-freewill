@@ -119,6 +119,7 @@
         <Compile Include="StrategyTests/HandlingStrategyTests.cs" />
         <Compile Include="StrategyTests/BasicWorkerStrategyTests.cs" />
         <Compile Include="StrategyTests/DefaultWorkTypeStrategyTests.cs" />
+        <Compile Include="IntegrationTests/PriorityCalculationIntegrationTests.cs" />
     </ItemGroup>
 
     <!-- Reference to main FreeWill project -->

@@ -1,4 +1,5 @@
 using System;
+using FreeWill.Tests.IntegrationTests;
 using FreeWill.Tests.StrategyTests;
 using FreeWill.Tests.TestHelpers;
 
@@ -122,6 +123,10 @@ namespace FreeWill.Tests
 
                 Console.WriteLine();
                 StrategyTests.DefaultWorkTypeStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                Console.WriteLine("5. Running Integration Tests...");
+                PriorityCalculationIntegrationTests.RunAllTests();
 
                 Console.WriteLine();
                 Console.WriteLine("=== LEGACY TESTS (for comparison) ===");
