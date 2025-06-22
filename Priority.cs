@@ -211,22 +211,42 @@ namespace FreeWill
         }
 
         /// <summary>
-        /// Converts the current value into a RimWorld work priority integer.
+        /// Converts the priority value to a RimWorld game priority integer.
+        /// RimWorld priority system: 0 = disabled, 1 = highest priority, 4 = lowest priority
         /// </summary>
         /// <returns>The equivalent game priority value.</returns>
         public int ToGamePriority()
         {
+            // Convert 0-1 float value to 0-100 integer for easier calculation
             int valueInt = Mathf.Clamp(Mathf.RoundToInt(Value * 100), 0, 100);
-            if (valueInt <= DISABLED_CUTOFF)
-            {
-                return Enabled ? Pawn_WorkSettings.LowestPriority : 0;
-            }
+
+            // Handle explicit disable first (always takes precedence)
             if (Disabled)
             {
-                return 0;
+                return 0; // Disabled
             }
-            int invertedValueRange = DISABLED_CUTOFF_ACTIVE_WORK_AREA - (valueInt - DISABLED_CUTOFF); // 0-80 if LowestPriority is 4
+
+            // Handle very low values (below cutoff threshold)
+            if (valueInt <= DISABLED_CUTOFF)
+            {
+                // If explicitly enabled (via AlwaysDo) but value is low, 
+                // enable at lowest priority rather than disabling completely
+                if (Enabled)
+                {
+                    return Pawn_WorkSettings.LowestPriority; // Enable at lowest priority (e.g., 4)
+                }
+                else
+                {
+                    return 0; // Not explicitly enabled and value is low = disabled
+                }
+            }
+
+            // Convert normal priority values to game priorities
+            // Higher values become lower priority numbers (1 = highest, 4 = lowest)
+            int invertedValueRange = DISABLED_CUTOFF_ACTIVE_WORK_AREA - (valueInt - DISABLED_CUTOFF);
             int gamePriorityValue = Mathf.FloorToInt(invertedValueRange / ONE_PRIORITY_WIDTH) + 1;
+
+            // Ensure result is within valid range
             if (gamePriorityValue > Pawn_WorkSettings.LowestPriority || gamePriorityValue < 1)
             {
                 Log.Error("Free Will: calculated an invalid game priority value of " + gamePriorityValue.ToString());

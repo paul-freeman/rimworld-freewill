@@ -1,4 +1,5 @@
 using System;
+using FreeWill.Tests.StrategyTests;
 using FreeWill.Tests.TestHelpers;
 
 namespace FreeWill.Tests
@@ -57,6 +58,70 @@ namespace FreeWill.Tests
 
                 Console.WriteLine();
                 StrategyTests.DoctorStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.PatientStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.PatientBedRestStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.CookingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.HuntingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.ConstructionStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.GrowingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.MiningStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.PlantCuttingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.SmithingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.TailoringStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.ArtStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.CraftingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.HaulingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.CleaningStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.ResearchingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.HaulingUrgentStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                Console.WriteLine("4. Running Specialized Strategy Tests...");
+                StrategyTests.ChildcareStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.WardenStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.HandlingStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.BasicWorkerStrategyTests.RunAllTests();
+
+                Console.WriteLine();
+                StrategyTests.DefaultWorkTypeStrategyTests.RunAllTests();
 
                 Console.WriteLine();
                 Console.WriteLine("=== LEGACY TESTS (for comparison) ===");
