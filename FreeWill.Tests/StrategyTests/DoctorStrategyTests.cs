@@ -39,9 +39,7 @@ namespace FreeWill.Tests.StrategyTests
             try
             {
                 WorkTypeDef doctorWorkType = TestDataBuilders.WorkTypeDefs.Doctor;
-                MockPriorityDependencyProvider mockProvider = new MockPriorityDependencyProvider();
-
-                // Test with no injured colonists (should have low priority)
+                MockPriorityDependencyProvider mockProvider = new MockPriorityDependencyProvider();                // Test with no injured colonists (should have low priority)
                 MockMapStateProvider mockMapState = (MockMapStateProvider)mockProvider.MapStateProvider;
                 mockMapState.InjuredColonistCount = 0;
                 mockMapState.InjuredPetCount = 0;
@@ -49,8 +47,9 @@ namespace FreeWill.Tests.StrategyTests
                 mockMapState.PercentPawnsDowned = 0.0f;
                 mockMapState.PercentPawnsNeedingTreatment = 0.0f;
 
-                Priority priority = new Priority(null, doctorWorkType, mockProvider);
-                DoctorStrategy strategy = new DoctorStrategy();                // Test that strategy can be called (actual calculation may require more setup)
+                Priority priority = new Priority(TestPawns.BasicColonist(), doctorWorkType, mockProvider);
+                DoctorStrategy strategy = new DoctorStrategy();
+                // Test that strategy can be called (actual calculation may require more setup)
                 try
                 {
                     Priority result = strategy.CalculatePriority(priority);
@@ -80,14 +79,14 @@ namespace FreeWill.Tests.StrategyTests
 
                 // Test with injured colonists (should increase priority)
                 mockMapState.InjuredColonistCount = 3;
-                mockMapState.PercentPawnsNeedingTreatment = 0.5f; // 50% need treatment
-                mockMapState.DownedColonistCount = 1;
+                mockMapState.PercentPawnsNeedingTreatment = 0.5f; // 50% need treatment                mockMapState.DownedColonistCount = 1;
                 mockMapState.PercentPawnsDowned = 0.2f; // 20% downed
 
-                Priority priority = new Priority(null, doctorWorkType, mockProvider);
+                Priority priority = new Priority(TestPawns.BasicColonist(), doctorWorkType, mockProvider);
                 float initialValue = priority.Value;
 
-                DoctorStrategy strategy = new DoctorStrategy(); try
+                DoctorStrategy strategy = new DoctorStrategy();
+                try
                 {
                     Priority result = strategy.CalculatePriority(priority);
                     // Priority should typically increase when colonists need medical attention
@@ -123,8 +122,9 @@ namespace FreeWill.Tests.StrategyTests
                 mockMapState.NumPetsNeedingTreatment = 2.0f;
                 mockMapState.InjuredColonistCount = 0; // No injured colonists, focus on animals
 
-                Priority priority = new Priority(null, doctorWorkType, mockProvider);
-                DoctorStrategy strategy = new DoctorStrategy(); try
+                Priority priority = new Priority(TestPawns.BasicColonist(), doctorWorkType, mockProvider);
+                DoctorStrategy strategy = new DoctorStrategy();
+                try
                 {
                     Priority result = strategy.CalculatePriority(priority);
                     Console.WriteLine("DoctorStrategy with injured animals - PASSED");
