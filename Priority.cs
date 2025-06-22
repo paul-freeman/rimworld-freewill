@@ -68,7 +68,7 @@ namespace FreeWill
         {
             this.pawn = pawn;
             WorkTypeDef = workTypeDef;
-            this.dependencyProvider = dependencyProvider ?? throw new System.ArgumentNullException(nameof(dependencyProvider));
+            this.dependencyProvider = dependencyProvider ?? throw new ArgumentNullException(nameof(dependencyProvider));
             AdjustmentStrings = new List<Func<string>> { };
         }        /// <summary>
                  /// Calculates the priority value using numerous heuristics.
@@ -652,16 +652,21 @@ namespace FreeWill
                 return this;
             }
         }
-
         public Priority ConsiderBored()
         {
-            try
+            return HandleExceptionWrapper(() =>
             {
+                // Handle null pawn gracefully - this is a valid production scenario
+                if (pawn?.mindState == null)
+                {
+                    return this;
+                }
+
                 const int boredomMemory = 2500; // 1 hour in game
                 if (pawn.mindState.IsIdle)
                 {
                     mapStateProvider?.UpdateLastBored(pawn);
-                    return AlwaysDoIf(pawn.mindState.IsIdle, "FreeWillPriorityBored".TranslateSimple);
+                    return AlwaysDoIf(pawn.mindState.IsIdle, () => "FreeWillPriorityBored".TranslateSimple());
                 }
                 if (!EnsureMapStateProvider())
                 {
@@ -669,16 +674,8 @@ namespace FreeWill
                 }
                 int? lastBored = mapStateProvider.GetLastBored(pawn);
                 bool wasBored = lastBored != 0 && Find.TickManager.TicksGame - lastBored < boredomMemory;
-                return AlwaysDoIf(wasBored, "FreeWillPriorityWasBored".TranslateSimple);
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: could not consider bored: {ex.Message}");
-                }
-                return this;
-            }
+                return AlwaysDoIf(wasBored, () => "FreeWillPriorityWasBored".TranslateSimple());
+            }, "consider bored");
         }
 
         public Priority ConsiderHasHuntingWeapon()
@@ -1740,10 +1737,9 @@ namespace FreeWill
                 return this;
             }
         }
-
         public Priority ConsiderLowFood(float adjustment)
         {
-            try
+            return HandleExceptionWrapper(() =>
             {
                 if (worldStateProvider?.Settings?.ConsiderLowFood == 0.0f || !mapStateProvider.AlertLowFood)
                 {
@@ -1757,15 +1753,7 @@ namespace FreeWill
                     return this;
                 }
                 return this;
-            }
-            catch (Exception ex)
-            {
-                if (Prefs.DevMode)
-                {
-                    Log.Error($"Free Will: could not consider low food: {ex.Message}");
-                }
-                return this;
-            }
+            }, "consider low food");
         }
 
         public Priority ConsiderWeaponRange()
@@ -2155,24 +2143,6 @@ namespace FreeWill
         private bool EnsureMapStateProvider()
         {
             return mapStateProvider != null;
-        }
-
-        /// <summary>
-        /// Ensures that world state provider is available.
-        /// </summary>
-        /// <returns>True if available, false otherwise.</returns>
-        private bool EnsureWorldStateProvider()
-        {
-            return worldStateProvider != null;
-        }
-
-        /// <summary>
-        /// Legacy compatibility method for EnsureMapComp calls.
-        /// </summary>
-        /// <returns>True if map state provider is available, false otherwise.</returns>
-        private bool EnsureMapComp()
-        {
-            return EnsureMapStateProvider();
         }
 
         /// <summary>

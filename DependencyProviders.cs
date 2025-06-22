@@ -54,8 +54,15 @@ namespace FreeWill
         public bool AreaHasHaulables => mapComponent.AreaHasHaulables;
         public bool AreaHasFilth => mapComponent.AreaHasFilth;
 
-        public int? GetLastBored(Pawn pawn) => mapComponent.GetLastBored(pawn);
-        public void UpdateLastBored(Pawn pawn) => mapComponent.UpdateLastBored(pawn);
+        public int? GetLastBored(Pawn pawn)
+        {
+            return mapComponent.GetLastBored(pawn);
+        }
+
+        public void UpdateLastBored(Pawn pawn)
+        {
+            mapComponent.UpdateLastBored(pawn);
+        }
     }
 
     /// <summary>
@@ -75,31 +82,32 @@ namespace FreeWill
     /// </summary>
     public class DefaultPriorityDependencyProvider : IPriorityDependencyProvider
     {
-        private readonly IWorkTypeStrategyProvider strategyProvider;
-
         public DefaultPriorityDependencyProvider()
         {
-            strategyProvider = new WorkTypeStrategyProvider();
+            StrategyProvider = new WorkTypeStrategyProvider();
         }
 
         public IWorldStateProvider WorldStateProvider
         {
             get
             {
-                var worldComponent = Find.World?.GetComponent<FreeWill_WorldComponent>();
+                FreeWill_WorldComponent worldComponent = Find.World?.GetComponent<FreeWill_WorldComponent>();
                 return worldComponent != null ? new WorldStateProvider(worldComponent) : null;
             }
         }
 
         public IMapStateProvider GetMapStateProvider(Pawn pawn)
         {
-            if (pawn?.Map == null) return null;
+            if (pawn?.Map == null)
+            {
+                return null;
+            }
 
-            var mapComponent = pawn.Map.GetComponent<FreeWill_MapComponent>();
+            FreeWill_MapComponent mapComponent = pawn.Map.GetComponent<FreeWill_MapComponent>();
             return mapComponent != null ? new MapStateProvider(mapComponent) : null;
         }
 
-        public IWorkTypeStrategyProvider StrategyProvider => strategyProvider;
+        public IWorkTypeStrategyProvider StrategyProvider { get; }
     }
 
     /// <summary>
@@ -108,12 +116,10 @@ namespace FreeWill
     /// </summary>
     public static class PriorityDependencyProviderFactory
     {
-        private static IPriorityDependencyProvider instance = new DefaultPriorityDependencyProvider();
-
         /// <summary>
         /// Gets the current dependency provider instance.
         /// </summary>
-        public static IPriorityDependencyProvider Current => instance;
+        public static IPriorityDependencyProvider Current { get; private set; } = new DefaultPriorityDependencyProvider();
 
         /// <summary>
         /// Sets the dependency provider instance. Used primarily for testing.
@@ -121,7 +127,7 @@ namespace FreeWill
         /// <param name="provider">The provider to use.</param>
         public static void SetProvider(IPriorityDependencyProvider provider)
         {
-            instance = provider ?? throw new System.ArgumentNullException(nameof(provider));
+            Current = provider ?? throw new System.ArgumentNullException(nameof(provider));
         }
 
         /// <summary>
@@ -129,7 +135,7 @@ namespace FreeWill
         /// </summary>
         public static void Reset()
         {
-            instance = new DefaultPriorityDependencyProvider();
+            Current = new DefaultPriorityDependencyProvider();
         }
     }
 }
