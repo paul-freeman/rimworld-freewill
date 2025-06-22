@@ -233,7 +233,8 @@ namespace FreeWill.Tests
             RunTest("TestMultiplyMethod", TestMultiplyMethod, ref passedTests, ref failedTests, ref skippedTests);
             RunTest("TestAlwaysDoMethods", TestAlwaysDoMethods, ref passedTests, ref failedTests, ref skippedTests);
             RunTest("TestNeverDoMethods", TestNeverDoMethods, ref passedTests, ref failedTests, ref skippedTests);
-            RunTest("TestDisabledFlagBehavior", TestDisabledFlagBehavior, ref passedTests, ref failedTests, ref skippedTests); RunTest("TestComputeWithValidGameState", TestComputeWithValidGameState, ref passedTests, ref failedTests, ref skippedTests);
+            RunTest("TestDisabledFlagBehavior", TestDisabledFlagBehavior, ref passedTests, ref failedTests, ref skippedTests);
+            RunTest("TestComputeWithValidGameState", TestComputeWithValidGameState, ref passedTests, ref failedTests, ref skippedTests);
 
             // Step 3: Consider* methods testing with dependency injection
             Console.WriteLine();
