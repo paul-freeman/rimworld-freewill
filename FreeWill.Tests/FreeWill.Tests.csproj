@@ -88,6 +88,10 @@
     <ItemGroup>
         <Compile Include="Program.cs" />
         <Compile Include="PriorityTests.cs" />
+        <Compile Include="BasicPriorityTests.cs" />
+        <Compile Include="ConsiderMethodTests.cs" />
+        <Compile Include="StrategyTests\FirefighterStrategyTests.cs" />
+        <Compile Include="StrategyTests\DoctorStrategyTests.cs" />
         <Compile Include="TestHelpers\MockDependencyProviders.cs" />
         <Compile Include="TestHelpers\MockGameObjects.cs" />
         <Compile Include="TestHelpers\MockPawnBuilder.cs" />

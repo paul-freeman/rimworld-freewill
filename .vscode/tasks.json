@@ -4,7 +4,8 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build-stable-mod",
+            "label": "build-stable",
+            "detail": "Build the stable version of the FreeWill mod",
             "command": "dotnet",
             "type": "shell",
             "args": [
@@ -18,12 +19,13 @@
             ],
             "group": "build",
             "presentation": {
-                "reveal": "silent"
+                "reveal": "always"
             },
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "build-unstable-mod",
+            "label": "build-unstable",
+            "detail": "Build the unstable version of the FreeWill mod",
             "command": "dotnet",
             "type": "shell",
             "args": [
@@ -37,9 +39,29 @@
             ],
             "group": "build",
             "presentation": {
-                "reveal": "silent"
+                "reveal": "always"
             },
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-and-test",
+            "detail": "Build the project and run all the tests",
+            "command": "./build-and-test.bat",
+            "type": "shell"
+        },
+        {
+            "label": "format",
+            "detail": "Format the code using dotnet format",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "format",
+                "--check",
+                "--include",
+                "**/*.cs",
+                "--exclude",
+                "**/obj/**"
+            ]
         }
     ]
 }
