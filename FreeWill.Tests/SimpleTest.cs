@@ -8,7 +8,7 @@ namespace FreeWill.Tests
     /// </summary>
     public class SimpleTest
     {
-        public static void Main(string[] args)
+        public static void RunSimpleSmokeTest(string[] args)
         {
             Console.WriteLine("=== Simple FreeWill Smoke Test ===");
 

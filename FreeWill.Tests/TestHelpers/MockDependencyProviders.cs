@@ -72,6 +72,13 @@ namespace FreeWill.Tests.TestHelpers
         public bool AreaHasHaulables { get; set; } = false;
         public bool AreaHasFilth { get; set; } = false;
 
+        // Additional test-specific properties
+        public bool LowFood { get; set; } = false;
+        public int ColonistsNeedingTreatment { get; set; } = 0;
+        public bool HuntingWeaponsAvailable { get; set; } = true;
+        public int BrawlerCount { get; set; } = 0;
+        public bool BeautyExpectations { get; set; } = false;
+
         public int? GetLastBored(Pawn pawn)
         {
             // For testing, return null (never bored)

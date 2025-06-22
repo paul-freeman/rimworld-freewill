@@ -79,7 +79,7 @@ namespace FreeWill.Tests.StrategyTests
 
                 // Test with injured colonists (should increase priority)
                 mockMapState.InjuredColonistCount = 3;
-                mockMapState.PercentPawnsNeedingTreatment = 0.5f; // 50% need treatment                mockMapState.DownedColonistCount = 1;
+                mockMapState.PercentPawnsNeedingTreatment = 0.5f; // 50% need treatment
                 mockMapState.PercentPawnsDowned = 0.2f; // 20% downed
 
                 Priority priority = new Priority(TestPawns.BasicColonist(), doctorWorkType, mockProvider);

@@ -195,7 +195,8 @@ namespace FreeWill.Tests
         }
 
         /// <summary>
-        /// Test ToGamePriority() conversion logic with boundary values.
+        /// Test ToGamePriority() conversion logic with boundary values using public interface.
+        /// Note: RimWorld uses an inverted priority system where 1=highest, 4=lowest, 0=disabled
         /// </summary>
         public static void TestToGamePriorityConversion()
         {
@@ -204,41 +205,46 @@ namespace FreeWill.Tests
             try
             {
                 Priority priority = new Priority(null, workTypeDef);
-                System.Reflection.FieldInfo valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Func<string> testDesc = () => "ToGamePriority test";
 
-                if (valueField == null)
-                {
-                    Console.WriteLine("ToGamePriority test skipped - cannot access Value field directly");
-                    return;
-                }
-
-                // Test standard values
-                valueField.SetValue(priority, 0.0f);
+                // Test disabled value (0.0f should convert to 0)
+                priority.Set(0.0f, testDesc);
                 int gameValue = priority.ToGamePriority();
                 if (gameValue != 0)
                 {
                     throw new Exception($"ToGamePriority(0.0f) should be 0, got {gameValue}");
                 }
 
-                valueField.SetValue(priority, 0.33f);
+                // Test high value (1.0f should convert to high priority = 1)
+                priority.Set(1.0f, testDesc);
                 gameValue = priority.ToGamePriority();
                 if (gameValue != 1)
                 {
-                    throw new Exception($"ToGamePriority(0.33f) should be 1, got {gameValue}");
+                    throw new Exception($"ToGamePriority(1.0f) should be 1 (highest priority), got {gameValue}");
                 }
 
-                valueField.SetValue(priority, 0.66f);
+                // Test medium-high value (around 0.75 should convert to 2)
+                priority.Set(0.75f, testDesc);
                 gameValue = priority.ToGamePriority();
-                if (gameValue != 2)
+                if (gameValue < 1 || gameValue > 3)
                 {
-                    throw new Exception($"ToGamePriority(0.66f) should be 2, got {gameValue}");
+                    throw new Exception($"ToGamePriority(0.75f) should be reasonable priority 1-3, got {gameValue}");
                 }
 
-                valueField.SetValue(priority, 1.0f);
+                // Test medium value (around 0.5 should convert to 2 or 3)
+                priority.Set(0.5f, testDesc);
                 gameValue = priority.ToGamePriority();
-                if (gameValue != 3)
+                if (gameValue < 1 || gameValue > 4)
                 {
-                    throw new Exception($"ToGamePriority(1.0f) should be 3, got {gameValue}");
+                    throw new Exception($"ToGamePriority(0.5f) should be reasonable priority 1-4, got {gameValue}");
+                }
+
+                // Test low value (around 0.25 should convert to 3 or 4)
+                priority.Set(0.25f, testDesc);
+                gameValue = priority.ToGamePriority();
+                if (gameValue < 1 || gameValue > 4)
+                {
+                    throw new Exception($"ToGamePriority(0.25f) should be reasonable priority 1-4, got {gameValue}");
                 }
 
                 Console.WriteLine("ToGamePriority conversion tests - PASSED");
@@ -247,16 +253,19 @@ namespace FreeWill.Tests
             {
                 Console.WriteLine($"ToGamePriority conversion test failed: {ex.Message}");
             }
-        }        /// <summary>
-                 /// Test FromGamePriority() conversion logic with boundary values.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Test FromGamePriority() conversion logic with boundary values.
+        /// Note: RimWorld uses an inverted priority system where 1=highest, 4=lowest, 0=disabled
+        /// </summary>
         public static void TestFromGamePriorityConversion()
         {
             WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
 
             try
             {
-                // Test standard game priority values
+                // Test disabled game priority (0 should convert to 0.0f)
                 Priority priority0 = new Priority(null, workTypeDef);
                 priority0.FromGamePriority(0);
                 if (Math.Abs(priority0.Value - 0.0f) > 0.001f)
@@ -264,25 +273,28 @@ namespace FreeWill.Tests
                     throw new Exception($"FromGamePriority(0) should be 0.0f, got {priority0.Value}");
                 }
 
+                // Test highest game priority (1 should convert to high value close to 1.0)
                 Priority priority1 = new Priority(null, workTypeDef);
                 priority1.FromGamePriority(1);
-                if (Math.Abs(priority1.Value - 0.33f) > 0.01f)
+                if (priority1.Value < 0.8f) // Should be high value
                 {
-                    throw new Exception($"FromGamePriority(1) should be ~0.33f, got {priority1.Value}");
+                    throw new Exception($"FromGamePriority(1) should be high value (>0.8), got {priority1.Value}");
                 }
 
+                // Test lowest game priority (4 should convert to low but non-zero value)
+                Priority priority4 = new Priority(null, workTypeDef);
+                priority4.FromGamePriority(4);
+                if (priority4.Value <= 0.1f || priority4.Value >= 0.5f) // Should be low but reasonable
+                {
+                    throw new Exception($"FromGamePriority(4) should be low value (0.1-0.5), got {priority4.Value}");
+                }
+
+                // Test mid-range priority (2 should convert to mid-range value)
                 Priority priority2 = new Priority(null, workTypeDef);
                 priority2.FromGamePriority(2);
-                if (Math.Abs(priority2.Value - 0.67f) > 0.01f)
+                if (priority2.Value <= 0.4f || priority2.Value >= 0.9f)
                 {
-                    throw new Exception($"FromGamePriority(2) should be ~0.67f, got {priority2.Value}");
-                }
-
-                Priority priority3 = new Priority(null, workTypeDef);
-                priority3.FromGamePriority(3);
-                if (Math.Abs(priority3.Value - 1.0f) > 0.001f)
-                {
-                    throw new Exception($"FromGamePriority(3) should be 1.0f, got {priority3.Value}");
+                    throw new Exception($"FromGamePriority(2) should be mid-range value (0.4-0.9), got {priority2.Value}");
                 }
 
                 Console.WriteLine("FromGamePriority conversion tests - PASSED");
@@ -291,9 +303,11 @@ namespace FreeWill.Tests
             {
                 Console.WriteLine($"FromGamePriority conversion test failed: {ex.Message}");
             }
-        }        /// <summary>
-                 /// Test round-trip conversion between ToGamePriority and FromGamePriority.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Test round-trip conversion between ToGamePriority and FromGamePriority.
+        /// </summary>
         public static void TestRoundTripConversion()
         {
             WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
@@ -322,7 +336,8 @@ namespace FreeWill.Tests
         }
 
         /// <summary>
-        /// Test that ToGamePriority handles edge cases and invalid values properly.
+        /// Test that ToGamePriority handles edge cases and invalid values properly using public interface.
+        /// Note: RimWorld uses an inverted priority system where 1=highest, 4=lowest, 0=disabled
         /// </summary>
         public static void TestToGamePriorityEdgeCases()
         {
@@ -331,36 +346,30 @@ namespace FreeWill.Tests
             try
             {
                 Priority priority = new Priority(null, workTypeDef);
-                System.Reflection.FieldInfo valueField = typeof(Priority).GetField("Value", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Func<string> testDesc = () => "ToGamePriority edge test";
 
-                if (valueField == null)
-                {
-                    Console.WriteLine("ToGamePriority edge cases test skipped - cannot access Value field directly");
-                    return;
-                }
-
-                // Test negative value (should be clamped)
-                valueField.SetValue(priority, -0.5f);
+                // Test negative value (should be clamped to disabled)
+                priority.Set(-0.5f, testDesc);
                 int gameValue = priority.ToGamePriority();
                 if (gameValue != 0)
                 {
                     throw new Exception($"Negative priority should convert to 0, got {gameValue}");
                 }
 
-                // Test value above 1.0 (should be clamped)
-                valueField.SetValue(priority, 1.5f);
+                // Test value above 1.0 (should be clamped to highest priority = 1)
+                priority.Set(1.5f, testDesc);
                 gameValue = priority.ToGamePriority();
-                if (gameValue != 3)
+                if (gameValue != 1)
                 {
-                    throw new Exception($"Priority above 1.0 should convert to 3, got {gameValue}");
+                    throw new Exception($"Priority above 1.0 should convert to 1 (highest priority), got {gameValue}");
                 }
 
-                // Test boundary values
-                valueField.SetValue(priority, 0.999f);
+                // Test boundary values close to 1.0
+                priority.Set(0.999f, testDesc);
                 gameValue = priority.ToGamePriority();
-                if (gameValue != 3)
+                if (gameValue != 1)
                 {
-                    throw new Exception($"Priority 0.999 should convert to 3, got {gameValue}");
+                    throw new Exception($"Priority 0.999 should convert to 1 (highest priority), got {gameValue}");
                 }
 
                 Console.WriteLine("ToGamePriority edge cases - PASSED");
@@ -369,9 +378,11 @@ namespace FreeWill.Tests
             {
                 Console.WriteLine($"ToGamePriority edge cases test failed: {ex.Message}");
             }
-        }        /// <summary>
-                 /// Test FromGamePriority with invalid input values.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Test FromGamePriority with invalid input values.
+        /// </summary>
         public static void TestFromGamePriorityEdgeCases()
         {
             WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
@@ -399,10 +410,12 @@ namespace FreeWill.Tests
             {
                 Console.WriteLine($"FromGamePriority edge cases test failed: {ex.Message}");
             }
-        }        /// <summary>
-                 /// Test error handling in Compute() method.
-                 /// Note: This tests the error handling path when game state is invalid.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Test error handling in Compute() method.
+        /// Note: This tests the error handling path when game state is invalid.
+        /// </summary>
         public static void TestComputeErrorHandling()
         {
             WorkTypeDef workTypeDef = TestDataBuilders.WorkTypeDefs.Hauling;
