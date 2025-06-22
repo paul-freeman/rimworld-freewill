@@ -87,7 +87,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Program.cs" />
-        <Compile Include="PriorityTests.cs" />
+
         <Compile Include="BasicPriorityTests.cs" />
         <Compile Include="ConsiderMethodTests.cs" />
         <Compile Include="StrategyTests/FirefighterStrategyTests.cs" />

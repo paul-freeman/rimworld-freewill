@@ -130,8 +130,7 @@ namespace FreeWill.Tests
 
                 Console.WriteLine();
                 Console.WriteLine("=== LEGACY TESTS (for comparison) ===");
-                Console.WriteLine("Running original PriorityTests to verify reorganization...");
-                PriorityTests.RunAllTests();
+                // Note: Original PriorityTests.cs has been replaced by reorganized test files above
 
                 Console.WriteLine();
                 Console.WriteLine("=== SMOKE TEST PASSED ===");
