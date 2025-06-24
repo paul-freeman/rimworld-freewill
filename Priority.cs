@@ -18,16 +18,98 @@ namespace FreeWill
         private const int DISABLED_CUTOFF_ACTIVE_WORK_AREA = 100 - DISABLED_CUTOFF; // 80 if LowestPriority is 4
         private const float ONE_PRIORITY_WIDTH = DISABLED_CUTOFF_ACTIVE_WORK_AREA / (float)Pawn_WorkSettings.LowestPriority; // ~20 if LowestPriority is 4
 
-        public readonly Pawn pawn;
-        private readonly IPriorityDependencyProvider dependencyProvider;
-        private IWorldStateProvider worldStateProvider;
-        private IMapStateProvider mapStateProvider;
-        public WorkTypeDef WorkTypeDef { get; }
-        public float Value { get; private set; }
-        public List<Func<string>> AdjustmentStrings { get; private set; }
+        // Priority calculation constants
+        private const int PERCENTAGE_CALCULATION_BASE = 100;
+        private const float GAME_PRIORITY_OFFSET = 0.5f;
 
-        public bool Enabled { get; private set; }
-        public bool Disabled { get; private set; }
+        // Default priority values
+        private const float DEFAULT_PRIORITY = 0.2f;
+        private const float ERROR_PRIORITY = 0.4f;
+        private const float MAXIMUM_PRIORITY = 1.0f;
+        private const float MINIMUM_PRIORITY = 0.0f;
+        private const float DISABLED_PRIORITY = 0.0f;
+
+        // Common priority adjustments
+        private const float INSPIRATION_BONUS = 0.4f;
+        private const float EMERGENCY_ADJUSTMENT = 0.4f;
+        private const float WARM_CLOTHES_ADJUSTMENT = 0.2f;
+        private const float FIRE_PENALTY = -0.2f;
+        private const float IMMUNITY_BONUS = 0.4f;
+        private const float IMMUNITY_PENALTY = -0.2f;
+        private const float REFUELING_HIGH_PRIORITY = 0.35f;
+        private const float REFUELING_NORMAL_PRIORITY = 0.20f;
+        private const float ANIMAL_PEN_ADJUSTMENT = 0.3f;
+        private const float MECH_REPAIR_BONUS = 0.6f;
+
+        // Multipliers for specific situations
+        private const float CURRENT_WORK_MULTIPLIER = 1.8f;
+        private const float BEST_AT_DOING_MULTIPLIER = 1.5f;
+        private const float DETERIORATING_MULTIPLIER = 2.0f;
+        private const float PRUNING_MULTIPLIER = 2.0f;
+        private const float OWN_ROOM_MULTIPLIER = 2.0f;
+
+        // Mood and thought adjustments
+        private const float MAJOR_MOOD_ADJUSTMENT = -0.01f;
+        private const float MINOR_MOOD_ADJUSTMENT = -0.005f;
+        private const float POSITIVE_MOOD_ADJUSTMENT = 0.005f;
+
+        // Passion and skill constants
+        private const float MINOR_PASSION_EFFECT = 0.25f;
+        private const float MAJOR_PASSION_EFFECT = 0.5f;
+        private const float INJURED_ADJUSTMENT = 0.5f;
+
+        // Skill comparison thresholds
+        private const float SKILL_DIFFERENCE_MUCH_MUCH_MUCH_BETTER = 15.0f;
+        private const float SKILL_DIFFERENCE_MUCH_MUCH_BETTER = 10.0f;
+        private const float SKILL_DIFFERENCE_MUCH_BETTER = 5.0f;
+
+        // Impact multipliers for skill differences
+        private const float IMPACT_MULTIPLIER_BETTER = 1.0f;
+        private const float IMPACT_MULTIPLIER_MUCH_BETTER = 0.8f;
+        private const float IMPACT_MULTIPLIER_MUCH_MUCH_BETTER = 0.6f;
+        private const float IMPACT_MULTIPLIER_MUCH_MUCH_MUCH_BETTER = 0.4f;
+
+        // Treatment and health thresholds
+        private const float TREATMENT_THRESHOLD = 0.3f;
+        private const float NON_DOCTOR_TREATMENT_CAP = 0.6f;
+        private const float RAW_FOOD_MINIMUM_PRIORITY = 0.6f;
+        private const float CURRENT_DOING_PENALTY_MULTIPLIER = -1.5f;
+
+        // Game reference values
+        private const float STANDARD_MOVEMENT_SPEED = 4.6f;
+        private const float BASE_CARRYING_CAPACITY = 75.0f;
+        private const float BOLT_ACTION_RIFLE_RANGE = 37.0f;
+        private const float HEALTH_CALCULATION_EXPONENT = 7.0f;
+        private const float FOOD_POISONING_MULTIPLIER = 20.0f;
+
+        // Beauty expectation thresholds
+        private const float BEAUTY_EXPECTATION_VERY_LOW = 0.2f;
+        private const float BEAUTY_EXPECTATION_LOW = 0.4f;
+        private const float BEAUTY_EXPECTATION_NORMAL = 0.6f;
+        private const float BEAUTY_EXPECTATION_HIGH = 0.8f;
+        private const float BEAUTY_ADJUSTMENT_COMPENSATION = 0.2f; // made to match change in base default from 0.3 to 0.5
+
+        // Fire priority calculation
+        private const float FIRE_PRIORITY_PER_FIRE = 0.01f;
+
+        // Time constants
+        private const int BOREDOM_MEMORY_TICKS = 2500; // 1 hour in game
+
+        // Vanilla Skills Expanded passion values
+        private const int VSE_PASSION_APATHY = 3;
+        private const int VSE_PASSION_NATURAL = 4;
+        private const int VSE_PASSION_CRITICAL = 5;
+
+        // Mech gestator state value
+        private const int MECH_GESTATOR_FORMED_STATE = 3;
+
+        // Log error IDs for LogErrorOnce calls
+        private const int LOG_ERROR_VSE_PASSION = 1518670634;
+        private const int LOG_ERROR_VSE_EXCEPTION = 1550506890;
+        private const int LOG_ERROR_SOMEONE_ELSE_DOING = 1203438361;
+        private const int LOG_ERROR_SKILL_DIFFERENCE = 856149440;
+        private const int LOG_ERROR_WEAPON_RANGE = 219276975;
+        private const int LOG_ERROR_BEAUTY_EXPECTATIONS = 1177516601;
 
         // work types
         private const string FIREFIGHTER = "Firefighter";
@@ -47,11 +129,24 @@ namespace FreeWill
         private const string RESEARCHING = "Research";
 
         // supported modded work types
-        private const string HAULING_URGENT = "HaulingUrgent";        /// <summary>
-                                                                      /// Initializes a new priority instance for a pawn and work type.
-                                                                      /// </summary>
-                                                                      /// <param name="pawn">Pawn to evaluate.</param>
-                                                                      /// <param name="workTypeDef">Work type being processed.</param>
+        private const string HAULING_URGENT = "HaulingUrgent";
+
+        public readonly Pawn pawn;
+        private readonly IPriorityDependencyProvider dependencyProvider;
+        private IWorldStateProvider worldStateProvider;
+        private IMapStateProvider mapStateProvider;
+        public WorkTypeDef WorkTypeDef { get; }
+        public float Value { get; private set; }
+        public List<Func<string>> AdjustmentStrings { get; private set; }
+
+        public bool Enabled { get; private set; }
+        public bool Disabled { get; private set; }
+
+        /// <summary>
+        /// Initializes a new priority instance for a pawn and work type.
+        /// </summary>
+        /// <param name="pawn">Pawn to evaluate.</param>
+        /// <param name="workTypeDef">Work type being processed.</param>
         public Priority(Pawn pawn, WorkTypeDef workTypeDef)
             : this(pawn, workTypeDef, PriorityDependencyProviderFactory.Current)
         {
@@ -70,9 +165,11 @@ namespace FreeWill
             WorkTypeDef = workTypeDef;
             this.dependencyProvider = dependencyProvider ?? throw new ArgumentNullException(nameof(dependencyProvider));
             AdjustmentStrings = new List<Func<string>> { };
-        }        /// <summary>
-                 /// Calculates the priority value using numerous heuristics.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Calculates the priority value using numerous heuristics.
+        /// </summary>
         public void Compute()
         {
             try
@@ -86,7 +183,7 @@ namespace FreeWill
                     {
                         Log.Warning($"Free Will: pawn {pawn?.Name?.ToStringShort ?? "null"} has no map, using default priority for {WorkTypeDef?.defName ?? "null"}");
                     }
-                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    Set(DEFAULT_PRIORITY, "FreeWillPriorityDefault".TranslateSimple);
                     return;
                 }
 
@@ -100,7 +197,7 @@ namespace FreeWill
                     {
                         Log.Warning($"Free Will: no map state provider found for pawn {pawn.Name}, using default priority");
                     }
-                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    Set(DEFAULT_PRIORITY, "FreeWillPriorityDefault".TranslateSimple);
                     return;
                 }
 
@@ -110,13 +207,13 @@ namespace FreeWill
                     {
                         Log.Warning($"Free Will: no world state provider found for pawn {pawn.Name}, using default priority");
                     }
-                    Set(0.2f, "FreeWillPriorityDefault".TranslateSimple);
+                    Set(DEFAULT_PRIORITY, "FreeWillPriorityDefault".TranslateSimple);
                     return;
                 }
 
                 // start priority at the global default and compute the priority
                 // using the AI in this file
-                Set(0.2f, "FreeWillPriorityGlobalDefault".TranslateSimple);
+                Set(DEFAULT_PRIORITY, "FreeWillPriorityGlobalDefault".TranslateSimple);
                 _ = InnerCompute();
                 return;
             }
@@ -127,7 +224,7 @@ namespace FreeWill
                     Log.Error($"Free Will: could not compute {WorkTypeDef?.defName ?? "unknown"} priority for pawn: {pawn?.Name?.ToStringShort ?? "unknown"}: {ex.Message}");
                 }
                 _ = AlwaysDo("FreeWillPriorityError".TranslateSimple);
-                Set(0.4f, "FreeWillPriorityError".TranslateSimple);
+                Set(ERROR_PRIORITY, "FreeWillPriorityError".TranslateSimple);
                 // Do NOT re-throw - handle gracefully with default priority
                 return;
             }
@@ -218,7 +315,7 @@ namespace FreeWill
         public int ToGamePriority()
         {
             // Convert 0-1 float value to 0-100 integer for easier calculation
-            int valueInt = Mathf.Clamp(Mathf.RoundToInt(Value * 100), 0, 100);
+            int valueInt = Mathf.Clamp(Mathf.RoundToInt(Value * PERCENTAGE_CALCULATION_BASE), 0, PERCENTAGE_CALCULATION_BASE);
 
             // Handle explicit disable first (always takes precedence)
             if (Disabled)
@@ -266,13 +363,13 @@ namespace FreeWill
 
             if (gamePriorityValue == 0)
             {
-                Set(0.0f, "FreeWillPriorityFromGame".TranslateSimple);
+                Set(DISABLED_PRIORITY, "FreeWillPriorityFromGame".TranslateSimple);
                 return;
             }
 
-            float invertedValueRange = (gamePriorityValue - 0.5f) * ONE_PRIORITY_WIDTH;
+            float invertedValueRange = (gamePriorityValue - GAME_PRIORITY_OFFSET) * ONE_PRIORITY_WIDTH;
             float valueInt = DISABLED_CUTOFF_ACTIVE_WORK_AREA - invertedValueRange + DISABLED_CUTOFF;
-            float finalValue = Mathf.Clamp(valueInt, 0, 100) / 100;
+            float finalValue = Mathf.Clamp(valueInt, 0, PERCENTAGE_CALCULATION_BASE) / PERCENTAGE_CALCULATION_BASE;
             Set(finalValue, "FreeWillPriorityFromGame".TranslateSimple);
         }
 
@@ -402,7 +499,7 @@ namespace FreeWill
 
         public Priority Multiply(float x, Func<string> description)
         {
-            if (Disabled || Value == 0.0f)
+            if (Disabled || Value == MINIMUM_PRIORITY)
             {
                 return this;
             }
@@ -509,14 +606,14 @@ namespace FreeWill
                 Inspiration inspiration = pawn.mindState.inspirationHandler.CurState;
                 if (WorkTypeDef.defName == HUNTING && inspiration.def.defName == "Frenzy_Shoot")
                 {
-                    Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
+                    Add(INSPIRATION_BONUS, "FreeWillPriorityInspired".TranslateSimple);
                     return this;
                 }
                 foreach (WorkTypeDef workTypeDefB in inspiration?.def?.requiredNonDisabledWorkTypes ?? new List<WorkTypeDef>())
                 {
                     if (WorkTypeDef.defName == workTypeDefB.defName)
                     {
-                        Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
+                        Add(INSPIRATION_BONUS, "FreeWillPriorityInspired".TranslateSimple);
                         return this;
                     }
                 }
@@ -524,7 +621,7 @@ namespace FreeWill
                 {
                     if (WorkTypeDef.defName == workTypeDefB.defName)
                     {
-                        Add(0.4f, "FreeWillPriorityInspired".TranslateSimple);
+                        Add(INSPIRATION_BONUS, "FreeWillPriorityInspired".TranslateSimple);
                         return this;
                     }
                 }
@@ -546,15 +643,15 @@ namespace FreeWill
                     {
                         if (WorkTypeDef.defName == COOKING)
                         {
-                            Add(-0.01f * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
+                            Add(MAJOR_MOOD_ADJUSTMENT * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
                             return this;
                         }
                         if (WorkTypeDef.defName == HUNTING || WorkTypeDef.defName == PLANT_CUTTING)
                         {
-                            Add(-0.005f * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
+                            Add(MINOR_MOOD_ADJUSTMENT * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
                             return this;
                         }
-                        Add(0.005f * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
+                        Add(POSITIVE_MOOD_ADJUSTMENT * GetMoodEffect(thought), "FreeWillPriorityHungerLevel".TranslateSimple);
                         return this;
                     }
                 }
@@ -576,7 +673,7 @@ namespace FreeWill
             }
             catch (ArgumentOutOfRangeException)
             {
-                moodEffect = 0.0f;
+                moodEffect = MINIMUM_PRIORITY;
             }
             return moodEffect;
         }
@@ -591,7 +688,7 @@ namespace FreeWill
                 }
                 if (mapStateProvider.AlertNeedWarmClothes)
                 {
-                    Add(0.2f, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
+                    Add(WARM_CLOTHES_ADJUSTMENT, "FreeWillPriorityNeedWarmClothes".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -608,7 +705,7 @@ namespace FreeWill
                 }
                 if (mapStateProvider.AlertAnimalRoaming)
                 {
-                    Add(0.4f, "FreeWillPriorityAnimalsRoaming".TranslateSimple);
+                    Add(EMERGENCY_ADJUSTMENT, "FreeWillPriorityAnimalsRoaming".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -631,7 +728,7 @@ namespace FreeWill
                 {
                     return this;
                 }
-                if (mapStateProvider.SuppressionNeed != 0.0f)
+                if (mapStateProvider.SuppressionNeed != MINIMUM_PRIORITY)
                 {
                     Add(mapStateProvider.SuppressionNeed, "FreeWillPrioritySuppressionNeed".TranslateSimple);
                     return this;
@@ -658,7 +755,7 @@ namespace FreeWill
                 }
                 if (mapStateProvider.AlertColonistLeftUnburied && (WorkTypeDef.defName == HAULING || WorkTypeDef.defName == HAULING_URGENT))
                 {
-                    Add(0.4f, "FreeWillPriorityColonistLeftUnburied".TranslateSimple);
+                    Add(EMERGENCY_ADJUSTMENT, "FreeWillPriorityColonistLeftUnburied".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -682,7 +779,7 @@ namespace FreeWill
                     return this;
                 }
 
-                const int boredomMemory = 2500; // 1 hour in game
+                const int boredomMemory = BOREDOM_MEMORY_TICKS; // 1 hour in game
                 if (pawn.mindState.IsIdle)
                 {
                     mapStateProvider?.UpdateLastBored(pawn);
@@ -725,7 +822,7 @@ namespace FreeWill
                 // pawns prefer the work they are current doing
                 return pawn.CurJob?.workGiverDef?.workType == WorkTypeDef
                     ? AlwaysDo("FreeWillPriorityCurrentlyDoing".TranslateSimple)
-                        .Multiply(1.8f, "FreeWillPriorityCurrentlyDoing".TranslateSimple)
+                        .Multiply(CURRENT_WORK_MULTIPLIER, "FreeWillPriorityCurrentlyDoing".TranslateSimple)
                     : this;
             }
             catch (Exception ex)
@@ -742,9 +839,9 @@ namespace FreeWill
         {
             try
             {
-                float setting = WorldCompSettings?.ConsiderMovementSpeed ?? 0.0f;
-                return setting != 0.0f
-                    ? Multiply(setting * (pawn.GetStatValue(StatDefOf.MoveSpeed, true) / 4.6f), "FreeWillPriorityMovementSpeed".TranslateSimple)
+                float setting = WorldCompSettings?.ConsiderMovementSpeed ?? MINIMUM_PRIORITY;
+                return setting != MINIMUM_PRIORITY
+                    ? Multiply(setting * (pawn.GetStatValue(StatDefOf.MoveSpeed, true) / STANDARD_MOVEMENT_SPEED), "FreeWillPriorityMovementSpeed".TranslateSimple)
                     : this;
             }
             catch (Exception ex)
@@ -761,7 +858,7 @@ namespace FreeWill
         {
             try
             {
-                float _baseCarryingCapacity = 75.0f;
+                float _baseCarryingCapacity = BASE_CARRYING_CAPACITY;
                 if (WorkTypeDef.defName != HAULING && WorkTypeDef.defName != HAULING_URGENT)
                 {
                     return this;
@@ -800,13 +897,13 @@ namespace FreeWill
                         case Passion.None:
                             continue;
                         case Passion.Minor:
-                            x = WorldCompSettings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.25f / relevantSkills.Count;
+                            x = WorldCompSettings.ConsiderPassions * pawn.needs.mood.CurLevel * MINOR_PASSION_EFFECT / relevantSkills.Count;
 
                             _ = AlwaysDo(() => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel));
                             Add(x, () => "FreeWillPriorityMinorPassionFor".Translate(relevantSkills[index].skillLabel));
                             continue;
                         case Passion.Major:
-                            x = WorldCompSettings.ConsiderPassions * pawn.needs.mood.CurLevel * 0.5f / relevantSkills.Count;
+                            x = WorldCompSettings.ConsiderPassions * pawn.needs.mood.CurLevel * MAJOR_PASSION_EFFECT / relevantSkills.Count;
 
                             _ = AlwaysDo(() => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
                             Add(x, () => "FreeWillPriorityMajorPassionFor".Translate(relevantSkills[index].skillLabel));
@@ -837,15 +934,15 @@ namespace FreeWill
                 }
                 switch ((int)passion)
                 {
-                    case 3: // Vanilla Skills Expanded: Apathy
+                    case VSE_PASSION_APATHY: // Vanilla Skills Expanded: Apathy
                         if (passion.GetLabel() != "Apathy")
                         {
                             // There is a third passion from another mod, which we don't want to consider.
                             return;
                         }
-                        Set(0.0f, () => "FreeWillPriorityApathy".Translate(relevantSkill.skillLabel));
+                        Set(DISABLED_PRIORITY, () => "FreeWillPriorityApathy".Translate(relevantSkill.skillLabel));
                         break;
-                    case 4: // Vanilla Skills Expanded: Natural
+                    case VSE_PASSION_NATURAL: // Vanilla Skills Expanded: Natural
                         if (passion.GetLabel() != "Natural")
                         {
                             // There is a fourth passion from another mod, which we don't want to consider.
@@ -853,7 +950,7 @@ namespace FreeWill
                         }
                         _ = AlwaysDo(() => "FreeWillPriorityNatural".Translate(relevantSkill.skillLabel));
                         break;
-                    case 5: // Vanilla Skills Expanded: Critical
+                    case VSE_PASSION_CRITICAL: // Vanilla Skills Expanded: Critical
                         if (passion.GetLabel() != "Critical")
                         {
                             // There is a fifth passion from another mod, which we don't want to consider.
@@ -864,13 +961,13 @@ namespace FreeWill
                         Add(x, () => "FreeWillPriorityCritical".Translate(relevantSkill.skillLabel));
                         break;
                     default:
-                        Log.WarningOnce($"Free Will: could not consider {passion} ({passion.GetLabel()}) passion for {WorkTypeDef.defName}", 1518670634);
+                        Log.WarningOnce($"Free Will: could not consider {passion} ({passion.GetLabel()}) passion for {WorkTypeDef.defName}", LOG_ERROR_VSE_PASSION);
                         return;
                 }
             }
             catch (Exception e)
             {
-                Log.ErrorOnce($"Free Will: could not consider vanilla skills expanded: {e}", 1550506890);
+                Log.ErrorOnce($"Free Will: could not consider vanilla skills expanded: {e}", LOG_ERROR_VSE_EXCEPTION);
             }
         }
 
@@ -900,13 +997,13 @@ namespace FreeWill
                     // In Rimworld 1.5, the state was changed from
                     // FormingCycleState to FormingState. So we cast to int to
                     // avoid a compiler error.
-                    if ((int)productionMech.State != 3) // FormingState.Formed
+                    if ((int)productionMech.State != MECH_GESTATOR_FORMED_STATE) // FormingState.Formed
                     {
                         continue;
                     }
                     if (productionMech.BoundPawn == pawn)
                     {
-                        Add(0.4f, "FreeWillPriorityMechGestator".TranslateSimple);
+                        Add(EMERGENCY_ADJUSTMENT, "FreeWillPriorityMechGestator".TranslateSimple);
                         return this;
                     }
                 }
@@ -935,7 +1032,7 @@ namespace FreeWill
                     else
                     {
                         _ = AlwaysDo("FreeWillPriorityPawnDowned".TranslateSimple);
-                        Set(1.0f, "FreeWillPriorityPawnDowned".TranslateSimple);
+                        Set(MAXIMUM_PRIORITY, "FreeWillPriorityPawnDowned".TranslateSimple);
                         return this;
                     }
                 }
@@ -944,7 +1041,7 @@ namespace FreeWill
                     return this;
                 }
 
-                if (mapStateProvider.PercentPawnsDowned <= 0.0f)
+                if (mapStateProvider.PercentPawnsDowned <= MINIMUM_PRIORITY)
                 {
                     return this;
                 }
@@ -985,7 +1082,7 @@ namespace FreeWill
                 }
                 if (!worldStateProvider.Settings.globalWorkAdjustments.ContainsKey(WorkTypeDef.defName))
                 {
-                    worldStateProvider.Settings.globalWorkAdjustments.Add(WorkTypeDef.defName, 0.0f);
+                    worldStateProvider.Settings.globalWorkAdjustments.Add(WorkTypeDef.defName, MINIMUM_PRIORITY);
                 }
                 float adj = worldStateProvider.Settings.globalWorkAdjustments[WorkTypeDef.defName];
                 Add(adj, "FreeWillPriorityColonyPolicy".TranslateSimple);
@@ -1011,12 +1108,12 @@ namespace FreeWill
                 }
                 if (mapStateProvider.RefuelNeededNow)
                 {
-                    Add(0.35f, "FreeWillPriorityRefueling".TranslateSimple);
+                    Add(REFUELING_HIGH_PRIORITY, "FreeWillPriorityRefueling".TranslateSimple);
                     return this;
                 }
                 if (mapStateProvider.RefuelNeeded)
                 {
-                    Add(0.20f, "FreeWillPriorityRefueling".TranslateSimple);
+                    Add(REFUELING_NORMAL_PRIORITY, "FreeWillPriorityRefueling".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -1043,24 +1140,24 @@ namespace FreeWill
                 {
                     if (mapStateProvider.HomeFire)
                     {
-                        Add(-0.2f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
+                        Add(FIRE_PENALTY, "FreeWillPriorityFireInHomeArea".TranslateSimple);
                         return this;
                     }
                     if (mapStateProvider.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
                     {
-                        Add(Mathf.Clamp01(mapStateProvider.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
+                        Add(Mathf.Clamp01(mapStateProvider.MapFires * FIRE_PRIORITY_PER_FIRE), "FreeWillPriorityFireOnMap".TranslateSimple);
                         return this;
                     }
                     return this;
                 }
                 if (mapStateProvider.HomeFire)
                 {
-                    Set(1.0f, "FreeWillPriorityFireInHomeArea".TranslateSimple);
+                    Set(MAXIMUM_PRIORITY, "FreeWillPriorityFireInHomeArea".TranslateSimple);
                     return this;
                 }
                 if (mapStateProvider.MapFires > 0 && WorkTypeDef.defName == FIREFIGHTER)
                 {
-                    Add(Mathf.Clamp01(mapStateProvider.MapFires * 0.01f), "FreeWillPriorityFireOnMap".TranslateSimple);
+                    Add(Mathf.Clamp01(mapStateProvider.MapFires * FIRE_PRIORITY_PER_FIRE), "FreeWillPriorityFireOnMap".TranslateSimple);
                     return this;
                 }
                 return this;
@@ -1081,7 +1178,7 @@ namespace FreeWill
             {
                 if (HealthAIUtility.ShouldHaveSurgeryDoneNow(pawn))
                 {
-                    Set(1.0f, "FreeWillPriorityOperation".TranslateSimple);
+                    Set(MAXIMUM_PRIORITY, "FreeWillPriorityOperation".TranslateSimple);
                     return this;
                 }
                 else
@@ -1107,12 +1204,12 @@ namespace FreeWill
                 {
                     if (WorkTypeDef.defName == PATIENT_BED_REST)
                     {
-                        Add(0.4f, "FreeWillPriorityBuildingImmunity".TranslateSimple);
+                        Add(IMMUNITY_BONUS, "FreeWillPriorityBuildingImmunity".TranslateSimple);
                         return this;
                     }
                     if (WorkTypeDef.defName != PATIENT)
                     {
-                        Add(-0.2f, "FreeWillPriorityBuildingImmunity".TranslateSimple);
+                        Add(IMMUNITY_PENALTY, "FreeWillPriorityBuildingImmunity".TranslateSimple);
                         return this;
                     }
                     return this;
@@ -1138,7 +1235,7 @@ namespace FreeWill
                     return this;
                 }
 
-                if (mapStateProvider.PercentPawnsNeedingTreatment <= 0.0f)
+                if (mapStateProvider.PercentPawnsNeedingTreatment <= MINIMUM_PRIORITY)
                 {
                     return this;
                 }
@@ -1172,7 +1269,7 @@ namespace FreeWill
                 {
                     // patient and bed rest are activated and set to 100%
                     _ = AlwaysDo("FreeWillPriorityNeedTreatment".TranslateSimple);
-                    Set(1.0f, "FreeWillPriorityNeedTreatment".TranslateSimple);
+                    Set(MAXIMUM_PRIORITY, "FreeWillPriorityNeedTreatment".TranslateSimple);
                     return this;
                 }
                 if (WorkTypeDef.defName == DOCTOR)
@@ -1182,7 +1279,7 @@ namespace FreeWill
                         // this pawn can self tend, so activate doctor skill and set
                         // to 100%
                         _ = AlwaysDo("FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple);
-                        Set(1.0f, "FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple);
+                        Set(MAXIMUM_PRIORITY, "FreeWillPriorityNeedTreatmentSelfTend".TranslateSimple);
                         return this;
                     }
                     // doctoring stays the same
@@ -1242,10 +1339,10 @@ namespace FreeWill
                     )
                 {
                     // crafting work types are low priority when someone is injured
-                    if (Value > 0.3f)
+                    if (Value > TREATMENT_THRESHOLD)
                     {
                         // crafting work types are low priority when someone is injured
-                        Add(-(Value - 0.3f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                        Add(-(Value - TREATMENT_THRESHOLD), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
                         return this;
                     }
                     // crafting work types are low priority when someone is injured
@@ -1253,9 +1350,9 @@ namespace FreeWill
                 }
 
                 // any other work type is capped at 0.6
-                if (Value > 0.6f)
+                if (Value > NON_DOCTOR_TREATMENT_CAP)
                 {
-                    Add(-(Value - 0.6f), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
+                    Add(-(Value - NON_DOCTOR_TREATMENT_CAP), "FreeWillPriorityOthersNeedTreatment".TranslateSimple);
                     return this;
                 }
                 return this;
