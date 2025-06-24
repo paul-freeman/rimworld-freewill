@@ -499,7 +499,9 @@ namespace FreeWill
 
         public Priority Multiply(float x, Func<string> description)
         {
-            if (Disabled || Value == MINIMUM_PRIORITY)
+            // Explicitly check if Value is 0.0f to determine a "disabled" state.
+            // This avoids relying on MINIMUM_PRIORITY, which may change in the future.
+            if (Disabled || Value == 0.0f)
             {
                 return this;
             }
