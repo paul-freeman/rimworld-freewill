@@ -1,5 +1,27 @@
 # Changelog
 
+## [2.0.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.2...v2.0.0) (2025-06-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* Update to RimWorld 1.6 API
+
+### Features
+
+* add basic support for vanilla expanded skills ([cab9031](https://github.com/paul-freeman/rimworld-freewill/commit/cab90319b3af44ba2d6c1cedd6956b00471a1411))
+* **core:** add base project ([3cd3104](https://github.com/paul-freeman/rimworld-freewill/commit/3cd3104fbc6a2261c74c88a2da40d37b83854e41))
+* **core:** introduce basic game interfaces ([13b9e72](https://github.com/paul-freeman/rimworld-freewill/commit/13b9e72495f928300c5bbbf2ea67305907ae2f43))
+* document core classes ([f62848a](https://github.com/paul-freeman/rimworld-freewill/commit/f62848a6a3433a9a9fb560948b5147052741bb3f))
+
+
+### Bug Fixes
+
+* address compile errors in RimWorld 1.6 ([4f1ca5e](https://github.com/paul-freeman/rimworld-freewill/commit/4f1ca5e7dc4e6fd749b5242b54d1f73922a23b0c))
+* null exceptions ([#44](https://github.com/paul-freeman/rimworld-freewill/issues/44)) ([0f5b410](https://github.com/paul-freeman/rimworld-freewill/commit/0f5b4108cc2d908b49d5d701c4e13a0575b99bf4))
+* show debug error for someone else doing error ([3714cb5](https://github.com/paul-freeman/rimworld-freewill/commit/3714cb585589afd520dd2bc0bdf6e6768cf62c57))
+* show error for weapon range error ([560bca7](https://github.com/paul-freeman/rimworld-freewill/commit/560bca77dce7f918376667c05c0e682647528d4f))
+
 ## [1.6.2](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.1...v1.6.2) (2024-04-15)
 
 
