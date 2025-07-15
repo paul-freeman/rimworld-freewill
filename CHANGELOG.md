@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/paul-freeman/rimworld-freewill/compare/v2.0.0...v2.0.1) (2025-07-15)
+
+
+### Bug Fixes
+
+* **hunting:** remove requirement for ranged weapon to hunting for RimWorld 1.6 fishing support ([#54](https://github.com/paul-freeman/rimworld-freewill/issues/54)) ([47ec7c9](https://github.com/paul-freeman/rimworld-freewill/commit/47ec7c9f3a05876b263c14f349a4c2ddda784701))
+
 ## [2.0.0](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.2...v2.0.0) (2025-06-22)
 
 
