@@ -1,12 +1,5 @@
 # Changelog
 
-## [Unreleased]
-
-### Changes
-
-* Remove requirement for ranged weapons in hunting to support fishing (introduced in RimWorld 1.6)
-* The "Consider has hunting weapon" setting is now deprecated and no longer affects hunting priority
-
 ## [1.6.2](https://github.com/paul-freeman/rimworld-freewill/compare/v1.6.1...v1.6.2) (2024-04-15)
 
 
