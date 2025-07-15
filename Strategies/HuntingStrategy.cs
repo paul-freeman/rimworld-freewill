@@ -4,9 +4,10 @@ namespace FreeWill
 {
     /// <summary>
     /// Strategy for hunting work type priority calculation.
-    /// Hunting involves tracking and killing wild animals for food and resources.
+    /// Hunting involves tracking and killing wild animals for food and resources, as well as fishing.
     /// Priority increases during food shortages as hunting provides essential meat.
-    /// Requires appropriate weapons and considers combat abilities and movement speed.
+    /// Considers combat abilities and movement speed but no longer requires ranged weapons
+    /// due to fishing being part of hunting in RimWorld 1.6.
     /// </summary>
     public class HuntingStrategy : BaseWorkTypeStrategy
     {
@@ -29,7 +30,6 @@ namespace FreeWill
                 .ConsiderHealth()
                 .ConsiderAteRawFood()
                 .ConsiderBored()
-                .ConsiderHasHuntingWeapon() // Must have appropriate weapon
                 .ConsiderBrawlersNotHunting() // Brawlers are less effective hunters
                 .ConsiderFire()
                 .ConsiderBuildingImmunity()
